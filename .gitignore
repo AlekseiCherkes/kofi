@@ -2,4 +2,7 @@
 *.hi
 *.o
 *.ho
-hw
+*.exe
+kofi.db
+create_db
+fill_db
