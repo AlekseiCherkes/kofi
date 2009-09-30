@@ -6,9 +6,10 @@ all:
 
 create_db: CreateDB.hs
 	runghc CreateDB.hs
+	sqlite3 -init fill.sql kofi.db
 
 clean:
-	rm -R -f *.hc *.hi *.o *.ho
+	rm -f -R *.hc *.hi *.o *.ho
 	rm -f $(PROGRAM)
 	rm -f create_db
 	rm -f fill_db

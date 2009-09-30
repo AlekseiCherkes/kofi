@@ -3,6 +3,8 @@
 *.o
 *.ho
 *.exe
+KofiDB
+KofiDB.hs
 kofi.db
 create_db
 fill_db

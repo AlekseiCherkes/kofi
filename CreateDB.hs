@@ -12,14 +12,34 @@ import Database.HaskellDB.DBSpec.DBSpecToDBDirect
 kofiDBInfo = DBInfo {
                dbname = "kofi", 
                opts = DBOptions{useBString = False}, 
-               tbls = [persons]
+               tbls = [companies, accounts, statuses]
              }
 
-persons = TInfo {tname = "persons",
-	    cols = [ CInfo {cname = "first_name", descr = (StringT, True )}
-                   , CInfo {cname = "second_name", descr = (StringT, True )}
-                   ]
-                }
+companies = TInfo {tname = "companies",
+	           cols = [ CInfo {cname = "unp", descr = (IntegerT, False)}
+                          , CInfo {cname = "name", descr = (StringT, False)}
+                          , CInfo {cname = "registry_date", descr = (StringT, False)}
+                          , CInfo {cname = "unregistry_date", descr = (StringT, True)}
+                          , CInfo {cname = "open_key", descr = (IntegerT, False)}
+                          ]
+                  }
+
+accounts = TInfo {tname = "accounts",
+                  cols = [ CInfo {cname = "id", descr = (IntegerT, False)}
+                         , CInfo {cname = "owner_id", descr = (IntegerT, False)}
+                         , CInfo {cname = "ballance", descr = (IntegerT, False)}
+                         , CInfo {cname = "open_date", descr = (CalendarTimeT, False)}
+                         , CInfo {cname = "close_date", descr = (CalendarTimeT, True)}
+                         , CInfo {cname = "currency_code", descr = (IntT, False)}
+                         ]
+                 }
+
+statuses = TInfo {tname = "statuses",
+                  cols = [ CInfo {cname = "id", descr = (IntT, False)}
+                         , CInfo {cname = "message", descr = (StringT, False)}
+                         ]
+                 }
+
   
 --------------------------------------------------------------------------------
 -- Create physical Database file and declaration modules.
