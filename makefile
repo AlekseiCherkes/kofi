@@ -1,8 +1,12 @@
-PROGRAM := kofi
 HSFLAGS :=
 
-all:
-	ghc --make $(HSFLAGS) -o $(PROGRAM) Main.hs
+all: client server
+
+server: ServerMain.hs
+	ghc --make $(HSFLAGS) -o server ServerMain.hs
+
+client: ClientMain.hs
+	ghc --make $(HSFLAGS) -o client ClientMain.hs
 
 create_db: CreateDB.hs
 	runghc CreateDB.hs
@@ -10,6 +14,6 @@ create_db: CreateDB.hs
 
 clean:
 	rm -f -R *.hc *.hi *.o *.ho
-	rm -f $(PROGRAM)
+	rm -f client server
 	rm -f create_db
 	rm -f fill_db
