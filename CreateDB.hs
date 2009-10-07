@@ -6,7 +6,7 @@ import Database.HaskellDB.DBSpec.DBSpecToDatabase
 import Database.HaskellDB.DBSpec.DBSpecToDBDirect
 
 --------------------------------------------------------------------------------
--- Database information
+-- Database declaration
 --------------------------------------------------------------------------------
 
 kofiDBInfo = DBInfo {
