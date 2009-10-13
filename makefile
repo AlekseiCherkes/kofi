@@ -1,27 +1,6 @@
-HSFLAGS :=	--make  	\
-		-Wall		\
-		-iThirdParty	\
-		-fglasgow-exts 	\
-		-fallow-undecidable-instances \
-		-XCPP
+HSFLAGS :=
 
-
-
-
-# CFILES := ThirdParty/CBits/sqlite3.c \
-# 	ThirdParty/CBits/sqlite3-local.c
-
-CFILES := ThirdParty/CBits/network/ancilData.c \
-ThirdParty/CBits/network/asyncAccept.c \
-ThirdParty/CBits/network/HsNet.c \
-ThirdParty/CBits/network/initWinSock.c \
-ThirdParty/CBits/network/winSockErr.c \
-
-CFLAGS := -I./ThirdParty/CBits/network
-
-HSC2HSFLAGS := -I ../CBits/network
-
-all: client_new
+all: client server
 
 server: ServerMain.hs
 	ghc --make $(HSFLAGS) -o server ServerMain.hs
@@ -29,19 +8,13 @@ server: ServerMain.hs
 client: ClientMain.hs
 	ghc --make $(HSFLAGS) -o client ClientMain.hs
 
-hsc2hs:
-	hsc2hs $(HSC2HSFLAGS) ThirdParty/Network/Socket.hsc
-#	hsc2hs ThirdParty/Network/Socket/Internal.hsc
-#	hsc2hs TirdParty/Network/BSD.hsc
-#	hsc2hs ThirdParty/Database/HSQL/SQLite3.hsc
-#	hsc2hs ThirdParty/Database/HSQL.hsc
+# create_db: hsc2hs CreateDB.hs
+# 	runghc CreateDB.hs
+# 	sqlite3 -init fill.sql kofi.db
 
-client_new:
-	ghc $(HSFLAGS) $(CFILES) -optP $(CFLAGS) ClientMain.hs
-
-create_db: CreateDB.hs
-	runghc CreateDB.hs
-	sqlite3 -init fill.sql kofi.db
+# hsc2hs: 
+# 	hsc2hs $(HSC2HSFLAGS) ThirdParty/Database/HSQL/SQLite3.hsc
+# 	hsc2hs $(HSC2HSFLAGS) ThirdParty/Database/HSQL.hsc
 
 clean:
 	rm -f -R *.hc *.hi *.o *.ho

@@ -1,29 +1,29 @@
 module Main() 
     where
 
-import KofiDB
-import KofiDB.Accounts
-import KofiDB.Companies
+import Network
 import System.IO
-import Database.HaskellDB
-import Database.HaskellDB.HSQL.SQLite3
 
-opts = SQLiteOptions {
-         filepath = "kofi.db",
-         mode = ReadWriteMode
-       }
+port = PortNumber 6555
 
-withDB :: (Database -> IO a) -> IO a
-withDB = sqliteConnect opts
+main = withSocketsDo $ do
+         sock <- listenOn port
+         loop sock
+         sClose sock
 
-lstCompanies :: Database -> IO ()
-lstCompanies db = do
-  let q = do
-        cs <- table companies
-        as <- table accounts
-        restrict (cs!unp .==. as!owner_id)        
-        project (name << cs!name # xid << as!xid)
-  rows <- query db q
-  mapM_ (putStrLn . \ r -> show (r!name) ++ "\t" ++ show (r!xid)) rows
+loop :: Socket -> IO ()
+loop sock = do
+  client <- accept sock
+  withClient (snd3 client) (fst3 client)
+  loop sock
+    where
+      fst3 (a, _, _) = a
+      snd3 (_, b, _) = b
+      tht3 (_, _, c) = c
 
-main = withDB lstCompanies
+withClient :: HostName -> Handle -> IO ()
+withClient name handle = do
+  print $ "Message from: " ++ name
+  msg <- hGetLine handle
+  print msg
+  hClose handle
