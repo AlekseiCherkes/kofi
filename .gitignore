@@ -3,6 +3,7 @@
 *.o
 *.ho
 *.exe
+*.log
 KofiDB
 KofiDB.hs
 kofi.db
