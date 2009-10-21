@@ -1,16 +1,32 @@
 module Message
     where
 
-import Entity
+--------------------------------------------------------------------------------
+
 import System.Time
 
-data Message = Message {unp :: Integer
+--------------------------------------------------------------------------------
+
+data TransactionPriority = Urgent | Normal
+                           deriving (Read, Show)
+
+data CommitedTransaction = CommitedTransaction { reason :: String
+                                               , creditAccountId :: Integer
+                                               , debitAccountId :: Integer
+                                               , amount :: Double
+                                               , priority :: TransactionPriority
+                                       }
+                   deriving (Read, Show)
+
+--------------------------------------------------------------------------------
+
+data Message = Message { unp :: Integer
                        , body :: String
                        , digest :: Integer -- от body
                        }
                deriving (Read, Show)
 
-data Request = CommitTransaction Transaction
+data Request = CommitTransaction CommitedTransaction
              | GetBalance
              | GetExtract CalendarTime CalendarTime -- без ошибок
              | GetLog CalendarTime CalendarTime     -- с ошибками
@@ -20,3 +36,5 @@ data Response = Balance Double
               | Log [String]
               | Extract [String]
                 deriving (Read, Show)
+
+--------------------------------------------------------------------------------
