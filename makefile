@@ -38,7 +38,9 @@ clean:
 	echo $(wildcard $(addprefix Server/, *.hc, *.hi, *.o, *.ho))
 
 .PHONY : clean_all
-clean_all: clean_system clean_database clean_cbits clean_db clean_our clean_db
+clean_all: clean_database clean_cbits clean_db clean_our clean_db
+
+# clean_system
 
 ################################################################################
 ################################################################################
@@ -52,7 +54,7 @@ clean_all: clean_system clean_database clean_cbits clean_db clean_our clean_db
 # $@ - name of target
 
 .PHONY: third_party
-third_party: cbits system database
+third_party: cbits database # system
 
 THIRD_PARTY_FLAGS := -iThirdParty
 
@@ -79,28 +81,28 @@ clean_cbits:
 # System.Log
 ################################################################################
 
-SYSTEM_DIRS := $(addprefix ThirdParty/System/, ./ Log/ Log/Handler/)
+# SYSTEM_DIRS := $(addprefix ThirdParty/System/, ./ Log/ Log/Handler/)
 
-SYSTEM_HS := $(wildcard $(addsuffix *.hs, $(SYSTEM_DIRS)))
-SYSTEM_HI := $(patsubst %.hs, %.hi, $(SYSTEM_HS))
-SYSTEM_O  := $(patsubst %.hs, %.o,  $(SYSTEM_HS))
+# SYSTEM_HS := $(wildcard $(addsuffix *.hs, $(SYSTEM_DIRS)))
+# SYSTEM_HI := $(patsubst %.hs, %.hi, $(SYSTEM_HS))
+# SYSTEM_O  := $(patsubst %.hs, %.o,  $(SYSTEM_HS))
 
-SYSTEM_FLAGS := $(THIRD_PARTY_FLAGS) $(HSFLAGS) \
-		 -XCPP 	\
-		 -XExistentialQuantification
+# SYSTEM_FLAGS := $(THIRD_PARTY_FLAGS) $(HSFLAGS) \
+# 		 -XCPP 	\
+# 		 -XExistentialQuantification
 
-.PHONY: system
-system: $(SYSTEM_HI) $(SYSTEM_O)
+# .PHONY: system
+# system: $(SYSTEM_HI) $(SYSTEM_O)
 
-$(SYSTEM_HI): %.hi: %.hs
-	ghc --make -c $(SYSTEM_FLAGS) $<
+# $(SYSTEM_HI): %.hi: %.hs
+# 	ghc --make -c $(SYSTEM_FLAGS) $<
 
-$(SYSTEM_O): %.o: %.hs
-	ghc --make -c $(SYSTEM_FLAGS) $<
+# $(SYSTEM_O): %.o: %.hs
+# 	ghc --make -c $(SYSTEM_FLAGS) $<
 
-.PHOBY: clean_system
-clean_system:
-	rm -f $(SYSTEM_HI) $(SYSTEM_O)
+# .PHOBY: clean_system
+# clean_system:
+# 	rm -f $(SYSTEM_HI) $(SYSTEM_O)
 
 ################################################################################
 # Database
