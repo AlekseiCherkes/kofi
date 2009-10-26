@@ -2,7 +2,12 @@
 module Database.HSQL.Types where
 
 import Control.Concurrent.MVar
-import Control.Exception
+---------------------------------------
+-- My fixing
+--import Control.Exception 		-- old
+import Control.OldException		-- my
+---------------------------------------
+
 import Data.Dynamic
 import Foreign
 import Foreign.C

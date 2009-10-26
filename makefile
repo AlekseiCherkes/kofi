@@ -76,6 +76,12 @@ $(CBITS_O): %.o: %.c
 .PHONY: clean_cbits
 clean_cbits:
 	rm -f $(CBITS_O)
+	
+################################################################################
+# utf8-string
+################################################################################
+
+# Не компилируется здесь, т.к не требует специальных флагов. Зависимость будет обработана компилятором.
 
 ################################################################################
 # System.Log
@@ -117,6 +123,8 @@ DATABASE_HS += $(DATABASE_HS_FROM_HSC)
 DATABASE_HI := $(patsubst %.hs, %.hi, $(DATABASE_HS))
 DATABASE_O  := $(patsubst %.hs, %.o,  $(DATABASE_HS))
 
+HSC2HS_FLAGS := -IThirdParty/CBits/sqlite3/
+
 DATABASE_FLAGS := $(THIRD_PARTY_FLAGS) $(HSFLAGS) \
 		  -fglasgow-exts 		  \
 		  -XTypeSynonymInstances	  \
@@ -144,7 +152,7 @@ $(DATABASE_O): %.o: %.hs
 	ghc --make -c $(DATABASE_FLAGS) $<
 
 $(DATABASE_HS_FROM_HSC): %.hs: %.hsc
-	hsc2hs $<
+	hsc2hs $(HSC2HS_FLAGS) $<
 
 .PHOBY: clean_database
 clean_database:

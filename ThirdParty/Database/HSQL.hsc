@@ -66,7 +66,11 @@ import Data.Dynamic
 import System.Time
 import System.IO.Unsafe(unsafePerformIO)
 import Control.Monad(when,unless,mplus)
-import Control.Exception (throwDyn, catchDyn, dynExceptions, Exception(..), finally, catch, throwIO)
+-----------------------------------------------------------------------------------------------------------------
+-- My fixing
+-- import Control.Exception (throwDyn, catchDyn, dynExceptions, Exception(..), finally, catch, throwIO) -- old
+import Control.OldException (throwDyn, catchDyn, dynExceptions, Exception(..), finally, catch, throwIO) -- my
+-----------------------------------------------------------------------------------------------------------------
 import Control.Concurrent.MVar
 import Text.ParserCombinators.ReadP
 import Text.Read
@@ -316,11 +320,14 @@ mkClockTime year mon mday hour min sec tz =
 			(#poke struct tm,tm_year ) p_tm	(fromIntegral (year-1900) :: CInt)
 			(#poke struct tm,tm_isdst) p_tm	(-1 :: CInt)
 			t <- mktime p_tm
-#if __GLASGOW_HASKELL__ >= 603
 			return (TOD (fromIntegral (fromEnum t) + fromIntegral (tz-currTZ)) 0)
-#else
-			return (TOD (fromIntegral t + fromIntegral (tz-currTZ)) 0)
-#endif
+						
+--if __GLASGOW_HASKELL__ >= 603
+--return (TOD (fromIntegral t + fromIntegral (tz-currTZ)) 0)
+--			return (TOD (fromIntegral (fromEnum t) + fromIntegral (tz-currTZ)) 0)
+--else
+--endif
+
 foreign import ccall unsafe mktime :: Ptr () -> IO CTime
 
 {-# NOINLINE currTZ #-}
