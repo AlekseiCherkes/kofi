@@ -17,7 +17,7 @@
 module Database.HaskellDB.HSQL (hsqlConnect) where
 
 import Data.Maybe
-import Control.Exception (catch, throwIO)
+import Control.Exception (catch,throwIO, SomeException)
 import Control.Monad
 import Control.Monad.Trans (MonadIO, liftIO)
 import System.IO
@@ -178,7 +178,7 @@ getRows f stmt = handleSqlError loop
 		   return []
 
 onError :: IO a -> IO b -> IO a
-onError a h = a `Control.Exception.catch` (\e -> h >> throwIO e)
+onError a h = a `Control.Exception.catch` (\e -> h >> throwIO (e::SomeException))
 
 -- | Primitive execute
 hsqlPrimExecute :: Connection -- ^ Database connection.

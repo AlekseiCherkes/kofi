@@ -19,7 +19,7 @@ import Foreign
 import Foreign.C
 import System.IO
 import Control.Monad(when)
-import Control.Exception(throwDyn)
+import Control.OldException(throwDyn)
 import Control.Concurrent.MVar
 
 #include <fcntl.h>
