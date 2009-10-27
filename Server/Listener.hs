@@ -14,7 +14,7 @@ listen f = withSocketsDo $ do
 
 loop :: Socket -> (String -> String -> IO ()) -> IO ()
 loop sock f = do
-  (handle, _, port) <- accept sock
+  (handle, name, port) <- accept sock
   msg <- hGetLine handle
-  f "name" msg
+  f name msg
   loop sock f
