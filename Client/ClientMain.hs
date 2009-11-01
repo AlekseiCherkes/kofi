@@ -3,9 +3,12 @@ module Main()
 
 import Network
 import System.IO
-import Message
+
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.Glade
+
+import Message
+import TransactionDialog
 
 host = "127.0.0.1"
 port = PortNumber 6555
@@ -35,13 +38,11 @@ testLogToConsole = do
 main :: IO ()
 main = do
   initGUI
-  dialogXml <- xmlNew "transaction_dialog.glade"
-  let dialogX = case dialogXml of
-        (Just dialogX) -> dialogX
-        Nothing        -> error "cant load the transaction_dialog.glade file."
-
-  window <- xmlGetWidget dialogX castToWindow "transaction_dialog"
-  button <- xmlGetWidget dialogX castToButton "conmmit_btn"
+  
+  gui <- loadTransactionDialog "transaction_dialog.glade"
+  let window = dialog_wnd gui
+  let button = commit_btn gui
+  
   onClicked button (testSend >> testLogToConsole)
   onDestroy window mainQuit
   widgetShowAll window
