@@ -4,6 +4,8 @@
 *.ho
 *.exe
 *.log
+*.project
+*.hsproject
 KofiDB
 KofiDB.hs
 kofi.db
