@@ -40,10 +40,11 @@ main = do
   initGUI
   
   gui <- loadTransactionDialog "transaction_dialog.glade"
-  let window = dialog_wnd gui
-  let button = commit_btn gui
   
-  onClicked button (testSend >> testLogToConsole)
-  onDestroy window mainQuit
-  widgetShowAll window
+  setTransactionDialogData gui testTransaction
+  
+  onClicked (commit_btn gui) (testSend >> testLogToConsole)
+  onDestroy (dialog_wnd gui) mainQuit
+  onDestroy (cancel_btn gui) mainQuit
+  widgetShowAll (dialog_wnd gui)
   mainGUI

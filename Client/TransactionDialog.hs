@@ -3,7 +3,7 @@ module TransactionDialog
 
 
 import System.IO
---import Message
+import Message
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.Glade
 
@@ -27,6 +27,9 @@ data TransactionDialog = TransactionDialog{ dialog_wnd         :: Dialog
                                            ,payer_unp          :: Entry
                                            ,payee_unp          :: Entry
                                           }
+
+
+
                                           
 loadTransactionDialog :: FilePath -> IO TransactionDialog
 loadTransactionDialog gladePath = do
@@ -69,7 +72,26 @@ loadTransactionDialog gladePath = do
                 payeeAcc_cmb       
                 reason_txt         
                 payer_unp          
-                payee_unp          
+                payee_unp
+                
+ 
+ubdateComboEntryItems :: ComboBoxEntry -> [String] -> IO ()
+ubdateComboEntryItems combo items = do
+    store <- comboBoxSetModelText combo 
+    mapM_ (listStoreAppend store) items
+
+
+ 
+setTransactionDialogData :: TransactionDialog -> CommitedTransaction -> IO ()
+setTransactionDialogData gui trans = do
+    ubdateComboEntryItems (payerAcc_cmb gui) ["1", "2", "3", "4", "5", "6"]--[show (creditAccountId trans)]
+    ubdateComboEntryItems (payeeAcc_cmb gui) ["a", "b", "c", "d", "e", "f"]--[show (debitAccountId  trans)]
+    
+
+    
+    entrySetText (amount_entry gui) $ show (amount trans)
+    --toggleButtonSetMode (urgent_btn    gui) (isUrgent (trans priority))
+    --toggleButtonSetMode (notUrgent_btn gui) (isUrgent ( not (trans priority)))      
    
 
 

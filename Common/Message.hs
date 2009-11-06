@@ -38,3 +38,6 @@ data Response = Balance Double
                 deriving (Read, Show)
 
 --------------------------------------------------------------------------------
+isUrgent :: TransactionPriority -> Bool
+isUrgent Normal = False
+isUrgent Urgent = True
