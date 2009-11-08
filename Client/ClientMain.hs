@@ -5,7 +5,7 @@ import Network
 import System.IO
 
 import Graphics.UI.Gtk
-import Graphics.UI.Gtk.Glade
+import Graphics.UI.Gtk.Glade ()
 
 import Message
 import TransactionDialog

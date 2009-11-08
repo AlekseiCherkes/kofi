@@ -77,8 +77,8 @@ loadTransactionDialog gladePath = do
  
 ubdateComboEntryItems :: ComboBoxEntry -> [String] -> IO ()
 ubdateComboEntryItems combo items = do
-    store <- comboBoxSetModelText combo 
-    mapM_ (listStoreAppend store) items
+    comboBoxEntrySetModelText combo 
+    mapM_ (comboBoxAppendText combo) items
 
 
  
