@@ -75,23 +75,28 @@ loadTransactionDialog gladePath = do
                 payee_unp
                 
  
-ubdateComboEntryItems :: ComboBoxEntry -> [String] -> IO ()
-ubdateComboEntryItems combo items = do
+setComboEntryItems :: ComboBoxEntry -> [String] -> IO ()
+setComboEntryItems combo items = do
     comboBoxEntrySetModelText combo 
     mapM_ (comboBoxAppendText combo) items
 
 
+setMultilineText :: TextView -> String -> IO ()
+setMultilineText textView text = do
+    buffer <- textViewGetBuffer textView
+    textBufferSetText buffer text
+    
  
 setTransactionDialogData :: TransactionDialog -> CommitedTransaction -> IO ()
 setTransactionDialogData gui trans = do
-    ubdateComboEntryItems (payerAcc_cmb gui) ["1", "2", "3", "4", "5", "6"]--[show (creditAccountId trans)]
-    ubdateComboEntryItems (payeeAcc_cmb gui) ["a", "b", "c", "d", "e", "f"]--[show (debitAccountId  trans)]
+    setComboEntryItems (payerAcc_cmb gui) ["1", "2", "3", "4", "5", "6"]--[show (creditAccountId trans)]
+    setComboEntryItems (payeeAcc_cmb gui) ["a", "b", "c", "d", "e", "f"]--[show (debitAccountId  trans)]
     
-
+    setMultilineText (reason_txt gui) "1-st line\n2-nd line\n3-d line\n4-th line."
     
     entrySetText (amount_entry gui) $ show (amount trans)
-    --toggleButtonSetMode (urgent_btn    gui) (isUrgent (trans priority))
-    --toggleButtonSetMode (notUrgent_btn gui) (isUrgent ( not (trans priority)))      
+    --toggleButtonSetMode (urgent_btn    gui) False
+    --toggleButtonSetMode (notUrgent_btn gui) False      
    
 
 
