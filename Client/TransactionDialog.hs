@@ -95,8 +95,10 @@ setTransactionDialogData gui trans = do
     setMultilineText (reason_txt gui) "1-st line\n2-nd line\n3-d line\n4-th line."
     
     entrySetText (amount_entry gui) $ show (amount trans)
-    --toggleButtonSetMode (urgent_btn    gui) False
-    --toggleButtonSetMode (notUrgent_btn gui) False      
-   
+    radioButtonSetGroup   (urgent_btn gui) (notUrgent_btn gui)
+    toggleButtonSetActive (urgent_btn gui) (isUrgent (priority trans))
+    --toggleButtonSetMode   (urgent_btn gui) True
+    
+  
 
 
