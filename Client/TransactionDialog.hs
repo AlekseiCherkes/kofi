@@ -79,6 +79,7 @@ setComboEntryItems :: ComboBoxEntry -> [String] -> IO ()
 setComboEntryItems combo items = do
     comboBoxEntrySetModelText combo 
     mapM_ (comboBoxAppendText combo) items
+    comboBoxSetActive combo 0
 
 
 setMultilineText :: TextView -> String -> IO ()
@@ -89,15 +90,14 @@ setMultilineText textView text = do
  
 setTransactionDialogData :: TransactionDialog -> CommitedTransaction -> IO ()
 setTransactionDialogData gui trans = do
-    setComboEntryItems (payerAcc_cmb gui) ["1", "2", "3", "4", "5", "6"]--[show (creditAccountId trans)]
-    setComboEntryItems (payeeAcc_cmb gui) ["a", "b", "c", "d", "e", "f"]--[show (debitAccountId  trans)]
+    setComboEntryItems (payerAcc_cmb gui) [show (creditAccountId trans)]
+    setComboEntryItems (payeeAcc_cmb gui) [show (debitAccountId  trans)]
     
-    setMultilineText (reason_txt gui) "1-st line\n2-nd line\n3-d line\n4-th line."
+    setMultilineText (reason_txt gui) (reason trans)
     
     entrySetText (amount_entry gui) $ show (amount trans)
     radioButtonSetGroup   (urgent_btn gui) (notUrgent_btn gui)
     toggleButtonSetActive (urgent_btn gui) (isUrgent (priority trans))
-    --toggleButtonSetMode   (urgent_btn gui) True
     
   
 
