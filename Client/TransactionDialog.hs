@@ -87,6 +87,15 @@ setMultilineText textView text = do
     buffer <- textViewGetBuffer textView
     textBufferSetText buffer text
     
+
+getMultilineText :: TextView -> IO String
+getMultilineText textView = do
+	buffer <- textViewGetBuffer textView
+	start  <- textBufferGetStartIter buffer
+	end    <- textBufferGetEndIter   buffer
+	txt    <- textBufferGetText      buffer start end True
+	return txt
+    
  
 setTransactionDialogData :: TransactionDialog -> CommitedTransaction -> IO ()
 setTransactionDialogData gui trans = do
@@ -98,6 +107,26 @@ setTransactionDialogData gui trans = do
     entrySetText (amount_entry gui) $ show (amount trans)
     radioButtonSetGroup   (urgent_btn gui) (notUrgent_btn gui)
     toggleButtonSetActive (urgent_btn gui) (isUrgent (priority trans))
+    
+    
+getTransactionDialogData :: TransactionDialog -> IO CommitedTransaction
+getTransactionDialogData gui = do
+	Just payerAcc <- comboBoxGetActiveText (payerAcc_cmb gui)
+	Just payeeAcc <- comboBoxGetActiveText (payeeAcc_cmb gui) 
+	reason        <- getMultilineText      (reason_txt   gui)
+	ammountTxt    <- entryGetText          (amount_entry gui)
+	isUrgent      <- toggleButtonGetActive (urgent_btn   gui)
+	
+	let payerAccNum = (read payerAcc)  ::Integer
+	let payeeAccNum = (read payeeAcc)  ::Integer
+	let ammount     = (read ammountTxt)::Double
+	
+	let priority = case isUrgent of
+		True -> Urgent
+		False-> Normal
+		
+	return (CommitedTransaction reason payerAccNum payeeAccNum ammount priority)
+	
     
   
 
