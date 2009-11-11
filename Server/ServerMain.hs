@@ -6,7 +6,7 @@ import System.IO
 -- import System.Log.Logger
 -- import System.Log.Handler.Simple
 
-import Listener
+import Server
 import MessageHandler
 
 main = do
@@ -14,5 +14,5 @@ main = do
 --   fileh <- fileHandler "server.log"  DEBUG
 --   updateGlobalLogger "server" (setLevel DEBUG . setHandlers [stderrh, fileh])
 --   infoM "server" "Starting server main."
-  listen handleMessage
+  runServer handleMessage
 
