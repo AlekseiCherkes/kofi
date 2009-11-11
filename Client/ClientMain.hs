@@ -55,6 +55,6 @@ main = do
   
   onClicked (commit_btn gui) $ onCommitTransactionClicked gui
   onDestroy (dialog_wnd gui) mainQuit
-  onClicke  (cancel_btn gui) mainQuit
+  onDestroy (cancel_btn gui) mainQuit
   widgetShowAll (dialog_wnd gui)
   mainGUI
