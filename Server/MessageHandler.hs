@@ -1,12 +1,13 @@
 module MessageHandler
     where
 
-import Message
+-- import Message
 import System.IO
+import System.Log.Logger
 
 handleMessage :: String -> Handle -> IO ()
 handleMessage name handle = do
-  str <- (hGetContents handle)
-  let msg = (read str) :: Message  
-  print $ "Message from" ++ ": " ++ name
-  print $ str
+  cnts <- hGetContents handle
+  -- let msg = (read cnts) :: Message
+  infoM "server.clients" $ "Message from" ++ ": " ++ name
+  infoM "server.clients" cnts

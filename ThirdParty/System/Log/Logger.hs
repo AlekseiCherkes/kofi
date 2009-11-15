@@ -182,7 +182,7 @@ import Control.Concurrent.MVar
 import Data.List(map, isPrefixOf)
 import Data.Maybe
 import qualified Data.Map as Map
-import qualified Control.Exception
+import qualified Control.OldException
 import Control.Monad.Error
 ---------------------------------------------------------------------------
 -- Basic logger types
@@ -456,9 +456,9 @@ traplogging logger priority desc action =
                              x -> x ++ ": "
         handler e = do
                     logM logger priority (realdesc ++ (show e))
-                    Control.Exception.throw e             -- Re-raise it
+                    Control.OldException.throw e             -- Re-raise it
         in
-        Control.Exception.catch action handler
+        Control.OldException.catch action handler
     
 {- This function pulled in from MissingH to avoid a dep on it -}
 split :: Eq a => [a] -> [a] -> [[a]]

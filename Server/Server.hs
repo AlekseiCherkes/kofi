@@ -7,11 +7,13 @@ import System.IO
 import Control.Monad
 import Control.Concurrent
 import Control.Exception
+import System.Log.Logger
 
 port = PortNumber 6555
 
 runServer :: (String -> Handle -> IO()) -> IO ()
-runServer connHandler = 
+runServer connHandler = do
+  infoM "server.server" $ "Run server" -- " -- ++ "port = " ++ (show port)
   run `catch` handleException
   where 
     run = withSocketsDo $ do
@@ -23,13 +25,14 @@ runServer connHandler =
           serviceConn name handle connHandler
     
     handleException (e::SomeException) = do
-      print $ "Common server error: " ++ (show e)    
+      emergencyM "server.server" $ "Exception in main thread: " ++ (show e)
 
 serviceConn :: String -> Handle -> (String -> Handle -> IO ()) -> IO ()
 serviceConn name handle connHandler = do
-  threadId <- forkIO $ (connHandler name handle `catch` handleException)
+  infoM "server.server" $ "Accept connection: " ++ name
+  threadId <- forkIO $ (connHandler name handle `catch` handleException)  
   return ()
   where
     handleException (e::SomeException) = do
-      print $ "Common error in client thread: " ++ (show e)
+      errorM "server.server" $ "Exception in client thread( " ++ name ++ " ): " ++ (show e)
       hClose handle
