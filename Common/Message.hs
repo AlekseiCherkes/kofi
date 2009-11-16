@@ -7,6 +7,23 @@ import System.Time
 
 --------------------------------------------------------------------------------
 
+type CipheredMessage = [String]
+
+data UserId = ClientId Integer     -- UNP клиента
+            | BankId Integer       -- в текущей реализации всегда 0
+            deriving (Read, Show)
+
+data Message = Message { userId :: UserId  -- 0 для сервера, UNP для клриента
+                       , digest :: Integer -- от body
+                       , text :: MessageText
+                       }
+               deriving (Read, Show)
+                        
+makeMessage :: Integer -> MessageText -> digestKey -> encryptionKey
+makeMessage unp
+                        
+--------------------------------------------------------------------------------
+
 data TransactionPriority = Urgent | Normal
                            deriving (Read, Show)
 
@@ -17,14 +34,6 @@ data CommitedTransaction = CommitedTransaction { reason :: String
                                                , priority :: TransactionPriority
                                        }
                    deriving (Read, Show)
-
---------------------------------------------------------------------------------
-
-data Message = Message { unp :: Integer
-                       , body :: String
-                       , digest :: Integer -- от body
-                       }
-               deriving (Read, Show)
 
 data Request = CommitTransaction CommitedTransaction
              | GetBalance
@@ -38,6 +47,9 @@ data Response = Balance Double
                 deriving (Read, Show)
 
 --------------------------------------------------------------------------------
+
 isUrgent :: TransactionPriority -> Bool
 isUrgent Normal = False
 isUrgent Urgent = True
+
+--------------------------------------------------------------------------------

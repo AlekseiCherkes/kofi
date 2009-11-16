@@ -23,7 +23,7 @@ testTransaction = CommitedTransaction { reason = "test this client server commun
                   
 makeMessage :: Request -> Message
 makeMessage request = Message { unp = 123456789
-                              , body = show request
+                              , text = show request
                               , digest = 0
                               }
                                                           
