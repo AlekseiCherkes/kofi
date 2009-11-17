@@ -4,6 +4,7 @@
   <!-- interface-naming-policy project-wide -->
   <widget class="GtkDialog" id="dialog">
     <property name="border_width">5</property>
+    <property name="destroy_with_parent">True</property>
     <property name="type_hint">normal</property>
     <property name="has_separator">False</property>
     <child internal-child="vbox">
@@ -502,9 +503,11 @@
             <child>
               <widget class="GtkButton" id="commit_btn">
                 <property name="label" translatable="yes">&#x41F;&#x440;&#x438;&#x43D;&#x44F;&#x442;&#x44C;</property>
+                <property name="response_id">-5</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <property name="image_position">top</property>
               </widget>
               <packing>
                 <property name="expand">False</property>
@@ -515,6 +518,7 @@
             <child>
               <widget class="GtkButton" id="cancel_btn">
                 <property name="label" translatable="yes">&#x41E;&#x442;&#x43C;&#x435;&#x43D;&#x438;&#x442;&#x44C;</property>
+                <property name="response_id">-6</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -527,7 +531,6 @@
             </child>
           </widget>
           <packing>
-            <property name="expand">False</property>
             <property name="pack_type">end</property>
             <property name="position">0</property>
           </packing>
