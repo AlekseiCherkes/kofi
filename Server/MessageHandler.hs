@@ -1,7 +1,7 @@
 module MessageHandler
     where
 
--- import Message
+import Message
 import System.IO
 import System.Log.Logger
 

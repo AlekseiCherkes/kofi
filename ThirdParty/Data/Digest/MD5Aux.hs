@@ -12,17 +12,17 @@ Nasty kludge to create a type Zord64 which is really a Word64 but works
 how we want in hugs ands nhc98 too...
 Also need a rotate left function that actually works.
 
-#ifdef __GLASGOW_HASKELL__
-#define rotL rotateL
-#include "Zord64_EASY.hs"
-#else
+-- #ifdef __GLASGOW_HASKELL__
+-- #define rotL rotateL
+-- #include "Zord64_EASY.hs"
+-- #else
 
 > import Zord64_HARD
  
 > rotL :: Word32 -> Rotation -> Word32
 > rotL a s = shiftL a s .|. shiftL a (s-32)
 
-#endif
+-- #endif
 -}
 
 rotL x = rotateL x

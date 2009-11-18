@@ -1,27 +1,26 @@
 module Message
     where
 
---------------------------------------------------------------------------------
-
 import System.Time
 
 --------------------------------------------------------------------------------
+-- Messages
+--------------------------------------------------------------------------------
 
-type CipheredMessage = [String]
+type Base64 = String
 
-data UserId = ClientId Integer     -- UNP клиента
-            | BankId Integer       -- в текущей реализации всегда 0
-            deriving (Read, Show)
+data SenderId = ClientId String  -- Client UNP
+              | BankId String    -- BIC (ignoring now)
+              deriving (Read, Show)
 
-data Message = Message { userId :: UserId  -- 0 для сервера, UNP для клриента
-                       , digest :: Integer -- от body
-                       , text :: MessageText
+data Message = Message { senderId :: SenderId
+                       , digest :: Base64
+                       , text :: String -- Serialized Request or Response
                        }
-               deriving (Read, Show)
-                        
-makeMessage :: Integer -> MessageText -> digestKey -> encryptionKey
-makeMessage unp
-                        
+             deriving (Read, Show)
+                      
+--------------------------------------------------------------------------------
+-- Requests
 --------------------------------------------------------------------------------
 
 data TransactionPriority = Urgent | Normal
@@ -32,20 +31,26 @@ data CommitedTransaction = CommitedTransaction { reason :: String
                                                , debitAccountId :: Integer
                                                , amount :: Double
                                                , priority :: TransactionPriority
-                                       }
-                   deriving (Read, Show)
+                                               }
+                         deriving (Read, Show)
 
 data Request = CommitTransaction CommitedTransaction
              | GetBalance
              | GetExtract CalendarTime CalendarTime -- без ошибок
              | GetLog CalendarTime CalendarTime     -- с ошибками
-               deriving (Read, Show)
+             deriving (Read, Show)
+                      
+--------------------------------------------------------------------------------
+-- Responses
+--------------------------------------------------------------------------------
 
 data Response = Balance Double
               | Log [String]
               | Extract [String]
-                deriving (Read, Show)
+              deriving (Read, Show)
 
+--------------------------------------------------------------------------------
+-- Utilities
 --------------------------------------------------------------------------------
 
 isUrgent :: TransactionPriority -> Bool
