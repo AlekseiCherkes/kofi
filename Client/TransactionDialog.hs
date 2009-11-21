@@ -3,12 +3,15 @@ module TransactionDialog
 
 
 import System.IO
-import Message
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.Glade
 
+import Message
+import MainWindow
 
-data TransactionDialog = TransactionDialog{ dialog_wnd         :: Dialog
+
+data TransactionDialog = TransactionDialog{ parent_gui         :: MainWindow
+                                           ,dialog_wnd         :: Dialog
                                            ,commit_btn         :: Button
                                            ,cancel_btn         :: Button
                                            ,urgent_btn         :: RadioButton
@@ -31,8 +34,8 @@ data TransactionDialog = TransactionDialog{ dialog_wnd         :: Dialog
 
 
                                           
-loadTransactionDialog :: FilePath -> IO TransactionDialog
-loadTransactionDialog gladePath = do
+loadTransactionDialog :: MainWindow -> FilePath -> IO TransactionDialog
+loadTransactionDialog mainWnd gladePath = do
     Just glade <- xmlNew gladePath
     
     dialog_wnd         <- xmlGetWidget glade castToDialog "dialog"
@@ -54,7 +57,8 @@ loadTransactionDialog gladePath = do
     payee_unp          <- xmlGetWidget glade castToEntry "payee_unp"
     reason_txt         <- xmlGetWidget glade castToTextView "reason_txt"  
     
-    return $ TransactionDialog 
+    return $ TransactionDialog
+                mainWnd 
                 dialog_wnd         
                 commit_btn         
                 cancel_btn         
@@ -126,7 +130,43 @@ getTransactionDialogData gui = do
 		False-> Normal
 		
 	return (CommitedTransaction reason payerAccNum payeeAccNum ammount priority)
+    
+
+makeMessage :: Int -> Request -> Message
+makeMessage upp -> request = Message { unp = 123456789
+                              , body = show request
+                              , digest = 0
+                              }
+
+    
+onCommitTransactionClicked :: TransactionDialog -> IO ()
+onCommitTransactionClicked gui = do
+    trans <- getTransactionDialogData gui
+    let msg = makeMessage $ CommitTransaction trans
+    (testSend msg) >> (testLogToConsole msg)
+    
+    
+    
+onNewTransaction :: IO ()
+onNewTransaction = do
+    gui <- loadTransactionDialog "transaction_dialog.glade"
+    setTransactionDialogData gui testTransaction
+  
+    trans <- getTransactionDialogData gui
+    let msg = makeMessage $ CommitTransaction trans
+  
+    onClicked (commit_btn gui) $ onCommitTransactionClicked gui
+    onDestroy (dialog_wnd gui) mainQuit
+    onDestroy (cancel_btn gui) mainQuit
+    widgetShowAll (dialog_wnd gui)
 	
+testTransaction = CommitedTransaction { reason = "test this client server communication"
+                                      , creditAccountId = 123456789
+                                      , debitAccountId = 987654321
+                                      , amount = 100.0
+                                      , priority = Urgent
+                                      }
+
     
   
 

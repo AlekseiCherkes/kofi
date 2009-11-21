@@ -1,0 +1,29 @@
+<ui> 
+    <menubar> 
+        <menu action= "UsrAction"> 
+            <menuitem action= "SwitchUser_a" /> 
+            <separator/> 
+            <menuitem action= "Exit_a"/>
+        </menu>
+
+        <menu action= "PayAction">
+            <menuitem action= "NewPay_a"/>
+            <menuitem action= "ViewPays_a"/>
+        </menu>
+
+        <menu action= "StaAction">
+            <menuitem action= "StaReq_a"/>
+            <menuitem action= "LogReq_a"/>
+            <menuitem action= "ViewSta_a"/>
+        </menu>
+
+        <menu action= "AccAction">
+            <menuitem action= "ViewBalance_a"/>
+        </menu> 
+
+        <menu action= "HlpAction">
+            <menuitem action= "About_a"/>
+        </menu>
+
+    </menubar>
+</ui>
