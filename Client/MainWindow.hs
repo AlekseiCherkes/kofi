@@ -1,52 +1,69 @@
 module MainWindow where
 
-import Control.Monad
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.Glade
 
-
-data GuiActions = GuiActions {switchUserAction     :: Action
-                             ,newPaymentAction     :: Action
-                             ,viewPaymentsAction   :: Action
-                             ,staRequestAction     :: Action
-                             ,logRequestAction     :: Action
-                             ,viewStaAction        :: Action
-                             ,balanceRequestAction :: Action
-                             }
-                             
-data MainWindowControms = MainWindowControms {userName_lbl   :: Label
-                                             ,companyName_lbl:: Label
-                                             ,companyUnp_ldl :: Label
-                                             }
-                                            
-data MainWindow = MainWindow {window  :: Window
-                             ,actions :: GuiActions
-                             ,controls:: MainWindowControms
-                             }
+actionEntries = 
+ [ActionEntry "SwitchUser_a"  "Переключить пользователя" (Just stockDialogAuthentication) Nothing (Just "Меняет пользователя."              ) (putStrLn "SwitchUser_a")--onSwitchUser 
+ ,ActionEntry "NewPay_a"      "Создать"                  (Just stockAdd                 ) Nothing (Just "Создает новое платежное поручение" ) (putStrLn "NewPay_a")--onNewPay 
+ ,ActionEntry "ViewPays_a"    "Просмотреть платежи"      (Just stockIndex               ) Nothing (Just "Показывает все платежные поручения") (putStrLn "ViewPays_a")--onViewPay 
+ ,ActionEntry "StaReq_a"      "Запрсить выписку"         (Just stockDnd                 ) Nothing (Just "Запрашивает выписку со счета."     ) (putStrLn "StaReq_a")--onStaReq 
+ ,ActionEntry "LogReq_a"      "Запрсить лог"             (Just stockUndelete            ) Nothing (Just "Запрашивает лог."                  ) (putStrLn "LogReq_a")--onLogReq 
+ ,ActionEntry "ViewSta_a"     "Просмотреть выписки"      (Just stockDndMultiple         ) Nothing (Just "Показывает все выписки."           ) (putStrLn "ViewSta_a")--onViewSta 
+ ,ActionEntry "ViewBalance_a" "Запрсить баланс"          (Just stockZoom100             ) Nothing (Just "Запрашивает баланс счета."         ) (putStrLn "ViewBalance_a")--onBalanceReq 
+ ,ActionEntry "Exit_a"        "Выход"                    (Just stockQuit                ) Nothing (Just "Завершает программу."              ) mainQuit
+ ,ActionEntry "About_a"       "О программе"              (Just stockAbout               ) Nothing (Just "About."                            ) (putStrLn "About_a")--onAbout
+ ]
 
 
-loadMainWindow :: FilePath -> IO MainWindow
-loadMainWindow gladePath = do
-  Just glade <- xmlNew gladePath
-  window <- xmlGetWidget glade castToWindow "mainWindow"
-  [switch_act, newPay_act, viewPay_act ,staReq_act, logReq_act, viewSta_act ,balanc_act] <- mapM ((liftM (\(Just act)-> act)).(>>= widgetGetAction).(xmlGetWidget glade castToMenuItem)) [ "switchUser_manui", "new_payment", "view_all_payments", "request_sta" , "request_log", "view_all_sta", "view_balance"] 
+initMainActionGroup :: IO ActionGroup
+initMainActionGroup = do
+    usrAct <- actionNew "UsrAction"  "Пользователь" Nothing Nothing
+    payAct <- actionNew "PayAction"  "Поручения"    Nothing Nothing
+    staAct <- actionNew "StaAction"  "Выписки"      Nothing Nothing
+    accAct <- actionNew "AccAction"  "Счет"         Nothing Nothing
+    hlpAct <- actionNew "HlpAction"  "Справка"      Nothing Nothing
+
+    mainGroup <- actionGroupNew "main"
+    mapM_ (actionGroupAddAction mainGroup) [usrAct, payAct, staAct, accAct, hlpAct]
+    actionGroupAddActions mainGroup actionEntries
+    return mainGroup
+  
+
+loadMenuBar :: FilePath -> ActionGroup -> IO Widget
+loadMenuBar xmlFile actions = do
+    ui <- uiManagerNew
+    uiManagerAddUiFromFile ui xmlFile
+    uiManagerInsertActionGroup ui actions 0
+    (Just menuBar) <- uiManagerGetWidget ui "/ui/menubar"
+    return menuBar
+
+
+
+data MainWindow = MainWindow {window         :: Window
+                             ,actions        :: ActionGroup
+                             ,userName_lbl   :: Label
+                             ,companyName_lbl:: Label
+                             ,companyUnp_ldl :: Label
+                             }  
+   
+
+loadMainWindow :: IO MainWindow
+loadMainWindow = do
+  actions <- initMainActionGroup
+  putStrLn "Actions initialized"
+  menuBar <- loadMenuBar "Resources/ActionMenu.xml" actions
+  putStrLn "Menu loaded"
+  Just glade <- xmlNew "Resources/mainWindow.glade"
+  putStrLn "main glade loaded"
+  window     <- xmlGetWidget glade castToWindow "mainWindow"
+  vBox       <- xmlGetWidget glade castToVBox   "vbox1"
+
+  boxPackStart vBox menuBar PackNatural 0
+  boxReorderChild vBox menuBar 0 
+  
   [user_l, comp_l, unp_l] <- mapM (xmlGetWidget glade castToLabel) ["user_lbl", "company_lbl", "cmpUnp_lbl"]
-  return (MainWindow window (GuiActions switch_act newPay_act viewPay_act logReq_act staReq_act viewSta_act balanc_act) (MainWindowControms user_l comp_l unp_l))
+  return $ MainWindow window actions user_l comp_l unp_l
  
 
-
-bindMainWindowSignals :: MainWindow -> IO ()
-bindMainWindowSignals gui = do
-    onDestroy (window gui) mainQuit
-    
-    let acts = (actions gui)
-    
-    onActionActivate (switchUserAction     acts) (putStrLn "Switch user")
-    onActionActivate (newPaymentAction     acts) (putStrLn "New Payment")
-    onActionActivate (viewPaymentsAction   acts) (putStrLn "View Payments user")
-    onActionActivate (staRequestAction     acts) (putStrLn "Request Statement")
-    onActionActivate (logRequestAction     acts) (putStrLn "Request logs")
-    onActionActivate (viewStaAction        acts) (putStrLn "View Statements")
-    onActionActivate (balanceRequestAction acts) (putStrLn "Request Balance")
-    return ()
 

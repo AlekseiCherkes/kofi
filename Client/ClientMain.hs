@@ -15,14 +15,15 @@ host = "127.0.0.1"
 port = PortNumber 6555
 
 
-                                  
-                 
-                                                          
+
 testSend message = withSocketsDo $ do
 	handle <- connectTo host port
 	hPrint handle (show message)
 	hClose handle
                                                   
+
+    
+testLogToConsole :: (Show a) => a -> IO ()
 testLogToConsole message= do
   print ("Send transaction: " ++ (show message))
   
@@ -34,22 +35,26 @@ makeMessage unp request = Message { senderId = ClientId unp
                                   , digest = "0"
                                   }
 
-    
-onCommitTransactionClicked :: TransactionDialog -> IO ()
-onCommitTransactionClicked gui = do
-    trans <- getTransactionDialogData gui
+  
+onCommitTransactionClicked :: CommitedTransaction -> IO ()
+onCommitTransactionClicked trans = do
     let msg = makeMessage "123456789" (CommitTransaction trans)
     (testSend msg) >> (testLogToConsole msg)
   
   
 
-  
+bindActions :: ActionGroup -> IO ()
+bindActions actions = do
+    (Just payAction) <- actionGroupGetAction actions "NewPay_a"
+    onActionActivate payAction (onNewTransaction onCommitTransactionClicked)
+    return ()
 
+  
 main :: IO ()
 main = do
-	initGUI
-  
-	gui <- loadMainWindow "Resources/mainWindow.glade"
-	onDestroy (window gui) mainQuit
-	widgetShowAll (window gui)
-	mainGUI
+    initGUI
+    gui <- loadMainWindow
+    bindActions   (actions gui)
+    onDestroy     (window  gui) mainQuit
+    widgetShowAll (window  gui)
+    mainGUI

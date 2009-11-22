@@ -7,7 +7,7 @@ import Graphics.UI.Gtk
 import Graphics.UI.Gtk.Glade
 
 import Message
-import MainWindow
+
 
 
 data TransactionDialog = TransactionDialog{ dialog_wnd         :: Dialog
@@ -131,16 +131,30 @@ getTransactionDialogData gui = do
     
 
 
-    
-onNewTransaction :: (TransactionDialog -> IO())-> IO ()
-onNewTransaction onCommit = do
+       
+onNewTransaction :: (CommitedTransaction -> IO ()) -> IO ()
+onNewTransaction commit = do
     gui <- loadTransactionDialog "Resources/transaction_dialog.glade"
     setTransactionDialogData gui testTransaction
- 
-    onClicked (commit_btn gui) $ onCommit gui
-    onDestroy (dialog_wnd gui) mainQuit
-    onDestroy (cancel_btn gui) mainQuit
+    onResponse    (dialog_wnd gui) (onTransactionResponse commit gui)
     widgetShowAll (dialog_wnd gui)
+    
+    
+onTransactionResponse :: (CommitedTransaction -> IO ()) -> TransactionDialog -> ResponseId -> IO ()
+onTransactionResponse commit gui responce = do
+    let dialog = dialog_wnd gui
+    case responce of
+        ResponseOk     -> do
+            (putStrLn "Response Ok")
+            trans <- getTransactionDialogData gui
+            commit trans
+            widgetDestroy dialog
+        ResponseCancel -> do
+            (putStrLn "Response Cancel")
+            widgetDestroy dialog
+        otherwise      -> return ()
+    
+        
 	
 testTransaction = CommitedTransaction { reason = "test this client server communication"
                                       , creditAccountId = 123456789
