@@ -30,9 +30,8 @@ makeMessage userUnp request = Message { unp = userUnp
                               }
 
     
-onCommitTransactionClicked :: TransactionDialog -> IO ()
-onCommitTransactionClicked gui = do
-    trans <- getTransactionDialogData gui
+onCommitTransactionClicked :: CommitedTransaction -> IO ()
+onCommitTransactionClicked trans = do
     let userUnp = 123456789
     let msg = makeMessage userUnp (CommitTransaction  trans)
     (testSend msg) >> (testLogToConsole msg)

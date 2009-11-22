@@ -11,7 +11,7 @@ actionEntries =
  ,ActionEntry "LogReq_a"      "Запрсить лог"             (Just stockUndelete            ) Nothing (Just "Запрашивает лог."                  ) (putStrLn "LogReq_a")--onLogReq 
  ,ActionEntry "ViewSta_a"     "Просмотреть выписки"      (Just stockDndMultiple         ) Nothing (Just "Показывает все выписки."           ) (putStrLn "ViewSta_a")--onViewSta 
  ,ActionEntry "ViewBalance_a" "Запрсить баланс"          (Just stockZoom100             ) Nothing (Just "Запрашивает баланс счета."         ) (putStrLn "ViewBalance_a")--onBalanceReq 
- ,ActionEntry "Exit_a"        "Выход"                    (Just stockQuit                ) Nothing (Just "Завершает программу."              ) (putStrLn "Exit_a")--onExit 
+ ,ActionEntry "Exit_a"        "Выход"                    (Just stockQuit                ) Nothing (Just "Завершает программу."              ) mainQuit
  ,ActionEntry "About_a"       "О программе"              (Just stockAbout               ) Nothing (Just "About."                            ) (putStrLn "About_a")--onAbout
  ]
 
