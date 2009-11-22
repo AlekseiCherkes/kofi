@@ -1,6 +1,3 @@
-module Main() 
-    where
-
 import Server
 import Loggers
 import MessageHandler
