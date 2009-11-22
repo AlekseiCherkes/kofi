@@ -9,30 +9,74 @@ import System.IO
 import Server
 import MessageHandler
 
+import Debug.Trace
+
 import Crypto
 import Message
 import Codec.Utils
-import Codec.Binary.Base64.String
+import qualified Codec.Binary.Base64.String as B64
 
-msg = Message (ClientId "alex") "digest" "text"
+euclid a 0 = (a, (1, 0))
+euclid a b = (d', (y', x' - (a `div` b) * y'))
+    where
+      ret = euclid b (a `mod` b)
+      d'  = fst ret
+      x'  = fst $ snd ret
+      y'  = snd $ snd ret
 
-convert x = (encode . toChars . toOctets 256) x
+-- modular liner equation solver
+      
+data MlesReturn a = BadParams | NoRoots | Result [a]
+                   deriving (Show)
+                            
+myResult (Result a) = a
 
-open_key = (x, y) 
-           where x = convert 3
-                 y = convert 60
+mles a b n | a <= 0 || n <= 0 = BadParams
+           | b `mod` d == 0 = let x0 = ((x' * (b `div` d)) `mod` n) in
+                              Result [(x0 + i * (n `div` d)) `mod` n | i <- [0 .. d - 1]]
+           | otherwise = NoRoots
+           where ret = euclid a n
+                 d   = fst ret
+                 x'  = fst $ snd ret
+                 y'  = snd $ snd ret
                  
-private_key = (x, y) 
-           where x = convert 13
-                 y = convert 60
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+-- msg = Message (ClientId "alex") "d" "t"
+msg = "aaa"
+
+p = 17
+q = 19
+-- p = 337
+-- q = 263
+n = p * q
+fn = (p - 1) * (q - 1)
+e = 7
+d = head $ myResult (mles e 1 fn)
+
+cast n e = keyToB64 $ (toOctets 256 n, toOctets 256 e)
+
+open_key = cast n e
+private_key = cast n d
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 main = do
   let em = encodeMessage open_key msg
   let dm = decodeMessage private_key em
-
+      
+  print $ (n, e)
+  print $ (n, d)
   print $ open_key
   print $ private_key
+  -- print $ (fromOctets 256 . b64ToKey) $ fst open_key
+  -- print $ private_key
   
+  print $ msg
   print $ em
   print $ dm
   
