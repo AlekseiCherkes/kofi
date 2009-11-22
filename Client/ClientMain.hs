@@ -47,7 +47,7 @@ testLogToConsole message= do
 bindActions :: ActionGroup -> IO ()
 bindActions actions = do
     (Just payAction) <- actionGroupGetAction actions "NewPay_a"
-    onActionActivate payAction (putStrLn "Transaction dialog launch!")--(onNewTransaction onCommitTransactionClicked)
+    onActionActivate payAction (onNewTransaction onCommitTransactionClicked)
     return ()
 
   

@@ -134,7 +134,7 @@ getTransactionDialogData gui = do
     
 onNewTransaction :: (TransactionDialog -> IO ()) -> IO ()
 onNewTransaction onCommit = do
-    gui <- loadTransactionDialog "transaction_dialog.glade"
+    gui <- loadTransactionDialog "Resources/transaction_dialog.glade"
     setTransactionDialogData gui testTransaction
 
     onClicked (commit_btn gui) $ onCommit gui
