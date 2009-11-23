@@ -14,11 +14,11 @@ CFLAGS_UOR := -IThirdParty/CBits/sqlite3
 .PHONY: all
 all: server client
 
-server: third_party Server/ServerMain.hs
-	ghc --make -iServer $(DATABASE_FLAGS) -optP $(CFLAGS) -o server $(HSFLAGS_OUR) Server/ServerMain.hs $(CBITS_O)
+server: third_party Server/Main.hs
+	ghc --make -iServer $(DATABASE_FLAGS) -optP $(CFLAGS) -o server $(HSFLAGS_OUR) Server/Main.hs $(CBITS_O)
 
-client: third_party Client/ClientMain.hs
-	ghc --make -iClient -optP $(CFLAGS) -o client $(HSFLAGS_OUR) Client/ClientMain.hs $(CBITS_O)
+client: third_party Client/Main.hs
+	ghc --make -iClient -optP $(CFLAGS) -o client $(HSFLAGS_OUR) Client/Main.hs $(CBITS_O)
 
 .PHONY: server_db
 server_db: third_party Server/CreateDB.hs
@@ -39,6 +39,10 @@ clean:
 
 .PHONY : clean_all
 clean_all: clean_database clean_cbits clean_db clean_our clean_db
+
+.PHONY: debug
+debug: third_party
+	ghci -i./ -iThirdParty -iServer -iClient -iCommon
 
 # clean_system
 
@@ -76,12 +80,12 @@ $(CBITS_O): %.o: %.c
 .PHONY: clean_cbits
 clean_cbits:
 	rm -f $(CBITS_O)
-	
+
 ################################################################################
 # utf8-string
 ################################################################################
 
-# Не компилируется здесь, т.к не требует специальных флагов. Зависимость будет обработана компилятором.
+
 
 ################################################################################
 # System.Log

@@ -1,4 +1,4 @@
-module Main() 
+module Main
     where
 
 import System.IO
@@ -44,9 +44,6 @@ mles a b n | a <= 0 || n <= 0 = BadParams
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
--- msg = Message (ClientId "alex") "d" "t"
-msg = "aaa"
-
 p = 17
 q = 19
 -- p = 337
@@ -61,14 +58,17 @@ cast n e = keyToB64 $ (toOctets 256 n, toOctets 256 e)
 open_key = cast n e
 private_key = cast n d
 
+-- msg = Message (ClientId "alex") "2134089" "text текст фыжва..юбыь!!-09"
+msg = createMessage open_key (ClientId "123") "text яяя !! жыдлвоафылваожлд.юб345щ2347590879087"
+
+em = encodeMessage open_key msg
+dm = decodeMessage private_key em
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
 main = do
-  let em = encodeMessage open_key msg
-  let dm = decodeMessage private_key em
-      
   print $ (n, e)
   print $ (n, d)
   print $ open_key
@@ -77,8 +77,9 @@ main = do
   -- print $ private_key
   
   print $ msg
-  print $ em
-  print $ dm
+  print $ verifyMessage private_key msg
+--  print $ em
+--  print $ dm
   
 -- runServer handleMessage
 
