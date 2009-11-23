@@ -1,3 +1,4 @@
+<<<<<<< HEAD:Server/Main.hs
 module Main
     where
 
@@ -6,6 +7,8 @@ import System.IO
 -- import System.Log.Logger
 -- import System.Log.Handler.Simple
 
+=======
+>>>>>>> hdc/master:Src/Server/Main.hs
 import Server
 import MessageHandler
 

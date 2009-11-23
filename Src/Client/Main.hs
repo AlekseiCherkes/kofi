@@ -1,6 +1,3 @@
-module Main()
-       where
-
 import Network
 import System.IO
 

@@ -8,41 +8,42 @@
 
 HSFLAGS := # -O2
 
-HSFLAGS_OUR := $(HSFLAGS) -XDisambiguateRecordFields -W -iCommon -i./ -iThirdParty -XCPP
-CFLAGS_UOR := -IThirdParty/CBits/sqlite3
+HSFLAGS_OUR := $(HSFLAGS) -XDisambiguateRecordFields -W -iSrc/Common -i./ -iSrc/ThirdParty -XCPP
+CFLAGS_UOR := -ISrc/ThirdParty/CBits/sqlite3
 
 .PHONY: all
-all: server client
+all: server client server_db
 
-server: third_party Server/Main.hs
-	ghc --make -iServer $(DATABASE_FLAGS) -optP $(CFLAGS) -o server $(HSFLAGS_OUR) Server/Main.hs $(CBITS_O)
+server: third_party Src/Server/Main.hs
+	ghc --make -iSrc/Server $(DATABASE_FLAGS) -optP $(CFLAGS) -o Bin/Server/server $(HSFLAGS_OUR) Src/Server/Main.hs $(CBITS_O)
 
-client: third_party Client/Main.hs
-	ghc --make -iClient -optP $(CFLAGS) -o client $(HSFLAGS_OUR) Client/Main.hs $(CBITS_O)
+client: third_party Src/Client/Main.hs
+	ghc --make -iSrc/Client -optP $(CFLAGS) -o Bin/Client/client $(HSFLAGS_OUR) Src/Client/Main.hs $(CBITS_O)
 
 .PHONY: server_db
-server_db: third_party Server/CreateDB.hs
-	ghc --make -o server_db -iServer $(HSFLAGS_OUR) Server/CreateDB.hs $(CBITS_O)
-	./server_db
-	sqlite3 -init Server/fill.sql server.db
+server_db: third_party Src/Server/CreateDB.hs
+	ghc --make -o Bin/Server/db -iSrc/Server $(HSFLAGS_OUR) Src/Server/CreateDB.hs $(CBITS_O)
+# 	Bin/Server/db
+# 	sqlite3 -init Bin/Server/fill.sql server.db
 
-.PHONY: clean_db
-clean_db:
-	rm -f server.db server_db Server/ServerDB.hs Server/ServerDB/*
-	rmdir Server/ServerDB
+# .PHONY: clean_db
+# clean_db:
+# 	rm -f server.db server_db Server/ServerDB.hs Server/ServerDB/*
+# 	rmdir Server/ServerDB
 
-.PHONY: clean
-clean:
-	rm -f $(wildcard $(addprefix Server/, *.hc, *.hi, *.o, *.ho))
-	rm -f client server
-	echo $(wildcard $(addprefix Server/, *.hc, *.hi, *.o, *.ho))
+# .PHONY: clean_our
+# clean:
+# 	rm -f $(wildcard $(addprefix Server/, *.hc, *.hi, *.o, *.ho))
+# 	rm -f client server
+# 	echo $(wildcard $(addprefix Server/, *.hc, *.hi, *.o, *.ho))
 
-.PHONY : clean_all
-clean_all: clean_database clean_cbits clean_db clean_our clean_db
+.PHONY : clean
+clean: clean_database clean_cbits clean
+	rm -f $(wildcard $(addprefix Src/Server/, *.hc, *.hi, *.o, *.ho))
 
 .PHONY: debug
 debug: third_party
-	ghci -i./ -iThirdParty -iServer -iClient -iCommon
+	ghci -i./ -iSrc/ThirdParty -iSrc/Server -iSrc/Client -iSrc/Common
 
 # clean_system
 
@@ -60,13 +61,13 @@ debug: third_party
 .PHONY: third_party
 third_party: cbits database # system
 
-THIRD_PARTY_FLAGS := -iThirdParty
+THIRD_PARTY_FLAGS := -iSrc/ThirdParty
 
 ################################################################################
 # CBits
 ################################################################################
 
-CBITS_C := $(addprefix ThirdParty/CBits/sqlite3/, sqlite3.c sqlite3-local.c)
+CBITS_C := $(addprefix Src/ThirdParty/CBits/sqlite3/, sqlite3.c sqlite3-local.c)
 CBITS_O := $(patsubst %.c, %.o, $(CBITS_C))
 
 CFLAGS := -DSQLITE_ENABLE_FTS3=1 # -O3 -DNDEBUG=1
@@ -91,7 +92,7 @@ clean_cbits:
 # System.Log
 ################################################################################
 
-# SYSTEM_DIRS := $(addprefix ThirdParty/System/, ./ Log/ Log/Handler/)
+# SYSTEM_DIRS := $(addprefix SThirdParty/System/, ./ Log/ Log/Handler/)
 
 # SYSTEM_HS := $(wildcard $(addsuffix *.hs, $(SYSTEM_DIRS)))
 # SYSTEM_HI := $(patsubst %.hs, %.hi, $(SYSTEM_HS))
@@ -118,16 +119,16 @@ clean_cbits:
 # Database
 ################################################################################
 
-DATABASE_DIRS := $(addprefix ThirdParty/Database/, ./ HSQL/ HaskellDB/ HaskellDB/DBSpec/ HaskellDB/HSQL/ HaskellDB/Sql/)
+DATABASE_DIRS := $(addprefix Src/ThirdParty/Database/, ./ HSQL/ HaskellDB/ HaskellDB/DBSpec/ HaskellDB/HSQL/ HaskellDB/Sql/)
 
-DATABASE_HSC := $(addprefix ThirdParty/Database/, HSQL.hsc HSQL/SQLite3.hsc)
+DATABASE_HSC := $(addprefix Src/ThirdParty/Database/, HSQL.hsc HSQL/SQLite3.hsc)
 DATABASE_HS_FROM_HSC := $(patsubst %.hsc, %.hs, $(DATABASE_HSC))
 DATABASE_HS := $(wildcard $(addsuffix *.hs, $(DATABASE_DIRS)))
 DATABASE_HS += $(DATABASE_HS_FROM_HSC)
 DATABASE_HI := $(patsubst %.hs, %.hi, $(DATABASE_HS))
 DATABASE_O  := $(patsubst %.hs, %.o,  $(DATABASE_HS))
 
-HSC2HS_FLAGS := -IThirdParty/CBits/sqlite3/
+HSC2HS_FLAGS := -ISrc/ThirdParty/CBits/sqlite3/
 
 DATABASE_FLAGS := $(THIRD_PARTY_FLAGS) $(HSFLAGS) \
 		  -fglasgow-exts 		  \
