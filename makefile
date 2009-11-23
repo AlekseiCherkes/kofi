@@ -12,7 +12,7 @@ HSFLAGS_OUR := $(HSFLAGS) -XDisambiguateRecordFields -W -iSrc/Common -i./ -iSrc/
 CFLAGS_UOR := -ISrc/ThirdParty/CBits/sqlite3
 
 .PHONY: all
-all: server client
+all: server client server_db
 
 server: third_party Src/Server/Main.hs
 	ghc --make -iSrc/Server $(DATABASE_FLAGS) -optP $(CFLAGS) -o Bin/Server/server $(HSFLAGS_OUR) Src/Server/Main.hs $(CBITS_O)
@@ -20,9 +20,9 @@ server: third_party Src/Server/Main.hs
 client: third_party Src/Client/Main.hs
 	ghc --make -iSrc/Client -optP $(CFLAGS) -o Bin/Client/client $(HSFLAGS_OUR) Src/Client/Main.hs $(CBITS_O)
 
-# .PHONY: server_db
-# server_db: third_party Src/Server/CreateDB.hs
-# 	ghc --make -o Bin/Server/db -iSrc/Server $(HSFLAGS_OUR) Src/Server/CreateDB.hs $(CBITS_O)
+.PHONY: server_db
+server_db: third_party Src/Server/CreateDB.hs
+	ghc --make -o Bin/Server/db -iSrc/Server $(HSFLAGS_OUR) Src/Server/CreateDB.hs $(CBITS_O)
 # 	Bin/Server/db
 # 	sqlite3 -init Bin/Server/fill.sql server.db
 
