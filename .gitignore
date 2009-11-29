@@ -6,8 +6,10 @@
 *.log
 *.project
 *.hsproject
-ThirdParty/Database/HSQL.hs
-ThirdParty/Database/HSQL/SQLite3.hs
-.settings/
+Src/ThirdParty/Database/HSQL.hs
+Src/ThirdParty/Database/HSQL/SQLite3.hs
+Src/ThirdParty/Database/SQLite/Base_stub.h
+Src/ThirdParty/Database/SQLite/Base_stub.c
 Src/Server/ServerDB/
 Src/Server/ServerDB.hs
+.settings/
