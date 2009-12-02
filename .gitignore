@@ -14,3 +14,6 @@ fill_db
 ThirdParty/Database/HSQL.hs
 ThirdParty/Database/HSQL/SQLite3.hs
 .settings/
+Leksah-kofi-project.cabal
+Setup.lhs
+dist/
