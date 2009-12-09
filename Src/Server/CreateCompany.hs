@@ -3,7 +3,9 @@ module Main()
 
 import WithDB
 import Crypto
+import Queries
 import ClientConfig
+import Entity
 
 import System.IO
 import System.Environment
@@ -57,8 +59,6 @@ generateUnp = do
     min = 10^8::Integer
     max = 10^9 - 1::Integer
 
-getCurrentCalendarTime = getClockTime >>= toCalendarTime
-
 generateKeyPair r1 r2 r3 = (open_key, private_key)  
   where 
     p = primes !! r1
@@ -85,13 +85,22 @@ main = do
   r3 <- rand 10 (100 - 1)
 
   unp <- generateUnp
-  date <- getCurrentCalendarTime
+  date <- getClockTime >>= toCalendarTime
   let (publicKey, privateKey) = generateKeyPair r1 r2 r3
       
   print $ "UNP: " ++ (show $ unp)
   print $ "Time: " ++ (show $ date)
   print $ "Keys: " ++ (show $ publicKey) ++ "; " ++ (show $ privateKey)
   
+  let cmp = Company { unp = unp 
+                    , name = name 
+                    , registryDate = date
+                    , unregistryDate = Nothing
+                    , openKey = show publicKey
+                    }
+            
+  withDB $ insertCompany cmp
+
   let cc = ClientConfig { unp = unp 
                         , name = name 
                         , registryDate = date

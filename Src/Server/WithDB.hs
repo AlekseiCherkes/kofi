@@ -2,9 +2,13 @@ module WithDB(withDB)
     where 
 
 import System.IO
+import Control.Exception
+import Database.HSQL.SQLite3
+-- import Database.HSQL
 
 dataBaseFilePath = "server.db"
 
--- withDB :: (Database -> IO a) -> IO a
--- withDB = sqliteConnect opts
-withDB = print "asd"
+withDB :: (Connection -> IO a) -> IO a
+withDB = bracket
+         (connect dataBaseFilePath ReadWriteMode)
+         (\conection -> disconnect conection)

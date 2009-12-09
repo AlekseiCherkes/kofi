@@ -7,16 +7,16 @@ import System.Time
 
 --------------------------------------------------------------------------------
 
-data Company = Company { unp :: Integer
+data Company = Company { unp :: String
                        , name :: String
---                       , registryDate :: CalendarTime
---                       , unregistryDate :: Maybe CalendarTime
-                       , openKey :: Integer 
+                       , registryDate :: CalendarTime
+                       , unregistryDate :: Maybe CalendarTime
+                       , openKey :: String
                        }
                deriving (Read, Show)
 
-data Account = Account { accountId :: Integer
-                       , ownerId :: Integer
+data Account = Account { accountId :: String
+                       , ownerId :: String
                        , ballance :: Double
                        , openData :: CalendarTime
                        , closeDate :: Maybe CalendarTime 
@@ -32,8 +32,8 @@ data Transaction = Transaction { transactionId :: Integer
                                , transactionStatusId :: Integer
                              --, content :: String
                                , reason :: String
-                               , creditAccountId :: Integer
-                               , debitAccountId :: Integer
+                               , creditAccountId :: String
+                               , debitAccountId :: String
                                , amount :: Double
                                , priority :: TransactionPriority
                                }
