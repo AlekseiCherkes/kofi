@@ -4,7 +4,10 @@ module Main()
 import DBInfo
 import WithDB
 import Crypto
+import Queries
 import ClientConfig
+
+import Entity
 
 import System.IO
 import System.Environment
@@ -93,6 +96,17 @@ main = do
   print $ "Time: " ++ (show $ date)
   print $ "Keys: " ++ (show $ publicKey) ++ "; " ++ (show $ privateKey)
   
+  time <- (getClockTime >>= toCalendarTime)
+  
+  let cmp = Company { unp = unp 
+                    , name = name 
+                    , registryDate = time
+                    , unregistryDate = Nothing
+                    , openKey = show publicKey
+                    }
+            
+  withDB $ \db -> insertCompany db cmp
+
   let cc = ClientConfig { unp = unp 
                         , name = name 
                         , registryDate = date
