@@ -1,7 +1,6 @@
 module Main()
        where 
 
-import DBInfo
 import WithDB
 import Crypto
 import ClientConfig

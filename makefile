@@ -12,11 +12,9 @@ HSFLAGS_OUR := $(HSFLAGS) -XDisambiguateRecordFields -W -iSrc/Common -i./ -iSrc/
 CFLAGS_UOR := -ISrc/ThirdParty/CBits/sqlite3
 
 .PHONY: all
-all: server client server_db
+all: server client
 
 server: Src/Server/Main.hs #  third_party
-	ghc --make -iSrc/Server $(DATABASE_FLAGS) -optP $(CFLAGS) -o Bin/Server/createdb $(HSFLAGS_OUR) Src/Server/DBInfoToDatabase.hs $(CBITS_O)
-	runghc -iSrc/Server $(DATABASE_FLAGS) -optP $(CFLAGS) $(HSFLAGS_OUR) Src/Server/DBInfoToModuleFiles.hs $(CBITS_O)
 	ghc --make -iSrc/Server $(DATABASE_FLAGS) -optP $(CFLAGS) -o Bin/Server/create_company $(HSFLAGS_OUR) Src/Server/CreateCompany.hs $(CBITS_O)
 	ghc --make -iSrc/Server $(DATABASE_FLAGS) -optP $(CFLAGS) -o Bin/Server/close_company $(HSFLAGS_OUR) Src/Server/CreateCompany.hs $(CBITS_O)
 	ghc --make -iSrc/Server $(DATABASE_FLAGS) -optP $(CFLAGS) -o Bin/Server/server $(HSFLAGS_OUR) Src/Server/Main.hs $(CBITS_O)
@@ -24,9 +22,9 @@ server: Src/Server/Main.hs #  third_party
 client: third_party Src/Client/Main.hs
 	ghc --make -iSrc/Client -optP $(CFLAGS) -o Bin/Client/client $(HSFLAGS_OUR) Src/Client/Main.hs $(CBITS_O)
 
-.PHONY: server_db
-server_db: third_party Src/Server/CreateDB.hs
-	ghc --make -o Bin/Server/db -iSrc/Server $(HSFLAGS_OUR) Src/Server/CreateDB.hs $(CBITS_O)
+# .PHONY: server_db
+# server_db: third_party Src/Server/CreateDB.hs
+# 	ghc --make -o Bin/Server/db -iSrc/Server $(HSFLAGS_OUR) Src/Server/CreateDB.hs $(CBITS_O)
 # 	Bin/Server/db
 # 	sqlite3 -init Bin/Server/fill.sql server.db
 
