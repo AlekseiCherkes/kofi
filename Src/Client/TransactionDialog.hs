@@ -79,8 +79,6 @@ loadTransactionDialog gladePath = do
 
 
 
-
-
 setTransactionDialogData :: TransactionDialog -> CommitedTransaction -> IO ()
 setTransactionDialogData gui trans = do
     setComboEntryItems (payerAcc_cmb gui) [show (creditAccountId trans)]
@@ -91,6 +89,7 @@ setTransactionDialogData gui trans = do
     entrySetText (amount_entry gui) $ show (amount trans)
     radioButtonSetGroup   (urgent_btn gui) (notUrgent_btn gui)
     toggleButtonSetActive (urgent_btn gui) (isUrgent (priority trans))
+
 
 
 getTransactionDialogData :: TransactionDialog -> IO CommitedTransaction

@@ -1,6 +1,11 @@
 
 module Validation where
 
+type Name = String
+type UNP  = String
+type BIC  = String
+type ACC  = String 
+
 
 isValidInteger :: String -> Bool
 isValidInteger lexem = 
@@ -21,8 +26,28 @@ isValidAmount :: String -> Bool
 isValidAmount = isValidFloat
 
 
+
+
+isValidBic String -> Bool
+isValidBic str = (length str == 3) && isValidInteger str
+
+str2bic :: String -> BIC
+str2bic str = if (isValidBic str) then str
+
+
+
+
 isValidUnp String -> Bool
-isValidUnp lexem = (length lexem == 9) and isValidInteger lexem
+isValidUnp str = (length str == 9) && isValidInteger str
+
+str2unp String -> UNP
+srr2unp str = if (isValidUnp str)  then str
+
+
+
 
 isValidAcc String -> Bool
-isValidAcc lexem = (length lexem == 13) and isValidInteger lexem
+isValidAcc str = (length str == 13) && isValidInteger str
+
+str2acc String -> ACC
+str2acc str = if (isValidAcc str) then str
