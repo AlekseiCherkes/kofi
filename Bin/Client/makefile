@@ -12,17 +12,15 @@ all: fill
 
 .PHONY: create
 create: clean
-	cat create.sql | sqlite3 -echo -bail server.db
+	cat create.sql | sqlite3 -echo -bail client.db
 
 .PHONY: fill
 fill: create
-# cat fill.sql | sqlite3 -echo -bail server.db
-	./fill.bat
+	cat fill.sql | sqlite3 -echo -bail client.db
 
 .PHONY : clean
 clean:
-	rm -f *.config
-	rm -f server.db
+	rm -f client.db
 #	rm -f banks.db
 
 ################################################################################
