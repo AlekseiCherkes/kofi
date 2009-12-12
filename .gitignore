@@ -1,5 +1,6 @@
 *.project
 *.hsproject
 .settings/
-Setup.lhs
 Leksah-kofi-project.cabal
+Setup.lhs
+dist/
