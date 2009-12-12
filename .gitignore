@@ -1,13 +1,3 @@
-*.hc
-*.hi
-*.o
-*.ho
-*.exe
-*.log
 *.project
 *.hsproject
-Src/ThirdParty/Database/HSQL.hs
-Src/ThirdParty/Database/HSQL/SQLite3.hs
-Src/ThirdParty/Database/SQLite/Base_stub.h
-Src/ThirdParty/Database/SQLite/Base_stub.c
 .settings/

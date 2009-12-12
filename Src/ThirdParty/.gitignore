@@ -1,0 +1,4 @@
+Database/HSQL.hs
+Database/HSQL/SQLite3.hs
+Database/SQLite/Base_stub.h
+Database/SQLite/Base_stub.c
