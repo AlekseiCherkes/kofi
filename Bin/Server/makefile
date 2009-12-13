@@ -17,7 +17,7 @@ create: clean
 .PHONY: fill
 fill: create
 # cat fill.sql | sqlite3 -echo -bail server.db
-	./fill.bat
+	fill.bat
 
 .PHONY : clean
 clean:
