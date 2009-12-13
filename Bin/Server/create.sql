@@ -7,14 +7,14 @@ create table Account (
 	close_date timestamp null,
 	primary key (account_id, bank_id),
 	foreign key(owner_id)
-		references client(client_unp)
+		references Company(company_unp)
 		on delete cascade
 		on update cascade
 );
 					  
 create table Company (
 	company_unp char(13) not null,
-	name text  not null,
+	name varchar(256) not null,
 	registry_date timestamp  not null,
 	unregistry_date timestamp  null,
 	open_key varchar(1024)  not null,
@@ -38,13 +38,13 @@ create table CommitedTransaction (
 	priority int not null,
 	primary key (transaction_id),
 	foreign key(payer_account_id)
-		references account(account_id),
+		references Account(account_id),
 	foreign key(payer_bank_id)
-		references account(bank_id),
+		references Account(bank_id),
 	foreign key(beneficiary_account_id)
-		references account(account_id),
+		references Account(account_id),
 	foreign key(beneficiary_bank_id)
-		references account(bank_id),
+		references Account(bank_id),
 	foreign key(status_id)
 		references status(status_id)
 );
