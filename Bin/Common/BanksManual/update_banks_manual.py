@@ -105,5 +105,5 @@ update_banks_manual.py [input_file] [output_file]" syntax.'
     if manual != None:
         try:
             create_db(db_name, manual)
-        except x:
+        except Exception,  x:
             print "Error: ", x

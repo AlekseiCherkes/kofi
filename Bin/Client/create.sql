@@ -1,16 +1,32 @@
--- FIXME: заменить весь файл, так чтобы он создавал базу клиента а не сервера.
+CREATE TABLE Company (
+	company_unp char(13) not null,
+	company_name varchar(256) not null,
+	primary key (company_unp)
+);
+		
+CREATE TABLE CounterParty (
+	payer_unp char(13) not null,
+	beneficiary_unp char(13) not null,
+	primary key (payer_unp, beneficiary_unp),
+	foreign key (payer_unp)
+		references Company(company_unp),
+	foreign key (beneficiary_unp)
+		references Company(company_unp)
+);
 
-CREATE TABLE Account (id varchar(9)  not null,
-                      owner_id varchar(13) not null,
-                      ballance double precision  not null,
-                      open_date timestamp not null,
-                      close_date timestamp null);
-					  
-CREATE TABLE Company (unp varchar(13)  not null,
-                      name text  not null,
-                      registry_date timestamp  not null,
-                      unregistry_date timestamp  null,
-                      open_key varchar  not null);
-					  
-CREATE TABLE Status (id bigint  not null,
-                     message text  not null);
+CREATE TABLE Bank (
+	bank_bic char(9) not null,
+	bank_name varchar(256) not null,
+	primary key (bank_bic)
+);
+
+CREATE TABLE Account (
+	acc_id int not null,
+	company_unp char(13) not null,
+	bank_bic char(9) not null,
+	primary key (acc_id, company_unp, bank_bic),
+	foreign key (company_unp)
+		references Company(company_unp),
+	foreign key (bank_bic)
+		references Bank(bank_bic)
+);
