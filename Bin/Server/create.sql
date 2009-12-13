@@ -18,7 +18,7 @@ create table Company (
 	registry_date timestamp  not null,
 	unregistry_date timestamp  null,
 	open_key varchar(1024)  not null,
-	primary key (client_unp)
+	primary key (company_unp)
 );
 					  
 create table CommitedTransaction (

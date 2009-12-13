@@ -9,9 +9,9 @@ create table CounterParty (
 	beneficiary_unp char(13) not null,
 	primary key (payer_unp, beneficiary_unp),
 	foreign key (payer_unp)
-		references company(company_unp),
+		references Company(company_unp),
 	foreign key (beneficiary_unp)
-		references company(company_unp)
+		references Company(company_unp)
 );
 
 create table Bank (
@@ -26,7 +26,7 @@ create table Account (
 	bank_bic char(9) not null,
 	primary key (acc_id, company_unp, bank_bic),
 	foreign key (company_unp)
-		references company(company_unp),
+		references Company(company_unp),
 	foreign key (bank_bic)
-		references bank(bank_bic)
+		references Bank(bank_bic)
 );
