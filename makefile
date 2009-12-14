@@ -14,7 +14,7 @@ CFLAGS_UOR := -ISrc/ThirdParty/CBits/sqlite3
 .PHONY: all
 all: server client
 
-server: Src/Server/Main.hs #  third_party
+server: Src/Server/Main.hs   third_party
 	ghc --make -iSrc/Server $(DATABASE_FLAGS) -optP $(CFLAGS) -o Bin/Server/create_company $(HSFLAGS_OUR) Src/Server/CreateCompany.hs $(CBITS_O)
 # ghc --make -iSrc/Server $(DATABASE_FLAGS) -optP $(CFLAGS) -o Bin/Server/close_company $(HSFLAGS_OUR) Src/Server/CreateCompany.hs $(CBITS_O)
 # ghc --make -iSrc/Server $(DATABASE_FLAGS) -optP $(CFLAGS) -o Bin/Server/server $(HSFLAGS_OUR) Src/Server/Main.hs $(CBITS_O)
