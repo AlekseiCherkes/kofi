@@ -12,6 +12,8 @@ import Data.Dynamic
 import Foreign
 import Foreign.C
 
+import qualified Codec.Binary.UTF8.String as UTF8
+
 type FieldDef = (String, SqlType, Bool)
 
 data SqlType
@@ -146,13 +148,14 @@ class SqlBind a where
 	-- This allows for faster conversion for eq. integral numeric types, etc.
 	-- Default version uses fromSqlValue.
 	fromSqlCStringLen :: FieldDef -> CString -> Int -> IO a
-	fromSqlCStringLen (name,sqlType,_) cstr cstrLen
+	fromSqlCStringLen (name,sqlType,_) cstr cstrLen     
 	  | cstr == nullPtr = throwDyn (SqlFetchNull name)
 	  | otherwise       = do 
-	      str <- peekCStringLen (cstr, cstrLen)
-	      case fromSqlValue sqlType str of
-	        Nothing -> throwDyn (SqlBadTypeCast name sqlType)
-	        Just v  -> return v
+			encodedStr <- peekCAStringLen (cstr, cstrLen)
+			let str = UTF8.decodeString encodedStr
+			case fromSqlValue sqlType str of
+				Nothing -> throwDyn (SqlBadTypeCast name sqlType)
+				Just v  -> return v
 
 	fromSqlValue :: SqlType -> String -> Maybe a
 	toSqlValue   :: a -> String

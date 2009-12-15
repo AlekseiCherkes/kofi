@@ -22,6 +22,8 @@ import Control.Monad(when)
 import Control.OldException(throwDyn)
 import Control.Concurrent.MVar
 
+import qualified Codec.Binary.UTF8.String as UTF8
+
 #include <fcntl.h>
 #include <sqlite3.h>
 
@@ -90,14 +92,14 @@ connect fpath mode =
 
 		execute :: SQLite3 -> String -> IO ()
 		execute sqlite query =
-			withCString query $ \pQuery -> do
+			withCString (UTF8.encodeString query) $ \pQuery -> do
 			alloca $ \ppMsg -> do
 				res <- sqlite3_exec sqlite pQuery nullFunPtr nullPtr ppMsg
 				handleSqlResult res ppMsg
 
 		query :: Connection -> SQLite3 -> String -> IO Statement
 		query connection sqlite query = do
-			withCString query $ \pQuery -> do
+			withCString (UTF8.encodeString query) $ \pQuery -> do
 			alloca $ \ppResult -> do
 			alloca $ \pnRow -> do
 			alloca $ \pnColumn -> do
