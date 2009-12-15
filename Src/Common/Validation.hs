@@ -40,5 +40,3 @@ str2unp str = if (isValidUnp str)  then str else error "Invalid UNP."
 
 str2acc :: String -> ACC
 str2acc str = if (isValidAcc str) then str else error "Invalid BIC."
-
-
