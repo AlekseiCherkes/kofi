@@ -5,6 +5,7 @@ module TransactionDialog
 import System.IO
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.Glade
+import DataModel
 
 import Message
 import GtkCommon
@@ -81,9 +82,13 @@ loadTransactionDialog gladePath = do
 
 setTransactionDialogData :: TransactionDialog -> CommitedTransaction -> IO ()
 setTransactionDialogData gui trans = do
+    banks <- listBranches
+  
     setComboEntryItems (payerAcc_cmb gui) [show (creditAccountId trans)]
     setComboEntryItems (payeeAcc_cmb gui) [show (debitAccountId  trans)]
 
+    setComboEntryItems (payerBank_cmb gui) $ map (bnkName) banks
+    
     setMultilineText (reason_txt gui) (reason trans)
 
     entrySetText (amount_entry gui) $ show (amount trans)

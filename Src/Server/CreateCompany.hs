@@ -47,7 +47,7 @@ mles a b n | a <= 0 || n <= 0 = BadParams
 -- Helper functions
 --------------------------------------------------------------------------------
 
-parseArgs args | length args /= 1 = error "Invalid keys.\n create_company <company name>"
+parseArgs args | length args /= 1 = error "Invalid command line params.\n create_company <company name>"
                | otherwise = head $ args
                              
 rand min max = getStdRandom $ randomR (min, max)
@@ -88,9 +88,9 @@ main = do
   date <- getClockTime >>= toCalendarTime
   let (publicKey, privateKey) = generateKeyPair r1 r2 r3
       
-  print $ "UNP: " ++ (show $ unp)
-  print $ "Time: " ++ (show $ date)
-  print $ "Keys: " ++ (show $ publicKey) ++ "; " ++ (show $ privateKey)
+  -- print $ "UNP: " ++ (show $ unp)
+  -- print $ "Time: " ++ (show $ date)
+  -- print $ "Keys: " ++ (show $ publicKey) ++ "; " ++ (show $ privateKey)
   
   let cmp = Company { unp = unp 
                     , name = name 
@@ -98,8 +98,11 @@ main = do
                     , unregistryDate = Nothing
                     , openKey = show publicKey
                     }
-            
-  withDB $ insertCompany cmp
+
+  withDB $ \conn -> insertCompany conn cmp
+  
+  company <- withDB $ \conn -> findCompany conn unp
+  print company
 
   let cc = ClientConfig { unp = unp 
                         , name = name 
