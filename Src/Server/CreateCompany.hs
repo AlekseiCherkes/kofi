@@ -100,9 +100,6 @@ main = do
                     }
 
   withDB $ \conn -> insertCompany conn cmp
-  
-  company <- withDB $ \conn -> findCompany conn unp
-  print company
 
   let cc = ClientConfig { unp = unp 
                         , name = name 

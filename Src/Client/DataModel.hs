@@ -60,9 +60,6 @@ findCompanyByUnp unp   = return $ Company "Company 1" unp
 findCompaniesByBank :: BIC -> IO [Company]
 findCompaniesByBank bic = return []
 
-
-
-
 findBankByName :: Name -> IO Bank
 findBankByName name = return $ Bank name (str2bic "001")
 
@@ -89,12 +86,6 @@ listBranches = catchSql
                   let bic = fromJust $ fromSqlValue (SqlVarChar 9) fvBic
                   return $ (Bank name bic)
 
-  
-  -- return [Bank "bank1" (str2bic "129834765")
-  --        ,Bank "bank2" (str2bic "987654321")]
-
-
-
 findAccountsByCompany :: UNP -> IO [Account]
 findAccountsByCompany unp = return []
 
@@ -103,9 +94,6 @@ findAccountsByBank bic = return []
 
 findAccounts :: BIC -> ACC -> IO Account
 findAccounts bic acc = return $ Account acc bic (str2unp "0000000001")
-
-
-
 
 findCounterparties :: UNP -> IO [Company]
 findCounterparties unp = return []
