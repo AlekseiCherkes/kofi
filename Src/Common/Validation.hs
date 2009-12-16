@@ -1,7 +1,6 @@
 module Validation where
 import Types
 
-
 isValidInteger :: String -> Bool
 isValidInteger lexem = 
     case (readsPrec 0 lexem)::[(Integer, String)] of
@@ -20,6 +19,7 @@ isValidDouble lexem =
         
 isValidAmount :: String -> Bool
 isValidAmount = isValidDouble
+
 
 isValidBic :: String -> Bool
 isValidBic str = ((length str) `elem` [3, 9]) && isValidInteger str

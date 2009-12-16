@@ -1,13 +1,14 @@
 module Message
     where
 
+
 import Types
 import System.Time
+
 
 --------------------------------------------------------------------------------
 -- Messages
 --------------------------------------------------------------------------------
-
 data SenderId = ClientId { unp :: UNP }  -- Client UNP
               | BankId   { bin :: BIC }  -- BIC (ignored now)
               deriving (Read, Show)

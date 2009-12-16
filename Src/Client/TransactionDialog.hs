@@ -6,9 +6,11 @@ import System.IO
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.Glade
 
+
 import Types
 import ClientEntities
 import DataModel ()
+
 import Message
 import GtkCommon
 
@@ -87,11 +89,11 @@ setTransactionDialogData :: TransactionDialog -> CommitedTransaction -> IO ()
 setTransactionDialogData gui trans = do
     let banks = []
 
-    let creditAcc = creditAccount trans
-    let debitAcc  = debitAccount  trans
+    let creditAccPk = creditAccount trans
+    let debitAccPk  = debitAccount  trans
 
-    setComboEntryItems (payerAcc_cmb  gui) [accId $ creditAcc]
-    setComboEntryItems (payeeAcc_cmb  gui) [accId $ debitAcc ]
+    setComboEntryItems (payerAcc_cmb  gui) [accId creditAccPk]
+    setComboEntryItems (payeeAcc_cmb  gui) [accId debitAccPk ]
     setComboEntryItems (payerBank_cmb gui) $ map (bnkName) banks
     setMultilineText   (reason_txt    gui) (reason trans)
 
@@ -118,6 +120,7 @@ getTransactionDialogData gui = do
     let payeeAccPk = AccountPK payeeAccNum "001"
     
     return $ CommitedTransaction reason payerAccPk payeeAccPk amount priority
+
 
 
 

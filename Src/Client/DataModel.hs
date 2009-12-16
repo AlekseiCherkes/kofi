@@ -5,6 +5,8 @@ import Message
 import ClientEntities
 
 import System.IO
+
+
 import Data.Maybe
 import Data.List
 import Data.String.UTF8 ()
@@ -93,7 +95,6 @@ fetchAccount stmt = do
 --------------------------------------------------------------------------------
 -- Companies
 --------------------------------------------------------------------------------
-
 findCompanyByName :: FilePath -> Name -> IO Company
 findCompanyByName file name = sqlQueryGetFirst $
                             sqlQuery (withDB file) fetchCompany  $
@@ -115,7 +116,6 @@ findCompaniesByBank file bic = sqlQuery (withDB file) fetchCompany $
                                "Account.company_unp = Company.company_unp " ++
                                "WHERE Account.bank_bic = " ++ bicValue ++";"
                                  where bicValue = toSqlValue bic
-                                
 --------------------------------------------------------------------------------
 -- Banks
 --------------------------------------------------------------------------------
