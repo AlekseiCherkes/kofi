@@ -3,6 +3,7 @@ module Crypto
 
 import Debug.Trace 
 
+import Types
 import Message
 import Data.Word
 import Data.List

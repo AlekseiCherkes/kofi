@@ -3,19 +3,19 @@ module Message
 
 import System.Time
 
+import Types
+
 --------------------------------------------------------------------------------
 -- Messages
 --------------------------------------------------------------------------------
 
-type Base64 = String
-
-data SenderId = ClientId String  -- Client UNP
-              | BankId String    -- BIC (ignoring now)
+data SenderId = ClientId UNP  -- Client UNP
+              | BankId   BIC    -- BIC (ignoring now)
               deriving (Read, Show)
 
 data Message = Message { senderId :: SenderId
-                       , digest :: Base64
-                       , text :: String -- Serialized Request or Response
+                       , digest   :: Base64
+                       , text     :: String -- Serialized Request or Response
                        }
              deriving (Read, Show)
                       
@@ -26,17 +26,21 @@ data Message = Message { senderId :: SenderId
 data TransactionPriority = Urgent | Normal
                            deriving (Read, Show)
 
-data CommitedTransaction = CommitedTransaction { reason :: String
-                                               , creditAccountId :: Integer
-                                               , debitAccountId :: Integer
-                                               , amount :: Double
-                                               , priority :: TransactionPriority
+data AccountPK = AccountPK { accountId:: ACC
+                           , banckBic :: BIC }
+               deriving (Read, Show)   
+
+data CommitedTransaction = CommitedTransaction { reason        :: String
+                                               , creditAccount :: AccountPK
+                                               , debitAccount  :: AccountPK
+                                               , amount        :: Double
+                                               , priority      :: TransactionPriority
                                                }
                          deriving (Read, Show)
 
 data Request = CommitTransaction CommitedTransaction
-             | GetBalance
-             | GetExtract CalendarTime CalendarTime -- без ошибок
+             | GetBalance AccountPK
+             | GetStatement AccountPK CalendarTime CalendarTime -- без ошибок
              | GetLog CalendarTime CalendarTime     -- с ошибками
              deriving (Read, Show)
                       

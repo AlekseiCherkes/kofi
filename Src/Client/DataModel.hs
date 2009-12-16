@@ -1,35 +1,13 @@
 module DataModel where
 
-import Validation
-
+import Types
+import Message
+import ClientEntities
 import System.IO
 import Data.Maybe
 import Data.String.UTF8
 import Control.Exception
 import Database.HSQL.SQLite3
-
---------------------------------------------------------------------------------
--- Data types
---------------------------------------------------------------------------------
-
-data Company = Company{cmpName :: Name
-                      ,cmpUnp  :: UNP}
-            deriving(Read, Show)
-
-data Bank = Bank { bnkName :: Name
-                 , bnkBic  :: BIC }
-            deriving(Read, Show)
-
-data Account = Account{accNumber  :: ACC
-                      ,accBank    :: BIC
-                      ,accCompany :: UNP}
-            deriving(Read, Show)
-
---------------------------------------------------------------------------------
--- !!! FIXME !!!
---------------------------------------------------------------------------------
-
-str2unp = id
 
 --------------------------------------------------------------------------------
 -- Connection functions
@@ -102,7 +80,8 @@ fetchAccount stmt = do
   let acc = fromJust $ fromSqlValue (SqlChar 13) fvAcc
   let unp = fromJust $ fromSqlValue (SqlChar 9) fvUnp
   let bic = fromJust $ fromSqlValue (SqlChar 13) fvBic
-  return $ Account acc bic unp
+  let payerAcc = Account (AccountPK acc "001") "0000000000000001"
+  return payerAcc -- $ Account $ (AccountPK (accountId "123456789") (banckBic "001")) "0000000000000001"
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
