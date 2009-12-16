@@ -6,13 +6,13 @@ values (2222222222222, "Company_2");
 insert into Company
 values (3333333333333, "Company_3");
 
--- Bank
-insert into Bank
-values (111111111, "Bank_1");
-insert into Bank
-values (222222222, "Bank_2");
-insert into Bank
-values (333333333, "Bank_3");
+-- -- Bank
+-- insert into Bank
+-- values (111111111, "Bank_1");
+-- insert into Bank
+-- values (222222222, "Bank_2");
+-- insert into Bank
+-- values (333333333, "Bank_3");
 
 -- Account
 -- 1-th company has accounts in all banks.
@@ -37,9 +37,9 @@ values (2, 2222222222222, 111111111);
 -- 1-st company has links with 2-d and 3-d.
 -- 2-d company hasn't links at all.
 -- 3-d company has link with 2-d.
-insert into CounterParty
+insert into Beneficiary
 values (1111111111111, 2222222222222);
-insert into CounterParty
+insert into Beneficiary
 values (1111111111111, 3333333333333);
-insert into CounterParty
+insert into Beneficiary
 values (3333333333333, 2222222222222);
