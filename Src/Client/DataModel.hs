@@ -9,8 +9,6 @@ import ClientEntities
 
 
 
-
-
 import Data.Maybe
 import Data.List
 import Data.String.UTF8 ()
@@ -121,7 +119,6 @@ fetchKeys stmt = do
 --------------------------------------------------------------------------------
 -- Profiles
 --------------------------------------------------------------------------------
-
 findProfileByPath :: FilePath -> IO Profile
 findProfileByPath file = sqlQueryGetFirst $
                          sqlQuery (withDB file) fetchProfile $

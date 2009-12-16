@@ -20,6 +20,7 @@ isValidAmount :: String -> Bool
 isValidAmount = isValidDouble
 
 
+
 isValidBic :: String -> Bool
 isValidBic str = ((length str) `elem` [3, 9]) && isValidInteger str
 

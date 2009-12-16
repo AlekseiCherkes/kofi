@@ -8,10 +8,12 @@ import Data.IORef
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.Glade
 
+
 -- Common imports
 import Types
 import ClientEntities
 import DataModel ()
+
 
 -- Client imports
 import Message
@@ -93,8 +95,6 @@ loadTransactionDialog gladePath = do
 
 
 
-
-
 getTransactionDialogData :: TransactionDialog -> IO CommitedTransaction
 getTransactionDialogData gui = return $   
     CommitedTransaction { reason = "test this client server communication"
@@ -115,10 +115,6 @@ showTransactionDialog :: Session -> IO ()
 showTransactionDialog session = do
     gui <- loadTransactionDialog "Resources/transaction_dialog.glade"
     widgetShowAll (dialog_wnd gui)
-
- 
-
-
 
 
 
