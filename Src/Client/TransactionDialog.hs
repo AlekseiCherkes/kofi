@@ -142,7 +142,7 @@ onTransactionResponse commit gui responce = do
         ResponseCancel -> do
             (putStrLn "Response Cancel")
             widgetDestroy dialog
-        --otherwise      -> return ()
+        otherwise      -> return ()
 
 
 
