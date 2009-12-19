@@ -140,7 +140,7 @@ DATABASE_FLAGS := $(THIRD_PARTY_FLAGS) $(HSFLAGS) \
 		  -XDeriveDataTypeable		  \
 		  -XOverlappingInstances	  \
 		  -XFlexibleInstances		  \
-		  -fallow-undecidable-instances	  \
+		  -XUndecidableInstances	  \
 		  -XMultiParamTypeClasses	  \
 		  -XGeneralizedNewtypeDeriving    \
 		  -XIncoherentInstances	          \

@@ -6,3 +6,8 @@ type UNP   = String
 type BIC  = String
 type ACC  = String 
 
+
+data AccountPK = AccountPK { accId   :: ACC
+                           , bankBic :: BIC }
+                deriving (Read, Show) 
+

@@ -22,7 +22,7 @@ isValidAmount :: String -> Bool
 isValidAmount = isValidDouble
 
 isValidBic :: String -> Bool
-isValidBic str = (length str == 9) && isValidInteger str
+isValidBic str = ((length str) `elem` [3, 9]) && isValidInteger str
 
 isValidUnp :: String -> Bool
 isValidUnp str = (length str == 13) && isValidInteger str

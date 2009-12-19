@@ -5,7 +5,7 @@ import Message
 import ClientEntities
 import System.IO
 import Data.Maybe
-import Data.String.UTF8
+import Data.String.UTF8 ()
 import Control.Exception
 import Database.HSQL.SQLite3
 
@@ -80,8 +80,8 @@ fetchAccount stmt = do
   let acc = fromJust $ fromSqlValue (SqlChar 13) fvAcc
   let unp = fromJust $ fromSqlValue (SqlChar 9) fvUnp
   let bic = fromJust $ fromSqlValue (SqlChar 13) fvBic
-  let payerAcc = Account (AccountPK acc "001") "0000000000000001"
-  return payerAcc -- $ Account $ (AccountPK (accountId "123456789") (banckBic "001")) "0000000000000001"
+  let payerAcc = Account (AccountPK acc bic) unp
+  return payerAcc
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------

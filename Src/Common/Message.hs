@@ -26,9 +26,6 @@ data Message = Message { senderId :: SenderId
 data TransactionPriority = Urgent | Normal
                            deriving (Read, Show)
 
-data AccountPK = AccountPK { accountId:: ACC
-                           , banckBic :: BIC }
-               deriving (Read, Show)   
 
 data CommitedTransaction = CommitedTransaction { reason        :: String
                                                , creditAccount :: AccountPK

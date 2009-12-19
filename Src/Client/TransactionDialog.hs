@@ -5,9 +5,10 @@ module TransactionDialog
 import System.IO
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.Glade
-import DataModel
 
+import Types
 import ClientEntities
+import DataModel ()
 import Message
 import GtkCommon
 
@@ -84,13 +85,13 @@ loadTransactionDialog gladePath = do
 
 setTransactionDialogData :: TransactionDialog -> CommitedTransaction -> IO ()
 setTransactionDialogData gui trans = do
-    banks <- listBranches
+    let banks = []
 
     let creditAcc = creditAccount trans
     let debitAcc  = debitAccount  trans
 
-    setComboEntryItems (payerAcc_cmb  gui) [accNumber creditAcc]
-    setComboEntryItems (payeeAcc_cmb  gui) [accNumber  debitAcc]
+    setComboEntryItems (payerAcc_cmb  gui) [accId $ creditAcc]
+    setComboEntryItems (payeeAcc_cmb  gui) [accId $ debitAcc ]
     setComboEntryItems (payerBank_cmb gui) $ map (bnkName) banks
     setMultilineText   (reason_txt    gui) (reason trans)
 
@@ -113,10 +114,10 @@ getTransactionDialogData gui = do
             False-> Normal    
 
     let amount   = (read amountTxt )::Double
-    let payerAcc = Account (AccountPK payerAccNum "001") "0000000000000001"
-    let payeeAcc = Account (AccountPK payeeAccNum "001") "0000000000000002"
+    let payerAccPk = AccountPK payerAccNum "001"
+    let payeeAccPk = AccountPK payeeAccNum "001"
     
-    return $ CommitedTransaction reason payerAcc payeeAcc amount priority
+    return $ CommitedTransaction reason payerAccPk payeeAccPk amount priority
 
 
 
@@ -141,15 +142,15 @@ onTransactionResponse commit gui responce = do
         ResponseCancel -> do
             (putStrLn "Response Cancel")
             widgetDestroy dialog
-        otherwise      -> return ()
+        --otherwise      -> return ()
 
 
 
 testTransaction = CommitedTransaction { reason = "test this client server communication"
-                                      , creditAccount = Account (AccountPK "123456789" "001") "0000000000000001"
-                                      , debitAccount  = Account (AccountPK "987654321" "001") "0000000000000002"
+                                      , creditAccount = AccountPK "123456789" "000000001"
+                                      , debitAccount  = AccountPK "987654321" "000000001"
                                       , amount = 100.0
-                                      , priority = Urgent
+                                      , priority = Normal
                                       }
 
 
