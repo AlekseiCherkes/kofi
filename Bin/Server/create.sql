@@ -53,3 +53,32 @@ create table Status (
 	status_id int primary key,
 	message varchar(256) not null
 );
+
+insert into Status 
+values (0, "Success.");
+insert into Status 
+values (1, "Corrupted message.");
+insert into Status 
+values (2, "Invalid UNP.");
+insert into Status 
+values (3, "Cannot decrypt.");
+insert into Status 
+values (4, "Invalid payer's BIC.");
+insert into Status 
+values (5, "Invalid beneficiary's BIC.");
+insert into Status 
+values (6, "Invalid payer's account.");
+insert into Status 
+values (7, "Invalid beneficiary's account.");
+insert into Status 
+values (8, "Payer hasn't this account.");
+insert into Status 
+values (9, "Payer is closed already.");
+insert into Status 
+values (10, "Beneficiary is closed already.");
+insert into Status 
+values (11, "Payer's account is closed already.");
+insert into Status 
+values (12, "Beneficiary's account is closed already.");
+insert into Status 
+values (13, "Payer hasn't enough money for commited this transaction.");
