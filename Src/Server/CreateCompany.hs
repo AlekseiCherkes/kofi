@@ -63,14 +63,18 @@ generateUnp = do
   where 
     min = 10^8::Integer
     max = 10^9 - 1::Integer
+    
+findNearestPrime r fn | fn `mod` p == 0 = findNearestPrime (r + 1) fn
+                      | otherwise = p
+                        where p = (primes !! r)
 
 generateKeyPair r1 r2 r3 = (open_key, private_key)  
   where 
     p = primes !! r1
     q = primes !! r2
-    e = primes !! r3
     n = p * q
     fn = (p - 1) * (q - 1)
+    e = findNearestPrime r3 fn
     d = head $ myResult (mles e 1 fn)
     cast n e = keyToB64 $ (toOctets 256 n, toOctets 256 e)
     open_key = cast n e
