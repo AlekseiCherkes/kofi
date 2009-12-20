@@ -15,6 +15,9 @@ import Codec.Encryption.RSA.NumberTheory
 import Codec.Utils
 import qualified Codec.Binary.Base64.String as B64
 
+import Database.HSQL
+import System.Exit
+
 --------------------------------------------------------------------------------
 -- Helper functions from number theory
 --------------------------------------------------------------------------------
@@ -47,7 +50,7 @@ mles a b n | a <= 0 || n <= 0 = BadParams
 -- Helper functions
 --------------------------------------------------------------------------------
 
-parseArgs args | length args /= 1 = error "Invalid command line params.\n create_company <company name>"
+parseArgs args | length args /= 1 = error "Invalid command line params."
                | otherwise = head $ args
                              
 rand min max = getStdRandom $ randomR (min, max)
@@ -76,9 +79,8 @@ generateKeyPair r1 r2 r3 = (open_key, private_key)
 --------------------------------------------------------------------------------
                   
 main = do
-  args <- getArgs
-  let name = parseArgs args
-  print $ "Create company: " ++ name
+  name <- (getArgs >>= \as -> return (parseArgs as))
+  setStdGen $ read (take 6 name) -- use company name for generate UNP
   
   r1 <- rand 100 1000
   r2 <- rand 100 1000
@@ -88,27 +90,21 @@ main = do
   date <- getClockTime >>= toCalendarTime
   let (publicKey, privateKey) = generateKeyPair r1 r2 r3
       
-  -- print $ "UNP: " ++ (show $ unp)
-  -- print $ "Time: " ++ (show $ date)
-  -- print $ "Keys: " ++ (show $ publicKey) ++ "; " ++ (show $ privateKey)
-  
-  let cmp = Company { unp = unp 
-                    , name = name 
+  let cmp = Company { unp = unp
+                    , name = name
                     , registryDate = date
                     , unregistryDate = Nothing
                     , openKey = show publicKey
                     }
 
-  withDB $ \conn -> insertCompany conn cmp
-
-  let cc = ClientConfig { unp = unp 
-                        , name = name 
-                        , registryDate = date
-                        , privateKey = privateKey
-                        }
-           
-  let fileName = unp ++ ".config"           
-  withFile fileName WriteMode (\h -> hPrint h (show cc))
+  catchSql 
+    (withDB $ \conn -> insertCompany conn cmp)
+    (\e -> (print $ show e) >> exitFailure)
+  
+  print unp
+  print name
+  print date
+  print privateKey
 
 --------------------------------------------------------------------------------
   
