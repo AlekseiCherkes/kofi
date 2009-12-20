@@ -36,6 +36,8 @@ data MlesReturn a = BadParams | NoRoots | Result [a]
                    deriving (Show)
                             
 myResult (Result a) = a
+myResult NoRoots = error "NoRoots"
+myResult BadParams = error "BadParams"
 
 mles a b n | a <= 0 || n <= 0 = BadParams
            | b `mod` d == 0 = let x0 = ((x' * (b `div` d)) `mod` n) in
