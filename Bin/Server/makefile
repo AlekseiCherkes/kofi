@@ -1,4 +1,3 @@
-
 ################################################################################
 ################################################################################
 #
@@ -8,21 +7,14 @@
 ################################################################################
 
 .PHONY: all
-all: fill
+all: create
+
+.PHONY : clean
+clean:
+	rm -f server.db
 
 .PHONY: create
 create: clean
 	cat create.sql | sqlite3 -echo -bail server.db
-
-.PHONY: fill
-fill: create
-# cat fill.sql | sqlite3 -echo -bail server.db
-	fill.bat
-
-.PHONY : clean
-clean:
-	rm -f *.config
-	rm -f server.db
-#	rm -f banks.db
 
 ################################################################################

@@ -5,7 +5,7 @@ create table Account (
 	ballance money not null,
 	open_date datetime not null,
 	close_date datetime null,
-	primary key (account_id, bank_id),
+	primary key (acc_id, bank_bic),
 	foreign key(owner_unp)
 		references Company(company_unp)
 		on delete cascade
@@ -36,7 +36,7 @@ create table CommitedTransaction (
 	bnfc_final_balance money not null,
 	amount money not null,
 	priority int not null,
-	primary key (transaction_id),
+	primary key (trn_id),
 	foreign key(payer_acc_id)
 		references Account(acc_id),
 	foreign key(payer_bank_bic)
