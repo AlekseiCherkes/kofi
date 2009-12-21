@@ -1,11 +1,8 @@
 module Main()
        where 
 
-import WithDB
 import Crypto
-import Queries
-import ClientConfig
-import Entity
+import DataModel
 
 import System.IO
 import System.Environment

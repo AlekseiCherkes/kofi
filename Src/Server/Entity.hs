@@ -7,19 +7,13 @@ import System.Time
 
 --------------------------------------------------------------------------------
 
-data Company = Company { unp :: String
-                       , name :: String
-                       , registryDate :: CalendarTime
-                       , unregistryDate :: Maybe CalendarTime
-                       , openKey :: String
-                       }
-               deriving (Read, Show)
 
-data Account = Account { accountId :: String
-                       , ownerId :: String
+data Account = Account { acc_id :: String
+                       , bank_bic :: String
+                       , owner_unp :: String
                        , ballance :: Double
-                       , openData :: CalendarTime
-                       , closeDate :: Maybe CalendarTime 
+                       , open_date :: CalendarTime
+                       , close_date :: Maybe CalendarTime 
                        }               
                deriving (Read, Show)
 
