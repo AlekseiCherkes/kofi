@@ -120,7 +120,7 @@ if __name__ == '__main__':
             pass
     # Create clients DBs.
     for client_info in clients_info:
-        client_name = client_dir + '/' + client_info[0] + '(' + client_info[1] + ').db'
+        client_name = client_dir + '/' + client_info[0] + '.db'# + '(' + client_info[1] + ').db'
         # Remove previous DB.
         try:
             os.remove(client_name)
