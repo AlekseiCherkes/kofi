@@ -74,7 +74,6 @@ def fill_Company(company_names):
     for company_name in company_names:
         result = os.popen('create_company.exe "' + company_name + '"')
         company_info = result.readlines()
-
         # Remove starting and ending double quotes.
         company_info[0] = company_info[0][1:len(company_info[0]) - 3]
         company_info[1] = company_info[1][1:len(company_info[1]) - 3]
@@ -126,7 +125,6 @@ def fill_CommitedTransaction(server_db_path, accounts):
         for payer_account in accounts:
             for bnfc_account in accounts:
                 if payer_account != bnfc_account:
-                    #trn_id = str(random.randint(0, 1000000000))
                     trn_id = str(random.randint(0, 1000000000))
                     money_amount = payer_account[3] / 2.0
                     cu.execute('''insert into CommitedTransaction
@@ -155,6 +153,9 @@ def fill_CommitedTransaction(server_db_path, accounts):
 
 
 def print_statistic(server_db_path):
+    '''
+    Print counts of records in Company, Account and CommitedTransaction tables.
+    '''
     c = db.connect(database = server_db_path)
     cu = c.cursor()
     try:
