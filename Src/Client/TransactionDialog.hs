@@ -5,10 +5,13 @@ module TransactionDialog
 import System.IO
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.Glade
-import DataModel
 
+import Types
+import ClientEntities
+import DataModel ()
 import Message
 import GtkCommon
+
 
 
 
@@ -82,14 +85,15 @@ loadTransactionDialog gladePath = do
 
 setTransactionDialogData :: TransactionDialog -> CommitedTransaction -> IO ()
 setTransactionDialogData gui trans = do
-    banks <- listBranches
-  
-    setComboEntryItems (payerAcc_cmb gui) [show (creditAccountId trans)]
-    setComboEntryItems (payeeAcc_cmb gui) [show (debitAccountId  trans)]
+    let banks = []
 
+    let creditAcc = creditAccount trans
+    let debitAcc  = debitAccount  trans
+
+    setComboEntryItems (payerAcc_cmb  gui) [accId $ creditAcc]
+    setComboEntryItems (payeeAcc_cmb  gui) [accId $ debitAcc ]
     setComboEntryItems (payerBank_cmb gui) $ map (bnkName) banks
-    
-    setMultilineText (reason_txt gui) (reason trans)
+    setMultilineText   (reason_txt    gui) (reason trans)
 
     entrySetText (amount_entry gui) $ show (amount trans)
     radioButtonSetGroup   (urgent_btn gui) (notUrgent_btn gui)
@@ -98,22 +102,22 @@ setTransactionDialogData gui trans = do
 
 
 getTransactionDialogData :: TransactionDialog -> IO CommitedTransaction
-getTransactionDialogData gui = do
-	Just payerAcc <- comboBoxGetActiveText (payerAcc_cmb gui)
-	Just payeeAcc <- comboBoxGetActiveText (payeeAcc_cmb gui)
-	reason        <- getMultilineText      (reason_txt   gui)
-	ammountTxt    <- entryGetText          (amount_entry gui)
-	isUrgent      <- toggleButtonGetActive (urgent_btn   gui)
-	
-	let payerAccNum = (read payerAcc)  ::Integer
-	let payeeAccNum = (read payeeAcc)  ::Integer
-	let ammount     = (read ammountTxt)::Double
-	
-	let priority = case isUrgent of
-		True -> Urgent
-		False-> Normal
-		
-	return (CommitedTransaction reason payerAccNum payeeAccNum ammount priority)
+getTransactionDialogData gui = do   
+    Just payerAccNum <- comboBoxGetActiveText (payerAcc_cmb gui)
+    Just payeeAccNum <- comboBoxGetActiveText (payeeAcc_cmb gui)
+    reason           <- getMultilineText      (reason_txt   gui)
+    amountTxt        <- entryGetText          (amount_entry gui)
+    isUrgent         <- toggleButtonGetActive (urgent_btn   gui)
+
+    let priority = case isUrgent of
+            True -> Urgent
+            False-> Normal    
+
+    let amount   = (read amountTxt )::Double
+    let payerAccPk = AccountPK payerAccNum "001"
+    let payeeAccPk = AccountPK payeeAccNum "001"
+    
+    return $ CommitedTransaction reason payerAccPk payeeAccPk amount priority
 
 
 
@@ -141,12 +145,12 @@ onTransactionResponse commit gui responce = do
         otherwise      -> return ()
 
 
-	
+
 testTransaction = CommitedTransaction { reason = "test this client server communication"
-                                      , creditAccountId = 123456789
-                                      , debitAccountId = 987654321
+                                      , creditAccount = AccountPK "123456789" "000000001"
+                                      , debitAccount  = AccountPK "987654321" "000000001"
                                       , amount = 100.0
-                                      , priority = Urgent
+                                      , priority = Normal
                                       }
 
 

@@ -1,8 +1,9 @@
 module Crypto 
        where 
 
-import Debug.Trace 
+import Debug.Trace() 
 
+import Types
 import Message
 import Data.Word
 import Data.List

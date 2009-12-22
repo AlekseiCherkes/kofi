@@ -20,4 +20,3 @@ data AccountConfig = AccountConfig { id :: String
                    deriving(Read, Show)  
   
 --------------------------------------------------------------------------------
-                                   
