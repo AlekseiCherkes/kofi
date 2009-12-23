@@ -2,6 +2,7 @@
 
 import os
 import random
+from pysqlite2 import dbapi2 as db
 
 server_db_path = 'server.db'
 client_dir = 'client_dbs'
@@ -35,7 +36,7 @@ def create_client_db(con):
                             references Account(bank_bic)
                     );''')
     cur.execute('''create table TransactionTemplate(
-                    	tmpl_name char(16) not null,
+                    	tmpl_name varchar(16) not null,
                     	payer_bank_bic char(9) not null,
                     	payer_acc_id char(13) not null,
                     	bnfc_bank_bic char(9) not null,
@@ -68,37 +69,39 @@ def fill_client_db(client_con, server_db_path, client_unp):
                                     (company[0], company[1]))
             client_con.commit()
         # Find all accounts for all companies.
-        server_cur.execute('''select acc_id, bank_bic
+        server_cur.execute('''select acc_id, bank_bic, owner_unp
                               from Account;''')
         accounts = server_cur.fetchall()
         # Add each of this account into client DB.
         for account in accounts:
             client_cur.execute('''insert into Account
                                   values (?,?,?);''',
-                                  (account[0], client_unp, account[1]))
+                                  (account[0], account[2], account[1]))
         # Fill Statement table.
-##        for account in accounts:
-##            statement_id = str(random.randint(0, 1000000000))
-##            client_cur.execute('''insert into Statement
-##                                  values (?,
-##                                          current_timestamp,
-##                                          current_timestamp,
-##                                          ?,?,
-##                                          'statement text');''',
-##                                  (statement_id, account[0], account[1]))
-##        for account in accounts:
-##            for company in companies:
-##                tmpl_name = str(random.randint(0, 1000000000))
-##                client_cur.execute('''insert into TransactionTemplate
-##                                      values (?,?,?,?,?
-##                                              current_timestamp,
-##                                              current_timestamp,
-##                                              ?,?,
-##                                              'statement text');''',
-##                                      (tmpl_name,
-##                                      account[0],
-##                                      account[1],
-##                                      company[0], ))
+        for account in accounts:
+            # Create statements only for accounts of this client.
+            if account[2] == client_unp:
+                statement_id = str(random.randint(0, 1000000000))
+                client_cur.execute('''insert into Statement
+                                      values (?,
+                                              current_timestamp,
+                                              current_timestamp,
+                                              ?,?,
+                                              'statement text');''',
+                                      (statement_id, account[0], account[1]))
+        if len(accounts) > 1:
+            tmpl_name = str(random.randint(0, 1000000000))
+            client_cur.execute('''insert into TransactionTemplate
+                                  values (?,?,?,?,?,
+                                          150,
+                                          'reason',
+                                          1);''',
+                                  (tmpl_name,
+                                  accounts[0][1],
+                                  accounts[0][0],
+                                  accounts[1][1],
+                                  accounts[1][0]))
+
 
     finally:
         server_con.close()
@@ -113,11 +116,10 @@ if __name__ == '__main__':
         server_con.close()
 
     # Create directory for clients DBs.
-    if len(clients_names) > 0:
-        try:
-            os.mkdir(client_dir)
-        except:
-            pass
+    try:
+        os.mkdir(client_dir)
+    except:
+        pass
     # Create clients DBs.
     for client_info in clients_info:
         client_name = client_dir + '/' + client_info[0] + '.db'# + '(' + client_info[1] + ').db'
