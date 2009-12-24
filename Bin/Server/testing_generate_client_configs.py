@@ -2,7 +2,7 @@
 
 import os
 import random
-from pysqlite2 import dbapi2 as db
+import sqlite3 as db
 
 server_db_path = 'server.db'
 client_dir = 'client_dbs'

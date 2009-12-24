@@ -3,7 +3,7 @@
 import os
 import random
 import datetime
-from pysqlite2 import dbapi2 as db
+import sqlite3 as db
 
 ##company_names = [
 ##    'АКСЕНОВ Сергей Анатольевич',
