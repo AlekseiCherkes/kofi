@@ -3,8 +3,10 @@ module DataModel where
 import Types
 import Message
 import ClientEntities
+
 import System.IO
 import Data.Maybe
+import Data.List
 import Data.String.UTF8 ()
 import Control.Exception
 import Database.HSQL.SQLite3
@@ -131,8 +133,26 @@ findBankByBic bic = sqlQueryGetFirst $
                     "WHERE branch_bic = " ++ bicValue ++ ";"
                       where bicValue = toSqlValue bic
 
--- findBanksByCompany :: UNP -> IO [Bank]
--- findBanksByCompany unp = do
+-- not tested yet !!!
+findBanksByCompany :: FilePath -> UNP -> IO [Bank]
+findBanksByCompany file unp = do
+  accounts <- fetchAccountsByCompany
+  banks <- fetchBanksByBics $ map (bankBic . accPk) accounts
+  return banks
+  where 
+    fetchAccountsByCompany = sqlQuery (withDB file) fetchAccount $
+                             "SELECT Account.bank_bic " ++  
+                             "FROM Company " ++ 
+                             "INNER JOIN Account ON Account.company_unp = Company.company_unp " ++
+                             "WHERE Company.company_unp = " ++ unpValue ++ ";"
+                               where unpValue = toSqlValue unp
+                 
+    fetchBanksByBics bics = sqlQuery withBanksManual fetchBankBranch $
+                            "SELECT * " ++ 
+                            "FROM Branch " ++
+                            "WHERE branch_bic IN (" ++ bicsValue ++ ");"
+                              where bicsValue = foldl1 (++) $ intersperse ", " $ 
+                                                map toSqlValue bics
 
 listBanks :: IO [Bank]
 listBanks = sqlQuery withBanksManual fetchBankBranch 
