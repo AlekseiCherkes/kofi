@@ -13,13 +13,12 @@ import Database.HSQL.SQLite3
 -- Connection functions
 --------------------------------------------------------------------------------
 
-dataBaseFilePath = "client.db"
 banksManualFilePath = "manual.db"
 
-withDB :: (Connection -> IO a) -> IO a
-withDB = bracket
-         (connect dataBaseFilePath ReadWriteMode)
-         (\conection -> disconnect conection)
+withDB :: FilePath -> (Connection -> IO a) -> IO a
+withDB filePath = bracket
+                  (connect filePath ReadWriteMode)
+                  (\conection -> disconnect conection)
 
 withBanksManual :: (Connection -> IO a) -> IO a
 withBanksManual = bracket
@@ -93,27 +92,27 @@ fetchAccount stmt = do
 -- Companies
 --------------------------------------------------------------------------------
 
-findCompanyByName :: Name -> IO Company
-findCompanyByName name = sqlQueryGetFirst $
-                         sqlQuery withDB fetchCompany  $
-                         "SELECT * FROM Company " ++
-                         "WHERE company_name = \"" ++ name ++ "\";"
+findCompanyByName :: FilePath -> Name -> IO Company
+findCompanyByName file name = sqlQueryGetFirst $
+                            sqlQuery (withDB file) fetchCompany  $
+                            "SELECT * FROM Company " ++
+                            "WHERE company_name = \"" ++ name ++ "\";"
 
-findCompanyByUnp :: UNP -> IO Company
-findCompanyByUnp unp = sqlQueryGetFirst $
-                       sqlQuery withDB fetchCompany  $
-                       "SELECT * FROM Company " ++
-                       "WHERE company_unp = " ++ unpValue ++ ";"
-                       where unpValue = toSqlValue unp
+findCompanyByUnp :: FilePath -> UNP -> IO Company
+findCompanyByUnp file unp = sqlQueryGetFirst $
+                          sqlQuery (withDB file) fetchCompany  $
+                          "SELECT * FROM Company " ++
+                          "WHERE company_unp = " ++ unpValue ++ ";"
+                            where unpValue = toSqlValue unp
 
-findCompaniesByBank :: BIC -> IO [Company]
-findCompaniesByBank bic = sqlQuery withDB fetchCompany $
-                          "SELECT Company.* " ++
-                          "FROM Company " ++
-                          "INNER JOIN Account on " ++
-                          "Account.company_unp = Company.company_unp " ++
-                          "WHERE Account.bank_bic = " ++ bicValue ++";"
-                          where bicValue = toSqlValue bic
+findCompaniesByBank :: FilePath -> BIC -> IO [Company]
+findCompaniesByBank file bic = sqlQuery (withDB file) fetchCompany $
+                               "SELECT Company.* " ++
+                               "FROM Company " ++
+                               "INNER JOIN Account on " ++
+                               "Account.company_unp = Company.company_unp " ++
+                               "WHERE Account.bank_bic = " ++ bicValue ++";"
+                                 where bicValue = toSqlValue bic
                                 
 --------------------------------------------------------------------------------
 -- Banks
@@ -130,7 +129,7 @@ findBankByBic bic = sqlQueryGetFirst $
                     sqlQuery withBanksManual fetchBankBranch  $
                     "SELECT * FROM Branch " ++
                     "WHERE branch_bic = " ++ bicValue ++ ";"
-                    where bicValue = toSqlValue bic
+                      where bicValue = toSqlValue bic
 
 -- findBanksByCompany :: UNP -> IO [Bank]
 -- findBanksByCompany unp = do
@@ -143,33 +142,33 @@ listBanks = sqlQuery withBanksManual fetchBankBranch
 -- Accounts
 --------------------------------------------------------------------------------
 
-findAccountsByCompany :: UNP -> IO [Account]
-findAccountsByCompany unp = sqlQuery withDB fetchAccount $
-                            "SELECT * FROM Account " ++
-                            "WHERE company_unp = " ++ unpValue ++ ";"
-                            where unpValue = toSqlValue unp
+findAccountsByCompany :: FilePath -> UNP -> IO [Account]
+findAccountsByCompany file unp = sqlQuery (withDB file) fetchAccount $
+                                 "SELECT * FROM Account " ++
+                                 "WHERE company_unp = " ++ unpValue ++ ";"
+                                   where unpValue = toSqlValue unp
 
-findAccountsByBank :: BIC -> IO [Account]
-findAccountsByBank bic = sqlQuery withDB fetchAccount $
-                         "SELECT * FROM Account " ++
-                         "WHERE bank_bic = " ++ bicValue ++ ";"
-                         where bicValue = toSqlValue bic
+findAccountsByBank :: FilePath -> BIC -> IO [Account]
+findAccountsByBank file bic = sqlQuery (withDB file) fetchAccount $
+                              "SELECT * FROM Account " ++
+                              "WHERE bank_bic = " ++ bicValue ++ ";"
+                                where bicValue = toSqlValue bic
 
-findAccount :: BIC -> ACC -> IO Account
-findAccount bic acc = sqlQueryGetFirst $
-                      sqlQuery withDB fetchAccount $
-                      "SELECT * FROM Account " ++
-                      "WHERE acc_id = " ++ accValue ++ " " ++
-                      "AND bank_bic = " ++ bicValue ++ ";"
-                      where accValue = toSqlValue acc
-                            bicValue = toSqlValue bic
+findAccount :: FilePath -> BIC -> ACC -> IO Account
+findAccount file bic acc = sqlQueryGetFirst $
+                           sqlQuery (withDB file) fetchAccount $
+                           "SELECT * FROM Account " ++
+                           "WHERE acc_id = " ++ accValue ++ " " ++
+                           "AND bank_bic = " ++ bicValue ++ ";"
+                             where accValue = toSqlValue acc
+                                   bicValue = toSqlValue bic
 
 --------------------------------------------------------------------------------
 -- Counterparties
 --------------------------------------------------------------------------------
 
-listCounterparties :: IO [Company]
-listCounterparties = sqlQuery withDB fetchCompany $
-                     "SELECT * FROM Company;"
+listCounterparties :: FilePath -> IO [Company]
+listCounterparties file = sqlQuery (withDB file) fetchCompany $
+                          "SELECT * FROM Company;"
 
 --------------------------------------------------------------------------------
