@@ -28,7 +28,7 @@ testLogToConsole message= do
   
 makeMessage :: String -> Request -> Message
 makeMessage unp request = Message { senderId = ClientId unp
-                                  , text = show request
+                                  , body = show request
                                   , digest = "0"
                                   }
 

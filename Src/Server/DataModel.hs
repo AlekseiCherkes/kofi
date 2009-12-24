@@ -114,4 +114,23 @@ insertAccount connection account = do
 --------------------------------------------------------------------------------
 -- End
 --------------------------------------------------------------------------------
+                
+-- все Maybe
+  
+-- insertAccount
+-- updateAccount
+
+-- insertCompany
+-- updateCompany
+
+-- findCompanyByUNP
+-- findAccountByACC
+-- findBankByBIC
+-- findCompanyByACC
+
+-- findTransactionsForStatement ACC From To
+-- findTransactionsForLog ACC From To
+
+
+
 

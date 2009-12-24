@@ -1,8 +1,6 @@
 module Crypto 
        where 
 
-import Debug.Trace() 
-
 import Types
 import Message
 import Data.Word
@@ -16,23 +14,20 @@ import qualified Codec.Binary.Base64.String as B64
 -- Common data types
 --------------------------------------------------------------------------------
 
-type RSAKey = (Base64, Base64) -- (n, e)
-type EncryptedMessage = Base64
-
-createMessage :: RSAKey -> SenderId -> String -> Message
-createMessage key senderId text = Message { senderId = senderId, 
+createMessage :: RSAKey -> SenderId -> MessageBody -> Message
+createMessage key senderId body = Message { senderId = senderId, 
                                             digest = digest,
-                                            text = text }
+                                            body = body }
   where digest = ( B64.encode .
                    octetsToChar8 .
                    groupMap (keyLen - 1) (RSA.encrypt dkey) .
-                   getHash ) text
+                   getHash ) body
         dkey = b64ToKey key
         keyLen = length $ fst dkey
 
 verifyMessage :: RSAKey -> Message -> Bool
 verifyMessage key msg = isPrefixOf ourDigest theirsDigest
-  where ourDigest = getHash (text msg)
+  where ourDigest = getHash (body msg)
         theirsDigest = ( groupMap (keyLen) decodeChunk .
                          char8ToOctets .
                          B64.decode ) (digest msg)
@@ -42,21 +37,20 @@ verifyMessage key msg = isPrefixOf ourDigest theirsDigest
             decodeChunk = take (keyLen - 1) . reverse . RSA.decrypt dkey
                 
 
-encodeMessage :: RSAKey -> Message -> EncryptedMessage
-encodeMessage key msg = (B64.encode . 
+encodeMessage :: RSAKey -> MessageBody -> EncryptedMessageBody
+encodeMessage key body = (B64.encode . 
                          octetsToChar8 . 
                          groupMap (keyLen - 1) (RSA.encrypt dkey) . 
-                         char16ToOctets) (show msg)
+                         char16ToOctets) (show body)
   where dkey = b64ToKey key
         keyLen = length $ fst dkey
 
-decodeMessage :: RSAKey -> EncryptedMessage -> Message
-decodeMessage key msg = read dmsg
+decodeMessage :: RSAKey -> EncryptedMessageBody -> MessageBody
+decodeMessage key emsg = read dmsg
   where dmsg = (octetsToChar16 .
                 groupMap keyLen decodeChunk .
                 char8ToOctets .
-                B64.decode) 
-               msg
+                B64.decode) emsg
         dkey = b64ToKey key
         keyLen = length $ fst dkey
         decodeChunk = take (keyLen - 1) . reverse . RSA.decrypt dkey
@@ -79,12 +73,10 @@ octetsToChar8 os = map wordToChar os
 char8ToOctets cs = map charToWord cs
   where charToWord = (toEnum . fromEnum) :: Char -> Word8
 
--- !!!
 char16ToOctets :: String -> [Octet]
 char16ToOctets cs = listToOctets $ map charToWord cs
   where charToWord = (toEnum . fromEnum) :: Char -> Word16
                                              
--- !!!
 octetsToChar16 :: [Octet] -> String
 octetsToChar16 os = map wordToChar (listFromOctets os :: [Word16])
   where wordToChar = (toEnum . fromEnum) :: Word16 -> Char
