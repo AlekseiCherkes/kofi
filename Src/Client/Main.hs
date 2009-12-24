@@ -1,11 +1,18 @@
 import Network
 import System.IO
 
+-- Gtk imports
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.Glade ()
 
+-- Common imports
+import Types
+import Validation
 import Message
+
+-- Client imports
 import TransactionDialog
+import BalanceDialog
 import MainWindow
 
 host = "127.0.0.1"
@@ -44,6 +51,9 @@ bindActions :: ActionGroup -> IO ()
 bindActions actions = do
     (Just payAction) <- actionGroupGetAction actions "NewPay_a"
     onActionActivate payAction (onNewTransaction onCommitTransactionClicked)
+    
+    (Just accAction) <- actionGroupGetAction actions "ViewBalance_a"
+    onActionActivate accAction (showBalanceDialog $ str2unp "987654321123")
     return ()
 
   
