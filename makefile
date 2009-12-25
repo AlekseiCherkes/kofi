@@ -12,44 +12,36 @@ HSFLAGS_OUR := $(HSFLAGS) -XDisambiguateRecordFields -W -iSrc/Common -i./ -iSrc/
 CFLAGS_UOR := -ISrc/ThirdParty/CBits/sqlite3
 
 .PHONY: all
-all: server client
+all: third_party create_company create_account server client
 
-server: Src/Server/Main.hs third_party
-	ghc --make -iSrc/Server $(DATABASE_FLAGS) -optP $(CFLAGS) -o Bin/Server/create_company $(HSFLAGS_OUR) Src/Server/CreateCompany.hs $(CBITS_O)
-	ghc --make -iSrc/Server $(DATABASE_FLAGS) -optP $(CFLAGS) -o Bin/Server/create_account $(HSFLAGS_OUR) Src/Server/CreateAccount.hs $(CBITS_O)
+.PHONY: server
+server: Src/Server/Main.hs
 	ghc --make -iSrc/Server $(DATABASE_FLAGS) -optP $(CFLAGS) -o Bin/Server/server $(HSFLAGS_OUR) Src/Server/Main.hs $(CBITS_O)
 
+.PHONY: server_create_company
+create_company: Src/Server/CreateCompany.hs
+	ghc --make -iSrc/Server $(DATABASE_FLAGS) -optP $(CFLAGS) -o Bin/Server/create_company $(HSFLAGS_OUR) Src/Server/CreateCompany.hs $(CBITS_O)
+
+.PHONY: server_create_account
+create_account: Src/Server/CreateAccount.hs
+	ghc --make -iSrc/Server $(DATABASE_FLAGS) -optP $(CFLAGS) -o Bin/Server/create_account $(HSFLAGS_OUR) Src/Server/CreateAccount.hs $(CBITS_O)
+
+.PHONY: client
 client: third_party Src/Client/Main.hs
 	ghc --make -iSrc/Client -optP $(CFLAGS) -o Bin/Client/client $(HSFLAGS_OUR) Src/Client/Main.hs $(CBITS_O)
 
+.PHONY: dummy_client
 dummy_client: third_party Src/DummyClient/Main.hs
 	ghc --make -iSrc/DummyClient -o Bin/dummy_client $(HSFLAGS_OUR) Src/DummyClient/Main.hs $(CBITS_O)
 
+# .PHONY : clean
+# clean: #clean_database clean # clean_cbits 
+# 	rm -f $(wildcard $(addprefix Src/Server/, *.hc, *.hi, *.o, *.ho))
+# 	rm -f $(wildcard $(addprefix Src/Client/, *.hc, *.hi, *.o, *.ho))
 
-# .PHONY: server_db
-# server_db: third_party Src/Server/CreateDB.hs
-# 	ghc --make -o Bin/Server/db -iSrc/Server $(HSFLAGS_OUR) Src/Server/CreateDB.hs $(CBITS_O)
-# 	Bin/Server/db
-# 	sqlite3 -init Bin/Server/fill.sql server.db
-
-# .PHONY: clean_db
-# clean_db:
-# 	rm -f server.db server_db Server/ServerDB.hs Server/ServerDB/*
-# 	rmdir Server/ServerDB
-
-# .PHONY: clean_our
-# clean:
-# 	rm -f $(wildcard $(addprefix Server/, *.hc, *.hi, *.o, *.ho))
-# 	rm -f client server
-# 	echo $(wildcard $(addprefix Server/, *.hc, *.hi, *.o, *.ho))
-
-.PHONY : clean
-clean: clean_database clean_cbits clean
-	rm -f $(wildcard $(addprefix Src/Server/, *.hc, *.hi, *.o, *.ho))
-
-.PHONY: debug
-debug: third_party
-	ghci -i./ -iSrc/ThirdParty -iSrc/Server -iSrc/Client -iSrc/Common
+# .PHONY: debug
+# debug: third_party
+# 	ghci -i./ -iSrc/ThirdParty -iSrc/Server -iSrc/Client -iSrc/Common
 
 # clean_system
 
