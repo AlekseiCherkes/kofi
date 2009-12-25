@@ -88,16 +88,22 @@ main = do
   r1 <- rand 100 1000
   r2 <- rand 100 1000
   r3 <- rand 10 (100 - 1)
+  
+  r4 <- rand 100 1000
+  r5 <- rand 100 1000
+  r6 <- rand 10 (100 - 1)
 
   unp <- generateUnp
   date <- getClockTime >>= toCalendarTime
-  let (publicKey, privateKey) = generateKeyPair r1 r2 r3
+  let (clientSendKey, serverRecvKey) = generateKeyPair r1 r2 r3
+  let (serverSendKey, clientRecvKey) = generateKeyPair r4 r5 r6
       
   let cmp = Company { unp = unp
                     , name = name
                     , registryDate = date
                     , unregistryDate = Nothing
-                    , openKey = show publicKey
+                    , recvKey = show serverRecvKey
+                    , sendKey = show serverSendKey
                     }
 
   catchSql 
@@ -107,12 +113,9 @@ main = do
   print unp
   print name
   print date
-  print privateKey
+  print clientRecvKey
+  print clientSendKey
 
 --------------------------------------------------------------------------------
-  
-  
-
-
-
-
+-- End
+--------------------------------------------------------------------------------

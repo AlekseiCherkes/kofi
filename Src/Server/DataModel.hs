@@ -65,7 +65,8 @@ data Company = Company { unp :: String
                        , name :: String
                        , registryDate :: CalendarTime
                        , unregistryDate :: Maybe CalendarTime
-                       , openKey :: String
+                       , recvKey :: String
+                       , sendKey :: String
                        }
                deriving (Read, Show)
 
@@ -77,7 +78,8 @@ insertCompany connection company = do
                               , toSqlValue $ name company
                               , toSqlValue $ toClockTime (registryDate company)
                               , clockValue $ unregistryDate company
-                              , toSqlValue $ openKey company ]
+                              , toSqlValue $ recvKey company 
+                              , toSqlValue $ sendKey company ]
           where clockValue (Just a) = toSqlValue $ toClockTime a
                 clockValue Nothing = "NULL"
 
