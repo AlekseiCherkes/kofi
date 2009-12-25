@@ -9,6 +9,14 @@ client_dir = 'client_dbs'
 
 def create_client_db(con):
     cur = con.cursor()
+    # Config table always has only one row
+    cur.execute('''create table Config (
+	                   unp char(13) not null,
+	                   name varchar(256) not null,
+                           date datetime not null, 
+                           recv_key varchar(1024) not null,
+                           send_key varchar(1024) not null,
+                    ); ''')
     cur.execute('''create table Company (
 	                   company_unp char(13) not null,
 	                   company_name varchar(256) not null,
@@ -60,6 +68,7 @@ def fill_client_db(client_con, server_db_path, client_unp):
     server_con = db.connect(database = server_db_path)
     server_cur = server_con.cursor()
     try:
+# TODO: не создавать профайлы для закрытых компаний
         server_cur.execute('select company_unp, company_name from Company;')
         companies = server_cur.fetchall()
         # Create list of companies, available for our client.
