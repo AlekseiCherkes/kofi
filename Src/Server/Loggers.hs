@@ -17,16 +17,20 @@ acquireLoggers = do
   
   createDirectoryIfMissing True logDir
   let logFileHandler path = fileHandler (logDir ++ path)
-  h <- logFileHandler "server.log" DEBUG
-  dbH <- logFileHandler "server.db.log" DEBUG
-  serverH <- logFileHandler "server.server.log" DEBUG
-  clientsH <- logFileHandler "server.clients.log" DEBUG
+      
+  h <- logFileHandler "server" DEBUG
+  dbH <- logFileHandler "server-db" DEBUG
+  serverH <- logFileHandler "server-server" DEBUG
+  clientsH <- logFileHandler "server-client" DEBUG
+  tellerH <- logFileHandler "server-teller" DEBUG
   
   updateGlobalLogger (rootLoggerName::String) (setLevel DEBUG . setHandlers [stderrH])
   updateGlobalLogger "server" (setLevel DEBUG . setHandlers [h])
   updateGlobalLogger "server.db" (setLevel DEBUG . setHandlers [dbH])
   updateGlobalLogger "server.server" (setLevel DEBUG . setHandlers [serverH])
-  updateGlobalLogger "server.clients" (setLevel DEBUG . setHandlers [clientsH])
+  updateGlobalLogger "server.client" (setLevel DEBUG . setHandlers [clientsH])
+  updateGlobalLogger "server.teller" (setLevel DEBUG . setHandlers [tellerH])
+  
   return [h, dbH, serverH, clientsH]
   
 releaseLoggers loggers = mapM (System.Log.Handler.close) loggers
