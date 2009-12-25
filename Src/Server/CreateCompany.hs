@@ -11,6 +11,8 @@ import System.Time
 import Codec.Encryption.RSA.NumberTheory
 import Codec.Utils
 import qualified Codec.Binary.Base64.String as B64
+import Data.Bits
+import Data.Word
 
 import Database.HSQL
 import System.Exit
@@ -77,13 +79,18 @@ generateKeyPair r1 r2 r3 = (open_key, private_key)
     open_key = cast n e
     private_key = cast n d
     
+hashString :: String -> Int
+hashString str = (toEnum . fromEnum) $ 
+                 foldl1 xor $ 
+                 ((map (toEnum . fromEnum) str) :: [Word16])
+    
 --------------------------------------------------------------------------------
 -- Main function
 --------------------------------------------------------------------------------
                   
 main = do
   name <- (getArgs >>= \as -> return (parseArgs as))
-  setStdGen $ read (take 6 name) -- use company name for generate UNP
+  setStdGen $ mkStdGen $ hashString name -- use company name for generate UNP
   
   r1 <- rand 100 1000
   r2 <- rand 100 1000
