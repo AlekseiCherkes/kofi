@@ -1,7 +1,17 @@
+module Main
+       where
+       
+import Teller
 import Server
 import Loggers
 import MessageHandler
 
-main = withLoggers $ \_ -> do
-  runServer handleMessage
+import Control.Concurrent
+import Control.Concurrent.Chan
 
+main = withLoggers $ \_ -> do
+  urgents <- newChan
+  normals <- newChan
+  forkIO $ startTeller urgents "urgents" (2 * 10^6)
+  forkIO $ startTeller normals "normals" (5 * 10^6) 
+  runServer handleMessage

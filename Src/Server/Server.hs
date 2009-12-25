@@ -30,7 +30,7 @@ runServer connHandler = do
 serviceConn :: String -> Handle -> (String -> Handle -> IO ()) -> IO ()
 serviceConn name handle connHandler = do
   infoM "server.server" $ "Accept connection: " ++ name
-  threadId <- forkIO $ (connHandler name handle `catch` handleException)  
+  threadId <- forkIO $ connHandler name handle `catch` handleException
   return ()
   where
     handleException (e::SomeException) = do
