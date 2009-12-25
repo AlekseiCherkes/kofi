@@ -17,8 +17,10 @@ create table Company (
 	company_name varchar(256) not null,
 	registry_date datetime  not null,
 	unregistry_date datetime  null,
-	recv_key varchar(1024)  not null,
-	send_key varchar(1024)  not null,
+	server_recv_key varchar(1024)  not null,
+	server_send_key varchar(1024)  not null,
+	client_recv_key varchar(1024)  not null,
+	client_send_key varchar(1024)  not null,
 	primary key (company_unp)
 );
 					  

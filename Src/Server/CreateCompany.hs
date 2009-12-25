@@ -102,8 +102,10 @@ main = do
                     , name = name
                     , registryDate = date
                     , unregistryDate = Nothing
-                    , recvKey = show serverRecvKey
-                    , sendKey = show serverSendKey
+                    , serverRecvKey = serverRecvKey
+                    , serverSendKey = serverSendKey
+                    , clientRecvKey = clientRecvKey
+                    , clientSendKey = clientSendKey
                     }
 
   catchSql 

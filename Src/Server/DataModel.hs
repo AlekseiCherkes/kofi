@@ -1,6 +1,8 @@
 module DataModel
     where
 
+import Types
+
 import Data.List
 import Data.Maybe
 import System.Time
@@ -65,8 +67,10 @@ data Company = Company { unp :: String
                        , name :: String
                        , registryDate :: CalendarTime
                        , unregistryDate :: Maybe CalendarTime
-                       , recvKey :: String
-                       , sendKey :: String
+                       , serverRecvKey :: RSAKey
+                       , serverSendKey :: RSAKey
+                       , clientRecvKey :: RSAKey
+                       , clientSendKey :: RSAKey
                        }
                deriving (Read, Show)
 
@@ -78,8 +82,10 @@ insertCompany connection company = do
                               , toSqlValue $ name company
                               , toSqlValue $ toClockTime (registryDate company)
                               , clockValue $ unregistryDate company
-                              , toSqlValue $ recvKey company 
-                              , toSqlValue $ sendKey company ]
+                              , toSqlValue $ show $ serverRecvKey company 
+                              , toSqlValue $ show $ serverSendKey company
+                              , toSqlValue $ show $ clientRecvKey company 
+                              , toSqlValue $ show $ clientSendKey company ]
           where clockValue (Just a) = toSqlValue $ toClockTime a
                 clockValue Nothing = "NULL"
 
