@@ -1,7 +1,6 @@
 module DataModel where
 
 import Types
-import Message
 import ClientEntities
 
 import System.IO

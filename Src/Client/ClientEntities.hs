@@ -13,3 +13,6 @@ data Bank = Bank{bnkName :: Name
 data Account = Account{accPk     :: AccountPK
                       ,accCompany:: UNP}
                deriving (Read, Show)
+
+               
+data Session = Session{ sessionUnp :: UNP }

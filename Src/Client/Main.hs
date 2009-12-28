@@ -1,4 +1,4 @@
-import Network
+
 import System.IO
 
 -- Gtk imports
@@ -6,38 +6,16 @@ import Graphics.UI.Gtk
 import Graphics.UI.Gtk.Glade ()
 
 -- Common imports
-import Types
+import Types ()
 import Validation
 import Message
 
 -- Client imports
+import ClientEntities
+import ClientMessage
 import TransactionDialog
 import BalanceDialog
 import MainWindow
-
-host = "127.0.0.1"
-port = PortNumber 6555
-
-
-
-testSend message = withSocketsDo $ do
-    handle <- connectTo host port
-    hPrint handle (show message)
-    hClose handle
-                                                  
-
-    
-testLogToConsole :: (Show a) => a -> IO ()
-testLogToConsole message= do
-  print ("Send transaction: " ++ (show message))
-  
-  
-  
-makeMessage :: String -> Request -> Message
-makeMessage unp request = Message { senderId = ClientId unp
-                                  , body = show request
-                                  , digest = "0"
-                                  }
 
   
 onCommitTransactionClicked :: CommitedTransaction -> IO ()
@@ -53,7 +31,7 @@ bindActions actions = do
     onActionActivate payAction (onNewTransaction onCommitTransactionClicked)
     
     (Just accAction) <- actionGroupGetAction actions "ViewBalance_a"
-    onActionActivate accAction (showBalanceDialog $ str2unp "987654321123")
+    onActionActivate accAction (showBalanceDialog $ Session $ str2unp "987654321123")
     return ()
 
   

@@ -138,12 +138,10 @@ onTransactionResponse commit gui responce = do
     let dialog = dialog_wnd gui
     case responce of
         ResponseOk     -> do
-            (putStrLn "Response Ok")
             trans <- getTransactionDialogData gui
             commit trans
             widgetDestroy dialog
         ResponseCancel -> do
-            (putStrLn "Response Cancel")
             widgetDestroy dialog
         otherwise      -> return ()
 

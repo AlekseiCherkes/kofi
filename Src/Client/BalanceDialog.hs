@@ -2,6 +2,7 @@ module BalanceDialog where
 
 -- standard imports
 import System.IO
+import Data.IORef
 
 -- Gtk imports
 import Graphics.UI.Gtk
@@ -11,7 +12,9 @@ import Graphics.UI.Gtk.Glade
 import Types
 import Validation
 
-
+-- Client imports
+import ClientEntities
+--import AccountChooser
 
 
 
@@ -24,6 +27,7 @@ data BalanceDialog = BalanceDialog{ dialog_wnd    :: Dialog
                                   , chooseAcc_btn :: Button
                                   , commit_btn    :: Button
                                   , cancel_btn    :: Button
+                                  , selected_acc  :: IORef (Maybe AccountPK)
                                   }
 
 
@@ -35,19 +39,21 @@ loadBalanceDialog gladePath = do
     [bnk_lbl      , bic_lbl   , acc_lbl   ] <- mapM (xmlGetWidget glade castToLabel ) ["bnk_lbl"      , "bic_lbl"   , "acc_lbl"   ]
     [chooseAcc_btn, commit_btn, cancel_btn] <- mapM (xmlGetWidget glade castToButton) ["chooseAcc_btn", "commit_btn", "cancel_btn"]
 
-    return $ BalanceDialog dialog_wnd bnk_lbl bic_lbl acc_lbl chooseAcc_btn commit_btn cancel_btn
+    accpk <- (newIORef Nothing)
+    return $ BalanceDialog dialog_wnd bnk_lbl bic_lbl acc_lbl chooseAcc_btn commit_btn cancel_btn accpk
                 
 
-initBalanceDialog :: (IO (AccountPK, Name)) -> (AccountPK -> IO()) -> BalanceDialog -> IO()
+initBalanceDialog :: (IO (Maybe(AccountPK, Name))) -> (AccountPK -> IO()) -> BalanceDialog -> IO()
 initBalanceDialog chooseAcc commitRequest gui = do
     mapM (\label -> labelSetText (label gui) "N/A") [bnk_lbl, bic_lbl, acc_lbl]
     
     onClicked (chooseAcc_btn gui) $ do
         putStrLn "Changing account..."
-        (acc, bnk) <- chooseAcc
-        labelSetText (bnk_lbl gui)  bnk
-        labelSetText (bic_lbl gui) (bankBic acc)
-        labelSetText (acc_lbl gui) (accId   acc)
+        chosenAcc <- chooseAcc
+        case chosenAcc of
+            Nothing   -> return ()
+            Just pair -> updateAccountData gui pair
+        
     
     let dialog = dialog_wnd gui
     onResponse dialog $ \responce -> do
@@ -55,37 +61,43 @@ initBalanceDialog chooseAcc commitRequest gui = do
         case responce of
             ResponseOk     -> do
                 (putStrLn "Response Ok")
-                accpk <- getAccountData gui
-                commitRequest accpk
+                maccpk <- readIORef $ selected_acc gui
+                case (maccpk) of
+                    Nothing    ->  (putStrLn "No account selected!")
+                    Just accpk ->  do
+                        commitRequest accpk
+                        widgetDestroy dialog
             ResponseCancel -> do
                 (putStrLn "Response Cancel")
+                widgetDestroy dialog
             otherwise      -> return ()
-        widgetDestroy dialog
      
     return ()
+    
+updateAccountData :: BalanceDialog -> (AccountPK, Name) -> IO ()
+updateAccountData gui (accpk, name) = do
+    writeIORef (selected_acc gui) (Just accpk)
+    labelSetText (bnk_lbl gui)  name
+    labelSetText (bic_lbl gui) (bankBic accpk)
+    labelSetText (acc_lbl gui) (accId   accpk)    
         
     
 
-getAccountData :: BalanceDialog -> IO AccountPK
-getAccountData gui = do
-    acc <- labelGetText (acc_lbl gui)
-    bic <- labelGetText (bic_lbl gui)
-    return $ AccountPK  (str2acc acc) (str2bic bic)
 
 
-showBalanceDialog :: UNP -> IO()
-showBalanceDialog _ = do
+showBalanceDialog :: Session -> IO()
+showBalanceDialog session = do
     gui <- loadBalanceDialog "Resources/balanceRequest_dialog.glade"
     initBalanceDialog 
-        (do
-            putStrLn "Account chooser is to be shown..."
-            return (AccountPK "123" "1111222233334", "Technodank"))
+        (showAccountChooser session)
         (\_ ->  putStrLn "The request is to be commited...")
         gui
         
     widgetShowAll (dialog_wnd gui)
          
-        
+showAccountChooser :: Session -> IO (Maybe (AccountPK, Name))
+showAccountChooser session = do
+    return $ Just (AccountPK "1231231231234" "333", "Банк ЗЗЗ")         
 
 
 

@@ -25,3 +25,17 @@ getMultilineText textView = do
 	end    <- textBufferGetEndIter   buffer
 	txt    <- textBufferGetText      buffer start end True
 	return txt
+
+
+makeTextTreeViewColumn :: (TreeModelClass (t_model t_row), TypedTreeModelClass t_model) 
+                       => String 
+                       -> (t_row -> String) 
+                       -> t_model t_row
+                       -> IO TreeViewColumn
+makeTextTreeViewColumn title row2str model = do
+    col <- treeViewColumnNew
+    treeViewColumnSetTitle col title
+    renderer <- cellRendererTextNew
+    cellLayoutPackStart col renderer True
+    cellLayoutSetAttributes col renderer model $ \row -> [ cellText := row2str row ]
+    return col
