@@ -43,9 +43,7 @@ loadBalanceDialog gladePath = do
                 
 
 initBalanceDialog :: (IO (Maybe(AccountPK, Name))) -> (AccountPK -> IO()) -> BalanceDialog -> IO()
-initBalanceDialog chooseAcc commitRequest gui = do
-    mapM (\label -> labelSetText (label gui) "N/A") [bnk_lbl, bic_lbl, acc_lbl]
-    
+initBalanceDialog chooseAcc commitRequest gui = do   
     onClicked (chooseAcc_btn gui) $ do
         putStrLn "Changing account..."
         chosenAcc <- chooseAcc

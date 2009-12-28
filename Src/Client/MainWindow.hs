@@ -1,7 +1,20 @@
 module MainWindow where
 
+-- Gtk imports
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.Glade
+
+-- Common imports
+import Types ()
+import Validation
+import Message
+
+-- Client imports
+import ClientEntities
+import ClientMessage
+import TransactionDialog (showTransactionDialog)
+import BalanceDialog     (showBalanceDialog)
+
 
 actionEntries = 
  [ActionEntry "SwitchUser_a"  "Переключить пользователя" (Just stockDialogAuthentication) Nothing (Just "Меняет пользователя."              ) (putStrLn "SwitchUser_a")--onSwitchUser 
@@ -64,6 +77,25 @@ loadMainWindow = do
   
   [user_l, comp_l, unp_l] <- mapM (xmlGetWidget glade castToLabel) ["user_lbl", "company_lbl", "cmpUnp_lbl"]
   return $ MainWindow window actions user_l comp_l unp_l
+  
+  
+bindActions :: ActionGroup -> IO ()
+bindActions actions = do
+    let session = Session $ str2unp "987654321123"
+    
+    (Just payAction) <- actionGroupGetAction actions "NewPay_a"
+    onActionActivate payAction (showTransactionDialog session)
+    
+    (Just accAction) <- actionGroupGetAction actions "ViewBalance_a"
+    onActionActivate accAction (showBalanceDialog session)
+    return ()
  
+ 
+showMainWindow :: IO ()
+showMainWindow = do
+    gui <- loadMainWindow
+    bindActions   (actions gui)
+    onDestroy     (window  gui) mainQuit
+    widgetShowAll (window  gui)
 
 

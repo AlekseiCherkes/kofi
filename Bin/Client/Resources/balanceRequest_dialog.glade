@@ -59,6 +59,7 @@
             <child>
               <widget class="GtkLabel" id="bnk_lbl">
                 <property name="visible">True</property>
+                <property name="label" translatable="yes">N/A</property>
               </widget>
               <packing>
                 <property name="left_attach">1</property>
@@ -69,6 +70,7 @@
             <child>
               <widget class="GtkLabel" id="bic_lbl">
                 <property name="visible">True</property>
+                <property name="label" translatable="yes">N/A</property>
               </widget>
               <packing>
                 <property name="left_attach">1</property>
@@ -81,6 +83,7 @@
             <child>
               <widget class="GtkLabel" id="acc_lbl">
                 <property name="visible">True</property>
+                <property name="label" translatable="yes">N/A</property>
               </widget>
               <packing>
                 <property name="left_attach">1</property>
