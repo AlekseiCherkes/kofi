@@ -14,8 +14,7 @@ import Validation
 
 -- Client imports
 import ClientEntities
---import AccountChooser
-
+import AccountChooser (showAccountChooser)
 
 
 
@@ -50,6 +49,7 @@ initBalanceDialog chooseAcc commitRequest gui = do
     onClicked (chooseAcc_btn gui) $ do
         putStrLn "Changing account..."
         chosenAcc <- chooseAcc
+        putStrLn $ show chosenAcc
         case chosenAcc of
             Nothing   -> return ()
             Just pair -> updateAccountData gui pair
@@ -89,15 +89,14 @@ showBalanceDialog :: Session -> IO()
 showBalanceDialog session = do
     gui <- loadBalanceDialog "Resources/balanceRequest_dialog.glade"
     initBalanceDialog 
-        (showAccountChooser session)
+        (showAccountChooser session (dialog_wnd gui))
         (\_ ->  putStrLn "The request is to be commited...")
         gui
         
     widgetShowAll (dialog_wnd gui)
          
-showAccountChooser :: Session -> IO (Maybe (AccountPK, Name))
-showAccountChooser session = do
-    return $ Just (AccountPK "1231231231234" "333", "Банк ЗЗЗ")         
+
+       
 
 
 

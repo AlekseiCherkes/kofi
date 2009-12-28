@@ -27,10 +27,9 @@ getMultilineText textView = do
 	return txt
 
 
-makeTextTreeViewColumn :: (TreeModelClass (t_model t_row), TypedTreeModelClass t_model) 
-                       => String 
+makeTextTreeViewColumn :: String 
                        -> (t_row -> String) 
-                       -> t_model t_row
+                       -> ListStore t_row
                        -> IO TreeViewColumn
 makeTextTreeViewColumn title row2str model = do
     col <- treeViewColumnNew
@@ -39,3 +38,10 @@ makeTextTreeViewColumn title row2str model = do
     cellLayoutPackStart col renderer True
     cellLayoutSetAttributes col renderer model $ \row -> [ cellText := row2str row ]
     return col
+    
+    
+refillListStore :: ListStore a -> [a] -> IO ()
+refillListStore store newItems = do
+    listStoreClear store
+    mapM (listStoreAppend store) newItems
+    return ()
