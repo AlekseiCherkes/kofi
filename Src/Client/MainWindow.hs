@@ -14,6 +14,7 @@ import ClientEntities
 import ClientMessage
 import TransactionDialog (showTransactionDialog)
 import BalanceDialog     (showBalanceDialog)
+import StaRequestDialog  (showStaRequestDialog)
 
 
 actionEntries = 
@@ -88,6 +89,9 @@ bindActions actions = do
     
     (Just accAction) <- actionGroupGetAction actions "ViewBalance_a"
     onActionActivate accAction (showBalanceDialog session)
+    
+    (Just staAction) <- actionGroupGetAction actions "StaReq_a"
+    onActionActivate staAction (showStaRequestDialog session)
     return ()
  
  
@@ -97,5 +101,6 @@ showMainWindow = do
     bindActions   (actions gui)
     onDestroy     (window  gui) mainQuit
     widgetShowAll (window  gui)
+
 
 
