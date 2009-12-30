@@ -7,14 +7,13 @@ import Graphics.UI.Gtk.Glade
 -- Common imports
 import Types ()
 import Validation
-import Message
 
 -- Client imports
 import ClientEntities
-import ClientMessage
 import TransactionDialog (showTransactionDialog)
 import BalanceDialog     (showBalanceDialog)
 import StaRequestDialog  (showStaRequestDialog)
+import ProfileChooser    (showProfileChooser)
 
 
 actionEntries = 
@@ -84,6 +83,9 @@ bindActions :: ActionGroup -> IO ()
 bindActions actions = do
     let session = Session $ str2unp "987654321123"
     
+    (Just usrAction) <- actionGroupGetAction actions "SwitchUser_a"
+    onActionActivate usrAction (showProfileChooser >>= (\_->return ()))
+    
     (Just payAction) <- actionGroupGetAction actions "NewPay_a"
     onActionActivate payAction (showTransactionDialog session)
     
@@ -95,8 +97,8 @@ bindActions actions = do
     return ()
  
  
-showMainWindow :: IO ()
-showMainWindow = do
+showMainWindow :: Session -> IO ()
+showMainWindow session = do
     gui <- loadMainWindow
     bindActions   (actions gui)
     onDestroy     (window  gui) mainQuit

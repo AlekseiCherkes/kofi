@@ -33,6 +33,7 @@ data TransactionDialog = TransactionDialog{ dialog_wnd         :: Dialog
                                            ,payerBank_lbl      :: Label
                                            ,payerBankBic_lbl   :: Label
                                            ,payerAcc_lbl       :: Label
+                                           ,payeeName_lbl      :: Label
                                            ,payeeBank_lbl      :: Label
                                            ,payeeBankBic_lbl   :: Label
                                            ,payeeAcc_lbl       :: Label
@@ -63,9 +64,11 @@ loadTransactionDialog gladePath = do
      "urgent_btn", "notUrgent_btn"]
      
     [ payerBank_lbl ,  payerBankBic_lbl ,  payerAcc_lbl ,
-      payeeBank_lbl ,  payeeBankBic_lbl ,  payeeAcc_lbl ] <- mapM (xmlGetWidget glade castToLabel) [
+      payeeBank_lbl ,  payeeBankBic_lbl ,  payeeAcc_lbl ,
+      payeeName_lbl                                     ] <- mapM (xmlGetWidget glade castToLabel) [
      "payerBank_lbl", "payerBankBic_lbl", "payerAcc_lbl",
-     "payeeBank_lbl", "payeeBankBic_lbl", "payeeAcc_lbl"] 
+     "payeeBank_lbl", "payeeBankBic_lbl", "payeeAcc_lbl",
+     "payeeName_lbl"                                    ] 
      
     return $ TransactionDialog
                 dialog_wnd
@@ -78,6 +81,7 @@ loadTransactionDialog gladePath = do
                 urgent_btn
                 notUrgent_btn
                 amount_entry
+                payeeName_lbl
                 payerBank_lbl
                 payerBankBic_lbl
                 payerAcc_lbl

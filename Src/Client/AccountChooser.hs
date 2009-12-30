@@ -59,12 +59,13 @@ initAccChooser session gui = do
         refillListStore accModel ["1234567890123", "9876543210987"] 
         --writeIORef (selected_acc gui) (Nothing)
 
-    let onAccSelected = \acc -> do
-        putStrLn "AccountSelected"
-        writeIORef (selected_acc gui) (Just $ acc)
+    --let onAccSelected = \acc -> do
+       -- putStrLn "AccountSelected"
+       -- writeIORef (selected_acc gui) (Just acc)
       
     initBanksTreeView     bankDoesMatch onBankSelected (banks_tv    gui) bnkModel
     initAccountsTreeView  accDoesMatch  onAccSelected  (accounts_tv gui) accModel
+    
 
     let banks = [Bank { bnkBic = "001", bnkName = "Альфа Банк"      }
                 ,Bank { bnkBic = "002", bnkName = "Приор Банк"      }
@@ -76,6 +77,7 @@ initAccChooser session gui = do
     
     refillListStore bnkModel banks  
     
+    where onAccSelected acc = do putStrLn "AccountSelected"
 
 getChoosedAccountPk :: AccChooserDialog -> IO ( Maybe (AccountPK, Name) )
 getChoosedAccountPk gui = do
