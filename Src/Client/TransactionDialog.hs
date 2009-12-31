@@ -98,8 +98,8 @@ loadTransactionDialog gladePath = do
 getTransactionDialogData :: TransactionDialog -> IO CommitedTransaction
 getTransactionDialogData gui = return $   
     CommitedTransaction { reason = "test this client server communication"
-                        , creditAccount = AccountPK "123456789" "000000001"
-                        , debitAccount  = AccountPK "987654321" "000000001"
+                        , creditAccount = AccountPK (str2acc "123456789") (str2bic "000000001")
+                        , debitAccount  = AccountPK (str2acc "987654321") (str2bic "000000001")
                         , amount = 100.0
                         , priority = Normal
                         }

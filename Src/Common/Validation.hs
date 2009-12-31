@@ -1,5 +1,4 @@
 module Validation where
-import Types
 
 isValidInteger :: String -> Bool
 isValidInteger lexem = 
@@ -32,11 +31,4 @@ isValidAcc str = (length str == 13) && isValidInteger str
 
 
 
-str2bic :: String -> BIC
-str2bic str = if (isValidBic str) then (str) else error "Invalid BIC."
 
-str2unp :: String -> UNP
-str2unp str = if (isValidUnp str)  then (str) else error "Invalid UNP."
-
-str2acc :: String -> ACC
-str2acc str = if (isValidAcc str) then (str) else error "Invalid BIC."

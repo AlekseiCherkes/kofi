@@ -8,7 +8,7 @@ import Graphics.UI.Gtk
 import Graphics.UI.Gtk.Glade
 
 -- Common imports
-import Validation
+import Types
 
 -- Client imports
 import ClientEntities

@@ -5,7 +5,6 @@ import System.IO
 import Graphics.UI.Gtk
 
 -- Common imports
-import Validation
 
 -- Client imports
 import ClientEntities

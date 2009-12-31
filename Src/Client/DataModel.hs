@@ -68,7 +68,7 @@ fetchCompany stmt = do
   fvName <- getFieldValue stmt "company_name"
   fvUnp <- getFieldValue stmt "company_unp"
   let name = fromJust $ fromSqlValue (SqlVarChar 256) fvName
-  let unp = fromJust $ fromSqlValue (SqlChar 13) fvUnp
+  let unp = str2unp $ fromJust $ fromSqlValue (SqlChar 13) fvUnp
   return $ Company name unp
 
 fetchBankBranch :: Statement -> IO Bank
@@ -76,7 +76,7 @@ fetchBankBranch stmt = do
   fvName <- getFieldValue stmt "name"
   fvBic <- getFieldValue stmt "branch_bic"
   let name = fromJust $ fromSqlValue (SqlVarChar 200) fvName
-  let bic = fromJust $ fromSqlValue (SqlVarChar 9) fvBic
+  let bic = str2bic $ fromJust $ fromSqlValue (SqlVarChar 9) fvBic
   return $ Bank name bic
   
 fetchAccount :: Statement -> IO Account
@@ -84,9 +84,9 @@ fetchAccount stmt = do
   fvAcc <- getFieldValue stmt "acc_id"
   fvUnp <- getFieldValue stmt "company_unp"
   fvBic <- getFieldValue stmt "bank_bic"
-  let acc = fromJust $ fromSqlValue (SqlChar 13) fvAcc
-  let unp = fromJust $ fromSqlValue (SqlChar 9) fvUnp
-  let bic = fromJust $ fromSqlValue (SqlChar 13) fvBic
+  let acc = str2acc $ fromJust $ fromSqlValue (SqlChar 13) fvAcc
+  let unp = str2unp $ fromJust $ fromSqlValue (SqlChar 9) fvUnp
+  let bic = str2bic $ fromJust $ fromSqlValue (SqlChar 13) fvBic
   let payerAcc = Account (AccountPK acc bic) unp
   return payerAcc
 
@@ -124,7 +124,7 @@ findCompanyByUnp file unp = sqlQueryGetFirst $
                           sqlQuery (withDB file) fetchCompany  $
                           "SELECT * FROM Company " ++
                           "WHERE company_unp = " ++ unpValue ++ ";"
-                            where unpValue = toSqlValue unp
+                            where unpValue = (toSqlValue . unp2str) unp
 
 findCompaniesByBank :: FilePath -> BIC -> IO [Company]
 findCompaniesByBank file bic = sqlQuery (withDB file) fetchCompany $
@@ -133,7 +133,7 @@ findCompaniesByBank file bic = sqlQuery (withDB file) fetchCompany $
                                "INNER JOIN Account on " ++
                                "Account.company_unp = Company.company_unp " ++
                                "WHERE Account.bank_bic = " ++ bicValue ++";"
-                                 where bicValue = toSqlValue bic
+                                 where bicValue = (toSqlValue . bic2str) bic
 --------------------------------------------------------------------------------
 -- Banks
 --------------------------------------------------------------------------------
@@ -149,7 +149,7 @@ findBankByBic bic = sqlQueryGetFirst $
                     sqlQuery withBanksManual fetchBankBranch  $
                     "SELECT * FROM Branch " ++
                     "WHERE branch_bic = " ++ bicValue ++ ";"
-                      where bicValue = toSqlValue bic
+                      where bicValue = (toSqlValue . bic2str) bic
 
 -- not tested yet !!!
 findBanksByCompany :: FilePath -> UNP -> IO [Bank]
@@ -163,14 +163,14 @@ findBanksByCompany file unp = do
                              "FROM Company " ++ 
                              "INNER JOIN Account ON Account.company_unp = Company.company_unp " ++
                              "WHERE Company.company_unp = " ++ unpValue ++ ";"
-                               where unpValue = toSqlValue unp
+                               where unpValue = (toSqlValue . unp2str) unp
                  
     fetchBanksByBics bics = sqlQuery withBanksManual fetchBankBranch $
                             "SELECT * " ++ 
                             "FROM Branch " ++
                             "WHERE branch_bic IN (" ++ bicsValue ++ ");"
                               where bicsValue = foldl1 (++) $ intersperse ", " $ 
-                                                map toSqlValue bics
+                                                map (toSqlValue . bic2str) bics
 
 listBanks :: IO [Bank]
 listBanks = sqlQuery withBanksManual fetchBankBranch 
@@ -184,13 +184,13 @@ findAccountsByCompany :: FilePath -> UNP -> IO [Account]
 findAccountsByCompany file unp = sqlQuery (withDB file) fetchAccount $
                                  "SELECT * FROM Account " ++
                                  "WHERE company_unp = " ++ unpValue ++ ";"
-                                   where unpValue = toSqlValue unp
+                                   where unpValue = (toSqlValue . unp2str) unp
 
 findAccountsByBank :: FilePath -> BIC -> IO [Account]
 findAccountsByBank file bic = sqlQuery (withDB file) fetchAccount $
                               "SELECT * FROM Account " ++
                               "WHERE bank_bic = " ++ bicValue ++ ";"
-                                where bicValue = toSqlValue bic
+                                where bicValue = (toSqlValue .bic2str) bic
 
 findAccount :: FilePath -> BIC -> ACC -> IO Account
 findAccount file bic acc = sqlQueryGetFirst $
@@ -198,8 +198,8 @@ findAccount file bic acc = sqlQueryGetFirst $
                            "SELECT * FROM Account " ++
                            "WHERE acc_id = " ++ accValue ++ " " ++
                            "AND bank_bic = " ++ bicValue ++ ";"
-                             where accValue = toSqlValue acc
-                                   bicValue = toSqlValue bic
+                             where accValue = (toSqlValue . acc2str) acc
+                                   bicValue = (toSqlValue . bic2str) bic
 
 --------------------------------------------------------------------------------
 -- Counterparties
