@@ -32,7 +32,7 @@ client: third_party Src/Client/Main.hs
 
 .PHONY: dummy_client
 dummy_client: third_party Src/DummyClient/Main.hs
-	ghc --make -iSrc/DummyClient -o Bin/dummy_client $(HSFLAGS_OUR) Src/DummyClient/Main.hs $(CBITS_O)
+	ghc --make -iSrc/DummyClient -o Bin/DummyClient/client $(HSFLAGS_OUR) Src/DummyClient/Main.hs $(CBITS_O)
 
 # .PHONY : clean
 # clean: #clean_database clean # clean_cbits 
