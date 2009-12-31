@@ -12,6 +12,7 @@ import System.Glib.Signals (on)
 
 -- Common imports
 import Types
+import Validation
 
 --Client imports
 import GtkCommon
@@ -56,7 +57,7 @@ initAccChooser session gui = do
     let onBankSelected = \bank -> do
         putStrLn $ show bank
         writeIORef (selected_bnk gui) (Just bank)
-        refillListStore accModel ["1234567890123", "9876543210987"] 
+        refillListStore accModel $ map str2acc ["1234567890123", "9876543210987"] 
         --writeIORef (selected_acc gui) (Nothing)
 
     --let onAccSelected = \acc -> do
@@ -67,13 +68,13 @@ initAccChooser session gui = do
     initAccountsTreeView  accDoesMatch  onAccSelected  (accounts_tv gui) accModel
     
 
-    let banks = [Bank { bnkBic = "001", bnkName = "Альфа Банк"      }
-                ,Bank { bnkBic = "002", bnkName = "Приор Банк"      }
-                ,Bank { bnkBic = "003", bnkName = "БелАгроПром Банк"}
-                ,Bank { bnkBic = "004", bnkName = "ВТБ Банк"        }
-                ,Bank { bnkBic = "005", bnkName = "БПС Банк"        }
-                ,Bank { bnkBic = "006", bnkName = "БелСвис Банк"    }
-                ,Bank { bnkBic = "007", bnkName = "Белинвест Банк"  }]
+    let banks = [Bank { bnkBic = str2bic "001", bnkName = "Альфа Банк"      }
+                ,Bank { bnkBic = str2bic "002", bnkName = "Приор Банк"      }
+                ,Bank { bnkBic = str2bic "003", bnkName = "БелАгроПром Банк"}
+                ,Bank { bnkBic = str2bic "004", bnkName = "ВТБ Банк"        }
+                ,Bank { bnkBic = str2bic "005", bnkName = "БПС Банк"        }
+                ,Bank { bnkBic = str2bic "006", bnkName = "БелСвис Банк"    }
+                ,Bank { bnkBic = str2bic "007", bnkName = "Белинвест Банк"  }]
     
     refillListStore bnkModel banks  
     
@@ -91,10 +92,10 @@ getChoosedAccountPk gui = do
 
 
 bankDoesMatch :: MatchFunc Bank
-bankDoesMatch bank str = map toLower str `isPrefixOf` map toLower (bnkBic bank)
+bankDoesMatch bank str = map toLower str `isPrefixOf` map toLower (show $ bnkBic bank)
 
 accDoesMatch :: MatchFunc ACC
-accDoesMatch acc str = str `isPrefixOf` acc     
+accDoesMatch acc str = str `isPrefixOf` show acc     
 
 
 
@@ -103,8 +104,8 @@ initBanksTreeView match select view model = do
     treeViewSetModel view model
     treeViewSetHeadersVisible view True 
     
-    col1 <- makeTextTreeViewColumn "BIC банка"      bnkBic  model
-    col2 <- makeTextTreeViewColumn "Название банка" bnkName model
+    col1 <- makeTextTreeViewColumn "BIC банка"      (show.bnkBic ) model
+    col2 <- makeTextTreeViewColumn "Название банка" (show.bnkName) model
     treeViewAppendColumn view col1
     treeViewAppendColumn view col2
 
@@ -129,7 +130,7 @@ initAccountsTreeView match select view model = do
     putStrLn "Initializing accounts..."
     treeViewSetModel view model
     treeViewSetHeadersVisible view True
-    col <- makeTextTreeViewColumn "Номер Счета" id model
+    col <- makeTextTreeViewColumn "Номер Счета" show model
     treeViewAppendColumn view col
 
     -- enable interactive search

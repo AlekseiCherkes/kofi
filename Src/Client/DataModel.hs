@@ -1,9 +1,14 @@
 module DataModel where
 
+
+import System.IO
+import System.Time
+
 import Types
 import ClientEntities
 
-import System.IO
+
+
 
 
 import Data.Maybe
@@ -90,6 +95,20 @@ fetchAccount stmt = do
 -- Access functions
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Profiles
+--------------------------------------------------------------------------------
+findProfileByUNP :: UNP -> IO Profile
+findProfileByUNP unp = do
+    clock <- getClockTime
+    time  <- toCalendarTime clock 
+    return $ Profile unp "Some company." time
+
+loadSessionByUNP :: UNP -> IO Session
+loadSessionByUNP unp =  do
+    profile <- findProfileByUNP unp
+    return $ Session profile "FilePath"
 
 --------------------------------------------------------------------------------
 -- Companies

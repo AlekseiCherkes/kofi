@@ -1,6 +1,8 @@
 
 module ProfileChooser where
 
+import System.Time
+
 -- Gtk imports
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.Glade
@@ -42,5 +44,8 @@ showProfileChooser = do
     
     gui <- loadProfileChooser "Resources/profileChooser_dialog.glade"
     widgetShowAll (dialog_wnd gui) 
+    clock <- getClockTime
+    time  <- toCalendarTime clock 
+    let session = Session  (Profile (str2unp "987654321123") "Some company." time) "FilePath"
     
-    return $ Just $ Session $ str2unp "0000000000003"
+    return $ Just session

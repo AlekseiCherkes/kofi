@@ -1,4 +1,5 @@
 module ClientEntities where
+import System.Time
 import Types
 
 data Company = Company{cmpName :: Name
@@ -14,5 +15,16 @@ data Account = Account{accPk     :: AccountPK
                       ,accCompany:: UNP}
                deriving (Read, Show)
 
-               
-data Session = Session{ sessionUnp :: UNP }
+
+
+data Profile = Profile{ profileUnp  :: UNP
+                      , profileName :: Name
+                      , profileDate :: CalendarTime
+                      }               
+data Session = Session{ sessionProfile  :: Profile 
+                      , sessionPath     :: FilePath
+                      -- private key
+                      -- etc
+                      }
+
+ 

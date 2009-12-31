@@ -1,5 +1,10 @@
 module MainWindow where
 
+
+import System.Time
+
+
+
 -- Gtk imports
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.Glade
@@ -81,7 +86,9 @@ loadMainWindow = do
   
 bindActions :: ActionGroup -> IO ()
 bindActions actions = do
-    let session = Session $ str2unp "987654321123"
+    clock <- getClockTime
+    time  <- toCalendarTime clock 
+    let session = Session  (Profile (str2unp "987654321123") "Some company." time) "FilePath"
     
     (Just usrAction) <- actionGroupGetAction actions "SwitchUser_a"
     onActionActivate usrAction (showProfileChooser >>= (\_->return ()))
@@ -97,8 +104,8 @@ bindActions actions = do
     return ()
  
  
-showMainWindow :: Session -> IO ()
-showMainWindow session = do
+showMainWindow :: IO ()
+showMainWindow = do
     gui <- loadMainWindow
     bindActions   (actions gui)
     onDestroy     (window  gui) mainQuit
