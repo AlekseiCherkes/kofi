@@ -13,7 +13,7 @@ port = PortNumber 6555
 
 runServer :: (String -> Handle -> IO()) -> IO ()
 runServer connHandler = do
-  infoM "server.server" $ "Run server" -- " -- ++ "port = " ++ (show port)
+  infoM "root.server" $ "Run server" -- " -- ++ "port = " ++ (show port)
   run `catch` handleException
   where 
     run = withSocketsDo $ do
@@ -25,14 +25,14 @@ runServer connHandler = do
           serviceConn name handle connHandler
     
     handleException (e::SomeException) = do
-      emergencyM "server.server" $ "Exception in main thread: " ++ (show e)
+      emergencyM "root.server" $ "Exception in main thread: " ++ (show e)
 
 serviceConn :: String -> Handle -> (String -> Handle -> IO ()) -> IO ()
 serviceConn name handle connHandler = do
-  infoM "server.server" $ "Accept connection: " ++ name
+  infoM "root.server" $ "Accept connection: " ++ name
   threadId <- forkIO $ connHandler name handle `catch` handleException
   return ()
   where
     handleException (e::SomeException) = do
-      errorM "server.server" $ "Exception in client thread( " ++ name ++ " ): " ++ (show e)
+      errorM "root.server" $ "Exception in client thread( " ++ name ++ " ): " ++ (show e)
       hClose handle

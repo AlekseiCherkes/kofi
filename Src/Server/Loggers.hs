@@ -1,4 +1,4 @@
-module Loggers(withLoggers)
+module Loggers
        where
 
 import System.IO
@@ -8,31 +8,45 @@ import System.Log.Logger
 import System.Log.Handler.Simple
 import qualified System.Log.Handler
 
-withLoggers = bracket acquireLoggers releaseLoggers
+withServerLoggers = bracket (acquireServerLoggers "server") releaseLoggers
+withUtilityLoggers = bracket (acquireUtilityLoggers "uility") releaseLoggers
 
 logDir = "log/"
+logFileHandler path = fileHandler (logDir ++ path)
 
-acquireLoggers = do
-  stderrH <- verboseStreamHandler stderr INFO
-  
+acquireServerLoggers appName = do
   createDirectoryIfMissing True logDir
-  let logFileHandler path = fileHandler (logDir ++ path)
-      
-  h <- logFileHandler "server" DEBUG
-  dbH <- logFileHandler "server-db" DEBUG
-  serverH <- logFileHandler "server-server" DEBUG
-  clientsH <- logFileHandler "server-client" DEBUG
-  tellerH <- logFileHandler "server-teller" DEBUG
+  
+  stderrH <- verboseStreamHandler stderr INFO
+  h <- logFileHandler (appName ++ "-root") DEBUG
+  dbH <- logFileHandler (appName ++ "-root-db") DEBUG
+  serverH <- logFileHandler (appName ++ "-root-server") DEBUG
+  clientsH <- logFileHandler (appName ++ "-root-client") DEBUG
+  tellerH <- logFileHandler (appName ++ "-root-teller") DEBUG
   
   updateGlobalLogger (rootLoggerName::String) (setLevel DEBUG . setHandlers [stderrH])
-  updateGlobalLogger "server" (setLevel DEBUG . setHandlers [h])
-  updateGlobalLogger "server.db" (setLevel DEBUG . setHandlers [dbH])
-  updateGlobalLogger "server.server" (setLevel DEBUG . setHandlers [serverH])
-  updateGlobalLogger "server.client" (setLevel DEBUG . setHandlers [clientsH])
-  updateGlobalLogger "server.teller" (setLevel DEBUG . setHandlers [tellerH])
+  updateGlobalLogger "root" (setLevel DEBUG . setHandlers [h])
+  updateGlobalLogger "root.db" (setLevel DEBUG . setHandlers [dbH])
+  updateGlobalLogger "root.server" (setLevel DEBUG . setHandlers [serverH])
+  updateGlobalLogger "root.client" (setLevel DEBUG . setHandlers [clientsH])
+  updateGlobalLogger "root.teller" (setLevel DEBUG . setHandlers [tellerH])
   
   return [h, dbH, serverH, clientsH]
+
+acquireUtilityLoggers appName = do
+  createDirectoryIfMissing True logDir
   
+  stderrH <- verboseStreamHandler stderr INFO
+  h <- logFileHandler (appName ++ "-root") DEBUG
+  dbH <- logFileHandler (appName ++ "-root-db") DEBUG
+  
+  updateGlobalLogger (rootLoggerName::String) (setLevel DEBUG . setHandlers [stderrH])
+  updateGlobalLogger "root" (setLevel DEBUG . setHandlers [h])
+  updateGlobalLogger "root.db" (setLevel DEBUG . setHandlers [dbH])
+  
+  return [h, dbH]
+
+
 releaseLoggers loggers = mapM (System.Log.Handler.close) loggers
   
 

@@ -6,19 +6,19 @@ import Types
 import Data.List
 import Data.Maybe
 import System.Time
-import Database.HSQL
+-- import Database.HSQL
+import Database.HSQL.SQLite3
 import Control.Exception
 import qualified System.Log.Logger as Logger
 
 import System.IO
-import Database.HSQL.SQLite3
 
 --------------------------------------------------------------------------------
 -- Logging utility functions
 --------------------------------------------------------------------------------
 
-infoM = Logger.infoM "server.db"
-errorM = Logger.errorM "server.db"
+infoM = Logger.infoM "root.db"
+errorM = Logger.errorM "root.db"
 
 --------------------------------------------------------------------------------
 -- Utiliy functions
@@ -46,18 +46,42 @@ formatValues values = foldl1 (++) $ intersperse ", " values
 -- Common functions
 --------------------------------------------------------------------------------
 
-dataBaseFilePath = "server.db"
+withDB :: FilePath -> IOMode -> (Connection -> IO a) -> IO a
+withDB path mode = bracket
+                   (connect path mode)
+                   (\conection -> disconnect conection)
 
-withDB :: (Connection -> IO a) -> IO a
-withDB = bracket
-         (connect dataBaseFilePath ReadWriteMode)
-         (\conection -> disconnect conection)
+withServerDB = withDB "server.db" ReadWriteMode
+withManualDB = withDB "manual.db" ReadMode
 
--- sqlLogErrorHandler :: SqlError -> IO a
--- sqlLogErrorHandler e = do
---   errorM (show e)  
+sqlExec connector command = do
+  infoM $ "Executing: " ++ command
+  catchSql 
+    (connector $ \conn -> execute conn command)
+    (\e -> errorM $ show e)
 
--- sqlExec errorHandler command 
+-- sqlQueryList connector fetcher q = do
+--   infoM $ "Query list: " ++ q
+--   catchSql
+--   (connector $ \conn -> do
+--       result <- (query conn q >>= collectRows fetcher)
+--       infoM "Result: " ++ (show result)
+--       -- return (Just result)
+--     )
+--   (\e -> errorM $ show e >> return Nothing)
+
+-- sqlQueryRec connector fetcher q = do
+--   infoM $ "Query record: " ++ q
+--   catchSql
+--   (connector $ \conn -> do
+--       result <- (query conn q >>= collectRows fetcher)
+--       infoM "Result: " ++ (show result)
+--       return Nothing
+--       -- if (length result) == 1
+--       --   then return (Just (head result))
+--       --   else return Nothing
+--     )
+--   (\e -> errorM $ show e >> return Nothing)
 
 --------------------------------------------------------------------------------
 -- Companies
@@ -74,10 +98,8 @@ data Company = Company { unp :: String
                        }
                deriving (Read, Show)
 
-insertCompany connection company = do
-  infoM q
-  execute connection q
-  where q = "INSERT INTO Company VALUES (" ++ values ++");"
+insertCompany company = sqlExec withServerDB cmd
+  where cmd = "INSERT INTO Company VALUES (" ++ values ++");"
         values = formatValues [ toSqlValue $ unp company
                               , toSqlValue $ name company
                               , toSqlValue $ toClockTime (registryDate company)
@@ -88,6 +110,12 @@ insertCompany connection company = do
                               , toSqlValue $ show $ clientSendKey company ]
           where clockValue (Just a) = toSqlValue $ toClockTime a
                 clockValue Nothing = "NULL"
+
+-- findCompanyByUNP connection company = do
+--   infoM q
+-- sqlExec str
+
+-- sqlQuery str
 
 --------------------------------------------------------------------------------
 -- Accounts
@@ -102,9 +130,7 @@ data Account = Account { acc_id :: String
                        }               
                deriving (Read, Show)
 
-insertAccount connection account = do
-  infoM cmd
-  execute connection cmd
+insertAccount account = sqlExec withServerDB cmd
   where cmd = "INSERT INTO Account VALUES(" ++ values ++");"
         values = formatValues [ toSqlValue $ acc_id account
                               , toSqlValue $ bank_bic account
@@ -136,6 +162,8 @@ insertAccount connection account = do
 -- findBankByBIC
 -- findCompanyByACC
 
+-- insertTransaction
+                
 -- findTransactionsForStatement ACC From To
 -- findTransactionsForLog ACC From To
 

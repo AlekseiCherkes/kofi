@@ -4,6 +4,8 @@ module Main()
 import Crypto
 import DataModel
 
+import Loggers
+
 import System.IO
 import System.Environment
 import System.Random
@@ -88,7 +90,7 @@ hashString str = (toEnum . fromEnum) $
 -- Main function
 --------------------------------------------------------------------------------
                   
-main = do
+main = withUtilityLoggers $ \_ -> do
   name <- (getArgs >>= \as -> return (parseArgs as))
   setStdGen $ mkStdGen $ hashString name -- use company name for generate UNP
   
@@ -115,9 +117,7 @@ main = do
                     , clientSendKey = clientSendKey
                     }
 
-  catchSql 
-    (withDB $ \conn -> insertCompany conn cmp)
-    (\e -> (print $ show e) >> exitFailure)
+  insertCompany cmp
   
   print unp
   print name

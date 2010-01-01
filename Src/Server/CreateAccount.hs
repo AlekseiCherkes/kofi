@@ -2,6 +2,7 @@ module Main()
        where
 
 import DataModel
+import Loggers
 
 import System.Environment
 import System.Time
@@ -9,8 +10,6 @@ import System.Random
 import System.Exit
 import Data.Bits
 import Data.Word
-
-import Database.HSQL
 
 --------------------------------------------------------------------------------
 -- Helper functions
@@ -38,7 +37,7 @@ hashString str = (toEnum . fromEnum) $
 -- Main function
 --------------------------------------------------------------------------------
 
-main = do
+main = withUtilityLoggers $ \_ -> do
   args <- getArgs
   let (unp, bic, ballance) = parseArgs args
       
@@ -47,9 +46,8 @@ main = do
   date <- getClockTime >>= toCalendarTime
                          
   let account = Account aid bic unp ballance date Nothing
-  catchSql 
-    (withDB $ \conn -> insertAccount conn account)
-    (\e -> (print $ show e) >> exitFailure)
+
+  insertAccount account
   
   print aid
 

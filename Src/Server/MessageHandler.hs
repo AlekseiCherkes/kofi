@@ -9,5 +9,4 @@ handleMessage :: String -> Handle -> IO ()
 handleMessage name handle = do
   cnts <- hGetContents handle
   -- let msg = (read cnts) :: Message
-  infoM "server.clients" $ "Message from" ++ ": " ++ name
-  infoM "server.clients" cnts
+  infoM "root.clients" $ "Message from" ++ ": " ++ name ++ ": " ++ cnts
