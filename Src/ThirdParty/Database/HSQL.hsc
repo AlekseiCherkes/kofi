@@ -78,6 +78,8 @@ import Text.Read.Lex
 import Numeric
 import Database.HSQL.Types
 
+import Debug.Trace
+
 #include <time.h>
 
 -----------------------------------------------------------------------------------------
@@ -307,8 +309,23 @@ instance SqlBind Float where
 	fromSqlValue _ _ = Nothing
 
 	toSqlValue d = show d
+        
+monthToInt str = case str of
+  ("January") -> 0
+  ("February") -> 1
+  ("March") -> 2
+  ("April") -> 3	  
+  ("May") -> 4	  
+  ("June") -> 5	  
+  ("July") -> 6	  
+  ("August") -> 7
+  ("September") -> 8
+  ("October") -> 9
+  ("November") -> 10 
+  ("December") -> 11
+  
 
-mkClockTime :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> ClockTime
+mkClockTime :: Int -> String -> Int -> Int -> Int -> Int -> Int -> ClockTime
 mkClockTime year mon mday hour min sec tz =
 	unsafePerformIO $ do
 		allocaBytes (#const sizeof(struct tm)) $ \ p_tm -> do
@@ -316,17 +333,16 @@ mkClockTime year mon mday hour min sec tz =
 			(#poke struct tm,tm_min  ) p_tm	(fromIntegral min  :: CInt)
 			(#poke struct tm,tm_hour ) p_tm	(fromIntegral hour :: CInt)
 			(#poke struct tm,tm_mday ) p_tm	(fromIntegral mday :: CInt)
-			(#poke struct tm,tm_mon  ) p_tm	(fromIntegral (mon-1) :: CInt)
+			(#poke struct tm,tm_mon  ) p_tm	(fromIntegral (imon-1) :: CInt)
 			(#poke struct tm,tm_year ) p_tm	(fromIntegral (year-1900) :: CInt)
 			(#poke struct tm,tm_isdst) p_tm	(-1 :: CInt)
 			t <- mktime p_tm
-			return (TOD (fromIntegral (fromEnum t) + fromIntegral (tz-currTZ)) 0)
-						
---if __GLASGOW_HASKELL__ >= 603
---return (TOD (fromIntegral t + fromIntegral (tz-currTZ)) 0)
---			return (TOD (fromIntegral (fromEnum t) + fromIntegral (tz-currTZ)) 0)
---else
---endif
+-- #if __GLASGOW_HASKELL__ >= 603
+ 			return (TOD (fromIntegral (fromEnum t) + fromIntegral (tz-currTZ)) 0)
+-- #else
+--			return (TOD (fromIntegral t +            fromIntegral (tz-currTZ)) 0)
+-- #endif
+                where imon = monthToInt mon
 
 foreign import ccall unsafe mktime :: Ptr () -> IO CTime
 
@@ -337,8 +353,15 @@ currTZ = ctTZ (unsafePerformIO (getClockTime >>= toCalendarTime))               
 parseTZ :: ReadP Int
 parseTZ =  (char '+' >> readDecP) `mplus` (char '-' >> fmap negate readDecP)
 
+
+
 f_read :: ReadP a -> String -> Maybe a
-f_read f s = case readP_to_S f s of {[(x,_)] -> Just x}
+f_read f s = traceShow s (case readP_to_S f s of {
+                             [(x,_)] -> Just x;
+                             -- x -> traceShow (length x) Nothing;
+                             _ -> Nothing;
+                             }
+                         )
 
 readHMS :: ReadP (Int, Int, Int)
 readHMS = do
@@ -349,16 +372,28 @@ readHMS = do
 	  seconds <- readDecP
 	  return (hour, minutes, seconds)
 
-readYMD :: ReadP (Int, Int, Int)
+readYMD :: ReadP (Int, String, Int)
 readYMD = do
 	  year  <- readDecP
 	  char '-'
-	  month <- readDecP
+	  month <- Text.ParserCombinators.ReadP.choice 
+                  [ string (show January)
+                  , string (show February)
+                  , string (show March)
+                  , string (show April)
+                  , string (show May)
+                  , string (show June)
+                  , string (show July)
+                  , string (show August)
+                  , string (show September)
+                  , string (show October)
+                  , string (show November)
+                  , string (show December) ]
 	  char '-'
 	  day   <- readDecP
 	  return (year, month, day)
 
-readDateTime :: ReadP (Int, Int, Int, Int, Int, Int)
+readDateTime :: ReadP (Int, String, Int, Int, Int, Int)
 readDateTime = do
 	       (year, month, day) <- readYMD
 	       skipSpaces
@@ -373,14 +408,14 @@ instance SqlBind ClockTime where
 				    (hour, minutes, seconds) <- readHMS
 				    (char '.' >> readDecP) `mplus` (return 0)
 				    tz <- parseTZ
-				    return (mkClockTime 1970 1 1 hour minutes seconds (tz*3600))
+				    return (mkClockTime 1970 "January" 1 hour minutes seconds (tz*3600))
 
 	fromSqlValue SqlTime s = f_read getTime s
 		where
 			getTime :: ReadP ClockTime
 			getTime = do
 				  (hour, minutes, seconds) <- readHMS
-				  return (mkClockTime 1970 1 1 hour minutes seconds currTZ)
+				  return (mkClockTime 1970 "January" 1 hour minutes seconds currTZ)
 
 	fromSqlValue SqlDate s = f_read getDate s
 		where
