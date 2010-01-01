@@ -5,12 +5,16 @@ import Types
 import Message
 import Crypto
 
+import Network
+import System.IO
+
 --------------------------------------------------------------------------------
 -- Messages
 --------------------------------------------------------------------------------
 
-myRSAKey = ""
-myUNP = "123456789"
+sendRSAKey = ("+q6x","vw==")
+recvRSAKey = ("ATKZxw==","WbJZ")
+myUNP = "842902100"
 apk1 = AccountPK "123456789" "000000001"
 apk2 = AccountPK "987654321" "000000001"
 
@@ -21,7 +25,7 @@ testTransaction = CommitedTransaction { reason = "test this client server commun
                                       , priority = Normal
                                       }
 
-body = GetBalance apk1
+msg_body = GetBalance apk1
 -- body = CommitedTransaction testTransaction
 
 --------------------------------------------------------------------------------
@@ -29,7 +33,10 @@ body = GetBalance apk1
 --------------------------------------------------------------------------------
 
 main = do
-  let msg = createMessage myRSAKey (ClientId myUNP) (show body)
+  let emb = encodeMessageBody sendRSAKey (show msg_body )
+  let msg = createMessage sendRSAKey (ClientId myUNP) emb
+  print "Message to send: "
+  print msg
   testSend msg
 
 --------------------------------------------------------------------------------
@@ -44,10 +51,10 @@ testSend message = withSocketsDo $ do
     hPrint handle (show message)
     hClose handle
 
-testSendAndReceive message = withSocketsDo $ do
+testSendAndRecv message = withSocketsDo $ do
     handle <- connectTo host port
     hPrint handle (show message)
-    hGetContent handle >> print
+    (hGetContents handle >>= print)
     hClose handle
 
 --------------------------------------------------------------------------------
