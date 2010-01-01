@@ -1,7 +1,10 @@
-module DataModel
+module DataModel( Company, Account
+                , insertCompany , findCompanyByUNP               
+                , insertAccount)
     where
 
 import Types
+import Crypto
 
 import Data.List
 import Data.Maybe
@@ -42,6 +45,8 @@ fromSqlClockMaybe (Just v) = do
   
 formatValues values = foldl1 (++) $ intersperse ", " values
 
+unpToSql unp = toSqlValue unp
+
 --------------------------------------------------------------------------------
 -- Common functions
 --------------------------------------------------------------------------------
@@ -60,31 +65,28 @@ sqlExec connector command = do
     (connector $ \conn -> execute conn command)
     (\e -> errorM $ show e)
 
--- sqlQueryList connector fetcher q = do
---   infoM $ "Query list: " ++ q
---   catchSql
---   (connector $ \conn -> do
---       result <- (query conn q >>= collectRows fetcher)
---       infoM "Result: " ++ (show result)
---       -- return (Just result)
---     )
---   (\e -> errorM $ show e >> return Nothing)
+sqlQueryList connector fetcher q = do
+  infoM $ "Query list: " ++ q
+  catchSql perform handle
+    where perform = connector $ \conn -> do
+            result <- (query conn q >>= collectRows fetcher)
+            infoM $ "Result: " ++ (show result)
+            return (Just result)
+          handle e = (errorM $ show e) >> return Nothing
 
--- sqlQueryRec connector fetcher q = do
---   infoM $ "Query record: " ++ q
---   catchSql
---   (connector $ \conn -> do
---       result <- (query conn q >>= collectRows fetcher)
---       infoM "Result: " ++ (show result)
---       return Nothing
---       -- if (length result) == 1
---       --   then return (Just (head result))
---       --   else return Nothing
---     )
---   (\e -> errorM $ show e >> return Nothing)
+sqlQueryRec connector fetcher q = do
+  infoM $ "Query record: " ++ q
+  catchSql perform handler
+  where perform = connector $ \conn -> do
+          result <- (query conn q >>= collectRows fetcher)
+          infoM $ "Result: " ++ (show result)        
+          if (length result) == 1
+            then return (Just (head result))
+            else return Nothing
+        handler e = (errorM $ show e) >> return Nothing
 
 --------------------------------------------------------------------------------
--- Companies
+-- Data types
 --------------------------------------------------------------------------------
 
 data Company = Company { unp :: String
@@ -97,6 +99,46 @@ data Company = Company { unp :: String
                        , clientSendKey :: RSAKey
                        }
                deriving (Read, Show)
+
+--------------------------------------------------------------------------------
+-- Fetchers
+--------------------------------------------------------------------------------
+
+fetchCompany :: Statement -> IO Company
+fetchCompany stmt = do
+  let get = getFieldValue stmt
+  let getMB = getFieldValueMB stmt
+
+  fvUnp <- get "company_unp"
+  fvName <- get "company_name"
+  fvRegDate <- get "registry_date"
+  fvUnregDate <- getMB "unregistry_date" 
+  fvServerRecvKey <- get "server_recv_key"
+  fvServerSendKey <- get "server_send_key"
+  fvClientRecvKey <- get "client_recv_key"
+  fvClientSendKey <- get "client_send_key"  
+  
+  let unp = fromJust $ fromSqlValue (SqlChar 13) fvUnp 
+  let name = fromJust $ fromSqlValue (SqlVarChar 256) fvName
+  regDate <- toCalendarTime $ fromJust $ fromSqlValue (SqlDateTime) fvRegDate
+  unregDate <- case fvUnregDate of 
+    Just ud -> do
+      r <- toCalendarTime $ fromJust $ fromSqlValue (SqlDateTime) ud 
+      return $ Just r
+    Nothing -> return Nothing
+  let serverRecvKey = read $ fromJust $ fromSqlValue (SqlVarChar 1024) fvServerRecvKey
+  let serverSendKey = read $ fromJust $ fromSqlValue (SqlVarChar 1024) fvServerSendKey
+  let clientRecvKey = read $ fromJust $ fromSqlValue (SqlVarChar 1024) fvClientRecvKey
+  let clientSendKey = read $ fromJust $ fromSqlValue (SqlVarChar 1024) fvClientSendKey
+
+  return $ Company unp name 
+    regDate unregDate
+    serverRecvKey serverSendKey 
+    clientRecvKey clientSendKey
+
+--------------------------------------------------------------------------------
+-- Companies
+--------------------------------------------------------------------------------
 
 insertCompany company = sqlExec withServerDB cmd
   where cmd = "INSERT INTO Company VALUES (" ++ values ++");"
@@ -111,11 +153,10 @@ insertCompany company = sqlExec withServerDB cmd
           where clockValue (Just a) = toSqlValue $ toClockTime a
                 clockValue Nothing = "NULL"
 
--- findCompanyByUNP connection company = do
---   infoM q
--- sqlExec str
-
--- sqlQuery str
+findCompanyByUNP unp = sqlQueryRec withServerDB fetchCompany q
+  where q = "SELECT * FROM Company " ++
+            "WHERE company_unp = " ++ (unpToSql unp) ++ ";"
+  
 
 --------------------------------------------------------------------------------
 -- Accounts

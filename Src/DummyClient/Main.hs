@@ -12,9 +12,9 @@ import System.IO
 -- Messages
 --------------------------------------------------------------------------------
 
-sendRSAKey = ("+q6x","vw==")
-recvRSAKey = ("ATKZxw==","WbJZ")
-myUNP = "842902100"
+sendRSAKey = ("ICbV","AY0=")
+recvRSAKey = ("AYreeQ==","fEyh")
+myUNP = "554977918"
 apk1 = AccountPK "123456789" "000000001"
 apk2 = AccountPK "987654321" "000000001"
 
@@ -33,7 +33,7 @@ msg_body = GetBalance apk1
 --------------------------------------------------------------------------------
 
 main = do
-  let emb = encodeMessageBody sendRSAKey (show msg_body )
+  let emb = encodeMessageBody sendRSAKey (show msg_body)
   let msg = createMessage sendRSAKey (ClientId myUNP) emb
   print "Message to send: "
   print msg
@@ -48,7 +48,7 @@ port = PortNumber 6555
 
 testSend message = withSocketsDo $ do
     handle <- connectTo host port
-    hPrint handle (show message)
+    hPrint handle message
     hClose handle
 
 testSendAndRecv message = withSocketsDo $ do

@@ -8,8 +8,8 @@ import System.Time
 -- Messages
 --------------------------------------------------------------------------------
 
-data SenderId = ClientId UNP  -- Client UNP
-              | BankId   BIC  -- BIC (ignored now)
+data SenderId = ClientId { unp :: UNP }  -- Client UNP
+              | BankId   { bin :: BIC }  -- BIC (ignored now)
               deriving (Read, Show)
 
 data Message = Message { senderId :: SenderId
