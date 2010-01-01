@@ -37,16 +37,16 @@ verifyMessage key msg = isPrefixOf ourDigest theirsDigest
             decodeChunk = take (keyLen - 1) . reverse . RSA.decrypt dkey
                 
 
-encodeMessage :: RSAKey -> MessageBody -> EncryptedMessageBody
-encodeMessage key body = (B64.encode . 
+encodeMessageBody :: RSAKey -> MessageBody -> EncryptedMessageBody
+encodeMessageBody key body = (B64.encode . 
                          octetsToChar8 . 
                          groupMap (keyLen - 1) (RSA.encrypt dkey) . 
                          char16ToOctets) (show body)
   where dkey = b64ToKey key
         keyLen = length $ fst dkey
 
-decodeMessage :: RSAKey -> EncryptedMessageBody -> MessageBody
-decodeMessage key emsg = read dmsg
+decodeMessageBody :: RSAKey -> EncryptedMessageBody -> MessageBody
+decodeMessageBody key emsg = read dmsg
   where dmsg = (octetsToChar16 .
                 groupMap keyLen decodeChunk .
                 char8ToOctets .
