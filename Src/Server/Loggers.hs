@@ -31,7 +31,7 @@ acquireServerLoggers appName = do
   updateGlobalLogger "root.client" (setLevel DEBUG . setHandlers [clientsH])
   updateGlobalLogger "root.teller" (setLevel DEBUG . setHandlers [tellerH])
   
-  return [h, dbH, serverH, clientsH]
+  return [h, dbH, serverH, clientsH, tellerH]
 
 acquireUtilityLoggers appName = do
   createDirectoryIfMissing True logDir
