@@ -3,9 +3,10 @@ module MessageHandler
 
 import Message
 import Crypto
-import DataModel
+import qualified DataModel as DM
 
 import System.IO
+import Data.Maybe
 import System.Log.Logger
 
 handleMessage :: String -> Handle -> IO ()
@@ -19,10 +20,24 @@ handleMessage name handle = do
       
   infoM "root.client" $ "Message: " ++ (show msg)
   
-  cmp <- findCompanyByUNP (unp $ senderId msg)
+  cmp <- DM.findCompanyByUNP (unp $ senderId msg)
   
   infoM "root.client" $ "Company: " ++ (show cmp)
 
-  -- let isValid = verifyMessage (serverRecvKey cmp) msg
+  let recvKey = DM.serverRecvKey $ fromJust cmp
+  let sendKey = DM.serverSendKey $ fromJust cmp
+
+  print recvKey
+  print sendKey
+  
+  let isValid = verifyMessage recvKey msg
+  print $ "isValid: " ++ (show isValid)
+  
+  let dmb = decodeMessageBody recvKey (body msg)
+  print $ "Message body: " ++ dmb
+  
+  -- let ansver = "server responce"
+  -- let rmsg = createMessage 
+
   
   

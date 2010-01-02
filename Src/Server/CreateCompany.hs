@@ -94,13 +94,13 @@ main = withUtilityLoggers $ \_ -> do
   name <- (getArgs >>= \as -> return (parseArgs as))
   setStdGen $ mkStdGen $ hashString name -- use company name for generate UNP
   
-  r1 <- rand 100 1000
-  r2 <- rand 100 1000
-  r3 <- rand 10 (100 - 1)
+  r1 <- rand 10 100
+  r2 <- rand 10 100
+  r3 <- rand 1 (10 - 1)
   
-  r4 <- rand 100 1000
-  r5 <- rand 100 1000
-  r6 <- rand 10 (100 - 1)
+  r4 <- rand 10 100
+  r5 <- rand 10 100
+  r6 <- rand 1 (10 - 1)
 
   unp <- generateUnp
   date <- getClockTime >>= toCalendarTime
