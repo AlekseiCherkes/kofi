@@ -44,6 +44,8 @@ fromSqlClockMaybe (Just v) = do
 formatValues values = foldl1 (++) $ intersperse ", " values
 
 unpToSql unp = toSqlValue unp
+bicToSql bic = toSqlValue bic
+accToSql acc = toSqlValue acc
 
 --------------------------------------------------------------------------------
 -- Common functions
@@ -97,6 +99,15 @@ data Company = Company { unp :: String
                        , clientSendKey :: RSAKey
                        }
                deriving (Read, Show)
+                        
+data Account = Account { acc_id :: String
+                       , bank_bic :: String
+                       , owner_unp :: String
+                       , ballance :: Double
+                       , open_date :: CalendarTime
+                       , close_date :: Maybe CalendarTime 
+                       }               
+               deriving (Read, Show)
 
 --------------------------------------------------------------------------------
 -- Fetchers
@@ -133,7 +144,37 @@ fetchCompany stmt = do
     regDate unregDate
     serverRecvKey serverSendKey 
     clientRecvKey clientSendKey
+    
 
+-- fetchAccount :: Statement -> IO Account
+fetchAccount stmt = do
+  let get = getFieldValue stmt
+  let getMB = getFieldValueMB stmt
+
+  fvAccId <- get "acc_id"
+  fvBankBic <- get "bank_bic"
+  fvOwnerUnp <- get "owner_unp"
+  fvBallance <- get "ballance"
+  fvOpenDate <- get "open_date"
+  fvCloseDate <- getMB "close_date"
+  
+  let accId = fromJust $ fromSqlValue (SqlChar 13) fvAccId
+  let bankBic = fromJust $ fromSqlValue (SqlChar 9) fvBankBic
+  let ownerUnp = fromJust $ fromSqlValue (SqlChar 13) fvOwnerUnp
+  let ballance = fromJust $ fromSqlValue SqlMoney fvBallance
+  openDate <- toCalendarTime $ fromJust $ fromSqlValue (SqlDateTime) fvOpenDate
+  closeDate <- case fvCloseDate of 
+    Just cd -> do
+      r <- toCalendarTime $ fromJust $ fromSqlValue (SqlDateTime) cd
+      return $ Just r
+    Nothing -> return Nothing
+    
+  return $ Account accId bankBic ownerUnp 
+    ballance 
+    openDate closeDate
+  
+  
+      
 --------------------------------------------------------------------------------
 -- Companies
 --------------------------------------------------------------------------------
@@ -154,20 +195,10 @@ insertCompany company = sqlExec withServerDB cmd
 findCompanyByUNP unp = sqlQueryRec withServerDB fetchCompany q
   where q = "SELECT * FROM Company " ++
             "WHERE company_unp = " ++ (unpToSql unp) ++ ";"
-  
 
 --------------------------------------------------------------------------------
 -- Accounts
 --------------------------------------------------------------------------------
-
-data Account = Account { acc_id :: String
-                       , bank_bic :: String
-                       , owner_unp :: String
-                       , ballance :: Double
-                       , open_date :: CalendarTime
-                       , close_date :: Maybe CalendarTime 
-                       }               
-               deriving (Read, Show)
 
 insertAccount account = sqlExec withServerDB cmd
   where cmd = "INSERT INTO Account VALUES(" ++ values ++");"
@@ -179,6 +210,11 @@ insertAccount account = sqlExec withServerDB cmd
                               , clockValue $ close_date account ]
           where clockValue (Just a) = toSqlValue $ toClockTime a
                 clockValue Nothing = "NULL"                 
+
+findAccountByPK apk = sqlQueryRec withServerDB fetchAccount q
+  where q = "SELECT * FROM Account " ++
+            "WHERE acc_id = " ++ (accToSql $ accId apk) ++ 
+            "AND bank_bic = " ++ (bicToSql $ bankBic apk) ++ ";"
 
 --------------------------------------------------------------------------------
 -- Transactions

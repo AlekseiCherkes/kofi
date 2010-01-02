@@ -1,19 +1,34 @@
 module Server(runServer)
     where
 
+import Data.Maybe
 import Prelude hiding (catch)
 import Network
 import System.IO
 import Control.Monad
 import Control.Concurrent
 import Control.Exception
-import System.Log.Logger
+import qualified System.Log.Logger as Logger
+
+--------------------------------------------------------------------------------
+-- Logging utility functions
+--------------------------------------------------------------------------------
+
+infoM = Logger.infoM "root.server"
+errorM = Logger.errorM "root.server"
+
+--------------------------------------------------------------------------------
+-- Config
+--------------------------------------------------------------------------------
 
 port = PortNumber 6555
 
-runServer :: (String -> Handle -> IO()) -> IO ()
+--------------------------------------------------------------------------------
+-- Server
+--------------------------------------------------------------------------------
+
 runServer connHandler = do
-  infoM "root.server" $ "Run server" -- " -- ++ "port = " ++ (show port)
+  infoM $ "Run server." -- ++ "port = " ++ (show $ (toEnum port)::Int)
   run `catch` handleException
   where 
     run = withSocketsDo $ do
@@ -25,14 +40,27 @@ runServer connHandler = do
           serviceConn name handle connHandler
     
     handleException (e::SomeException) = do
-      emergencyM "root.server" $ "Exception in main thread: " ++ (show e)
+      errorM $ "Exception in main thread: " ++ (show e)
 
-serviceConn :: String -> Handle -> (String -> Handle -> IO ()) -> IO ()
-serviceConn name handle connHandler = do
-  infoM "root.server" $ "Accept connection: " ++ name
-  threadId <- forkIO $ connHandler name handle `catch` handleException
+serviceConn name h connHandler = do
+  infoM $ "Accept connection: " ++ name
+  cnts <- hGetContents h
+  infoM $ "Request contents: " ++ cnts
+  threadId <- forkIO $ (perform cnts) `catch` handleException
   return ()
   where
+    perform cnts = do
+      resp <- connHandler cnts
+      if (isJust resp)
+        then do
+          infoM $ "Response contents: " ++ (fromJust resp)
+          hPrint h (fromJust resp)
+        else 
+          infoM $ "No response."
     handleException (e::SomeException) = do
-      errorM "root.server" $ "Exception in client thread( " ++ name ++ " ): " ++ (show e)
-      hClose handle
+      errorM $ "Exception in client thread( " ++ name ++ " ): " ++ (show e)
+      hClose h
+
+--------------------------------------------------------------------------------
+-- End
+--------------------------------------------------------------------------------
