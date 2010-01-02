@@ -1,6 +1,4 @@
-module DataModel( Company, Account
-                , insertCompany , findCompanyByUNP               
-                , insertAccount)
+module DataModel
     where
 
 import Types
