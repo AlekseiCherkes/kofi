@@ -78,8 +78,6 @@ import Text.Read.Lex
 import Numeric
 import Database.HSQL.Types
 
-import Debug.Trace
-
 #include <time.h>
 
 -----------------------------------------------------------------------------------------
@@ -356,12 +354,11 @@ parseTZ =  (char '+' >> readDecP) `mplus` (char '-' >> fmap negate readDecP)
 
 
 f_read :: ReadP a -> String -> Maybe a
-f_read f s = traceShow s (case readP_to_S f s of {
+f_read f s = case readP_to_S f s of {
                              [(x,_)] -> Just x;
                              -- x -> traceShow (length x) Nothing;
                              _ -> Nothing;
                              }
-                         )
 
 readHMS :: ReadP (Int, Int, Int)
 readHMS = do
