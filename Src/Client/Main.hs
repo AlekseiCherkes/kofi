@@ -8,10 +8,31 @@ import Graphics.UI.Gtk
 
 -- Client imports
 import ClientEntities
-import MainWindow  (showMainWindow)
+import MainWindow     (showMainWindow)
+import ProfileChooser (showProfileChooser)
 
 main :: IO ()
 main = do
     initGUI
-    showMainWindow 
+    showProfileChooser handler 
     mainGUI
+    putStrLn "MainGui" 
+    
+    
+    
+    where handler msession = do 
+                    case msession of
+                        Nothing -> do
+                            putStrLn "handler>>>Nothing"
+                            mainQuit
+                        Just session -> do
+                            putStrLn "handler>>>Just"
+                            resp <- showMainWindow session
+                            if resp == ResponseClose
+                                then mainQuit 
+                                else showProfileChooser handler
+                                    
+     
+        
+            
+        

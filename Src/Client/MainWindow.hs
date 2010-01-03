@@ -29,7 +29,7 @@ actionEntries =
  ,ActionEntry "LogReq_a"      "Запрсить лог"             (Just stockUndelete            ) Nothing (Just "Запрашивает лог."                  ) (putStrLn "LogReq_a")--onLogReq 
  ,ActionEntry "ViewSta_a"     "Просмотреть выписки"      (Just stockDndMultiple         ) Nothing (Just "Показывает все выписки."           ) (putStrLn "ViewSta_a")--onViewSta 
  ,ActionEntry "ViewBalance_a" "Запрсить баланс"          (Just stockZoom100             ) Nothing (Just "Запрашивает баланс счета."         ) (putStrLn "ViewBalance_a")--onBalanceReq 
- ,ActionEntry "Exit_a"        "Выход"                    (Just stockQuit                ) Nothing (Just "Завершает программу."              ) mainQuit
+ ,ActionEntry "Exit_a"        "Выход"                    (Just stockQuit                ) Nothing (Just "Завершает программу."              ) (putStrLn "Exit_a") --mainQuit
  ,ActionEntry "About_a"       "О программе"              (Just stockAbout               ) Nothing (Just "About."                            ) (putStrLn "About_a")--onAbout
  ]
 
@@ -58,11 +58,11 @@ loadMenuBar xmlFile actions = do
 
 
 
-data MainWindow = MainWindow {window         :: Window
-                             ,actions        :: ActionGroup
-                             ,userName_lbl   :: Label
-                             ,companyName_lbl:: Label
-                             ,companyUnp_ldl :: Label
+data MainWindow = MainWindow {dialog_wnd :: Dialog
+                             ,actions    :: ActionGroup
+                             ,date_lbl   :: Label
+                             ,name_lbl   :: Label
+                             ,unp_lbl    :: Label
                              }  
    
 
@@ -72,44 +72,52 @@ loadMainWindow = do
   putStrLn "Actions initialized"
   menuBar <- loadMenuBar "Resources/ActionMenu.xml" actions
   putStrLn "Menu loaded"
-  Just glade <- xmlNew "Resources/mainWindow.glade"
+  Just glade <- xmlNew "Resources/mainWindow_1.glade"
   putStrLn "main glade loaded"
-  window     <- xmlGetWidget glade castToWindow "mainWindow"
-  vBox       <- xmlGetWidget glade castToVBox   "vbox1"
+  dialog_wnd <- xmlGetWidget glade castToDialog "dialog_wnd"
+  vBox       <- xmlGetWidget glade castToVBox   "dialog-vbox1"
 
   boxPackStart vBox menuBar PackNatural 0
   boxReorderChild vBox menuBar 0 
   
-  [user_l, comp_l, unp_l] <- mapM (xmlGetWidget glade castToLabel) ["user_lbl", "company_lbl", "cmpUnp_lbl"]
-  return $ MainWindow window actions user_l comp_l unp_l
+  --dialogSetDefaultResponse dialog_wnd ResponseOk
+  
+  [ date_lbl ,  name_lbl ,  unp_lbl ] <- mapM (xmlGetWidget glade castToLabel) [
+   "date_lbl", "name_lbl", "unp_lbl"]
+   
+   
+   
+  return $ MainWindow dialog_wnd actions date_lbl name_lbl unp_lbl
   
   
-bindActions :: ActionGroup -> IO ()
-bindActions actions = do
-    clock <- getClockTime
-    time  <- toCalendarTime clock 
-    let session = Session  (Profile (str2unp "987654321123") "Some company." time) "FilePath"
+bindActions :: MainWindow -> Session -> IO ()
+bindActions gui session = do
+    let acts = actions gui
     
-    (Just usrAction) <- actionGroupGetAction actions "SwitchUser_a"
-    onActionActivate usrAction (showProfileChooser >>= (\_->return ()))
+    (Just usrAction) <- actionGroupGetAction acts "SwitchUser_a"
+    onActionActivate usrAction (dialogResponse (dialog_wnd  gui) ResponseOk)
     
-    (Just payAction) <- actionGroupGetAction actions "NewPay_a"
+    (Just exiAction) <- actionGroupGetAction acts "Exit_a"
+    onActionActivate exiAction (dialogResponse (dialog_wnd  gui) ResponseClose)
+    
+    (Just payAction) <- actionGroupGetAction acts "NewPay_a"
     onActionActivate payAction (showTransactionDialog session)
     
-    (Just accAction) <- actionGroupGetAction actions "ViewBalance_a"
+    (Just accAction) <- actionGroupGetAction acts "ViewBalance_a"
     onActionActivate accAction (showBalanceDialog session)
     
-    (Just staAction) <- actionGroupGetAction actions "StaReq_a"
+    (Just staAction) <- actionGroupGetAction acts "StaReq_a"
     onActionActivate staAction (showStaRequestDialog session)
     return ()
  
  
-showMainWindow :: IO ()
-showMainWindow = do
+showMainWindow :: Session -> IO ResponseId
+showMainWindow session = do
     gui <- loadMainWindow
-    bindActions   (actions gui)
-    onDestroy     (window  gui) mainQuit
-    widgetShowAll (window  gui)
+    bindActions   gui session
+    responce <- dialogRun (dialog_wnd  gui)
+    widgetDestroy (dialog_wnd gui)
+    return responce
 
 
 

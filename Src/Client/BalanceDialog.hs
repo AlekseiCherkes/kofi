@@ -10,7 +10,6 @@ import Graphics.UI.Gtk.Glade
 
 -- Common imports
 import Types
-import Validation
 
 -- Client imports
 import ClientEntities

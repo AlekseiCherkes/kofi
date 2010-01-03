@@ -29,6 +29,3 @@ isValidUnp str = (length str == 13) && isValidInteger str
 isValidAcc :: String -> Bool
 isValidAcc str = (length str == 13) && isValidInteger str
 
-
-
-

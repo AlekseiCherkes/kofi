@@ -20,7 +20,7 @@
               <widget class="GtkScrolledWindow" id="scrolledwindow1">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="vadjustment">0 0 344 34.399999999999999 309.60000000000002 344</property>
+                <property name="vadjustment">0 0 203 20.300000000000001 182.70000000000002 203</property>
                 <property name="hscrollbar_policy">automatic</property>
                 <property name="vscrollbar_policy">automatic</property>
                 <property name="shadow_type">etched-in</property>
@@ -157,6 +157,7 @@
             <child>
               <widget class="GtkButton" id="ok_btn">
                 <property name="label" translatable="yes">&#x412;&#x44B;&#x431;&#x440;&#x430;&#x442;&#x44C;</property>
+                <property name="response_id">-5</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>

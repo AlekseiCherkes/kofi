@@ -99,16 +99,16 @@ fetchAccount stmt = do
 --------------------------------------------------------------------------------
 -- Profiles
 --------------------------------------------------------------------------------
-findProfileByUNP :: UNP -> IO Profile
+findProfileByUNP :: UNP -> IO (Maybe Profile)
 findProfileByUNP unp = do
     clock <- getClockTime
     time  <- toCalendarTime clock 
-    return $ Profile unp "Some company." time
+    return $ Just $ Profile unp "Some company." time
 
-loadSessionByUNP :: UNP -> IO Session
+loadSessionByUNP :: UNP -> IO (Maybe Session)
 loadSessionByUNP unp =  do
-    profile <- findProfileByUNP unp
-    return $ Session profile "FilePath"
+    Just profile <- findProfileByUNP unp
+    return $ Just $ Session profile "FilePath"
 
 --------------------------------------------------------------------------------
 -- Companies

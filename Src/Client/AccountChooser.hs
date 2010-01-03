@@ -8,19 +8,15 @@ import Data.IORef
 -- Gtk imports
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.Glade
-import System.Glib.Signals (on)
 
 -- Common imports
 import Types
-import Validation
+
 
 --Client imports
 import GtkCommon
 import ClientEntities
 
-
-type MatchFunc  a = (a -> String -> Bool)
-type SelectFunc a = (a -> IO())
 
 
 data AccChooserDialog = AccChooserDialog { accChooser_dlg :: Dialog
@@ -54,18 +50,26 @@ initAccChooser session gui = do
     bnkModel <- listStoreNew ([]::[Bank])
     accModel <- listStoreNew ([]::[ACC ])
     
+    initTreeViewColumns (banks_tv gui) bnkModel [
+        ("BIC банка"     , bic2str.bnkBic ),
+        ("Название банка", bnkName        )]
+        
+    initTreeViewColumns (accounts_tv gui) accModel [
+        ("Номер Счета", acc2str)]
+        
     let onBankSelected = \bank -> do
         putStrLn $ show bank
+        writeIORef (selected_acc gui) (Nothing)
         writeIORef (selected_bnk gui) (Just bank)
-        refillListStore accModel $ map str2acc ["1234567890123", "9876543210987"] 
-        --writeIORef (selected_acc gui) (Nothing)
-
-    --let onAccSelected = \acc -> do
-       -- putStrLn "AccountSelected"
-       -- writeIORef (selected_acc gui) (Just acc)
+        let accs = ["1234567890123", "9876543210987"] 
+        refillListStore accModel $ map str2acc accs
+        
+    let onAccSelected = \acc -> do
+        putStrLn "AccountSelected"
+        writeIORef (selected_acc gui) (Just acc)
       
-    initBanksTreeView     bankDoesMatch onBankSelected (banks_tv    gui) bnkModel
-    initAccountsTreeView  accDoesMatch  onAccSelected  (accounts_tv gui) accModel
+    bindTreeViewHandlers  bankDoesMatch onBankSelected (banks_tv    gui) bnkModel
+    bindTreeViewHandlers  accDoesMatch  onAccSelected  (accounts_tv gui) accModel
     
 
     let banks = [Bank { bnkBic = str2bic "001", bnkName = "Альфа Банк"      }
@@ -78,7 +82,7 @@ initAccChooser session gui = do
     
     refillListStore bnkModel banks  
     
-    where onAccSelected acc = do putStrLn "AccountSelected"
+    
 
 getChoosedAccountPk :: AccChooserDialog -> IO ( Maybe (AccountPK, Name) )
 getChoosedAccountPk gui = do
@@ -92,64 +96,12 @@ getChoosedAccountPk gui = do
 
 
 bankDoesMatch :: MatchFunc Bank
-bankDoesMatch bank str = map toLower str `isPrefixOf` map toLower (show $ bnkBic bank)
+bankDoesMatch bank str = map toLower str `isPrefixOf` map toLower (bic2str $ bnkBic bank)
 
 accDoesMatch :: MatchFunc ACC
-accDoesMatch acc str = str `isPrefixOf` show acc     
+accDoesMatch acc str = str `isPrefixOf` acc2str acc     
 
 
-
-initBanksTreeView :: MatchFunc Bank -> SelectFunc Bank -> TreeView -> ListStore Bank -> IO()
-initBanksTreeView match select view model = do
-    treeViewSetModel view model
-    treeViewSetHeadersVisible view True 
-    
-    col1 <- makeTextTreeViewColumn "BIC банка"      (show.bnkBic ) model
-    col2 <- makeTextTreeViewColumn "Название банка" (show.bnkName) model
-    treeViewAppendColumn view col1
-    treeViewAppendColumn view col2
-
-    -- enable interactive search
-    treeViewSetEnableSearch view True
-    treeViewSetSearchEqualFunc view $ Just $ \str iter -> do
-        (i:_) <- treeModelGetPath  model iter
-        row   <- listStoreGetValue model i
-        return $ match row str 
-
-    -- selection handling is hardcoded to ListStore  
-    on view cursorChanged $ do
-        ((i:_), _) <- treeViewGetCursor view
-        row <- listStoreGetValue model i
-        select row
-    return ()
-
-
-
-initAccountsTreeView :: MatchFunc ACC -> SelectFunc ACC -> TreeView -> ListStore ACC -> IO()
-initAccountsTreeView match select view model = do
-    putStrLn "Initializing accounts..."
-    treeViewSetModel view model
-    treeViewSetHeadersVisible view True
-    col <- makeTextTreeViewColumn "Номер Счета" show model
-    treeViewAppendColumn view col
-
-    -- enable interactive search
-    treeViewSetEnableSearch view True
-    treeViewSetSearchEqualFunc view $ Just $ \str iter -> do
-        (i:_) <- treeModelGetPath  model iter
-        row   <- listStoreGetValue model i
-        return $ match row str 
-
-    -- selection handling is hardcoded to ListStore  
-    on view cursorChanged $ do
-        ((i:_), _) <- treeViewGetCursor view
-        row <- listStoreGetValue model i
-        select row
-    
-    return ()
-
-    
-               
 
 showAccountChooser :: (WindowClass twin)=> Session -> twin -> IO (Maybe (AccountPK, Name))
 showAccountChooser session parent = do
