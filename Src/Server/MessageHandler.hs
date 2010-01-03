@@ -60,7 +60,7 @@ handleMessage cnts = catch (perform cnts) handle
           -- 4) Расшифровка сообщения.
           let dmb = decodeMessageBody recvKey (MSG.body msg)
           infoM $ "Decoded message body: " ++ dmb
-          
+    
           let r = (read dmb) :: MSG.Request
               
           -- Формирование ответа
@@ -77,15 +77,25 @@ handleMessage cnts = catch (perform cnts) handle
 --------------------------------------------------------------------------------
 
 getBalance cmp apk = do
-  akk <- (DM.findAccountByPK apk) >>= \a ->
-    if (isJust a)
-    then (infoM $ "Found account: " ++ (show $ fromJust a))
-         >> return (fromJust a)
+  acc <- DM.findAccountByPK apk
+  if (isJust acc)
+    then (infoM $ "Found account: " ++ (show $ fromJust acc))
     else ioError 
          (userError $ "Can't find account by apk = " 
           ++ (show apk) ++ " in server database.")
-
-  return $ Just $ show (DM.ballance akk)
+         
+  bnk <- DM.findBankByBIC (DM.bank_bic $ fromJust acc)
+  if (isJust bnk)
+    then (infoM $ "Found accounts bank: " ++ (show $ fromJust bnk))
+    else ioError 
+         (userError $ "Can't find account's bank by UNP = " 
+          ++ (show $ DM.bank_bic $ fromJust acc) ++ "in banks manual database.")
+         
+  if ((DM.owner_unp $ fromJust acc) /= (DM.unp cmp)) 
+    then ioError (userError $ "Author of the request hasn't have responsed account.")
+    else infoM "Account belongs to author of the reqest."
+    
+  return $ Just $ show (DM.ballance $ fromJust acc)
 
 --------------------------------------------------------------------------------
 -- End of file

@@ -108,7 +108,13 @@ data Account = Account { acc_id :: String
                        , close_date :: Maybe CalendarTime 
                        }               
                deriving (Read, Show)
-
+                        
+data Bank = Bank { branch_bic :: String                 
+                 , bank_bank_bic :: String
+                 , bank_name :: String 
+                 }
+          deriving (Read, Show)
+                   
 --------------------------------------------------------------------------------
 -- Fetchers
 --------------------------------------------------------------------------------
@@ -145,8 +151,6 @@ fetchCompany stmt = do
     serverRecvKey serverSendKey 
     clientRecvKey clientSendKey
     
-
--- fetchAccount :: Statement -> IO Account
 fetchAccount stmt = do
   let get = getFieldValue stmt
   let getMB = getFieldValueMB stmt
@@ -158,6 +162,13 @@ fetchAccount stmt = do
   fvOpenDate <- get "open_date"
   fvCloseDate <- getMB "close_date"
   
+  print fvAccId
+  print fvBankBic
+  print fvOwnerUnp
+  print fvBallance
+  print fvOpenDate
+  print fvCloseDate
+    
   let accId = fromJust $ fromSqlValue (SqlChar 13) fvAccId
   let bankBic = fromJust $ fromSqlValue (SqlChar 9) fvBankBic
   let ownerUnp = fromJust $ fromSqlValue (SqlChar 13) fvOwnerUnp
@@ -172,8 +183,21 @@ fetchAccount stmt = do
   return $ Account accId bankBic ownerUnp 
     ballance 
     openDate closeDate
+    
   
   
+fetchBank stmt = do
+  let get = getFieldValue stmt
+  
+  fvBranchBic <- get "branch_bic"
+  fvBankBic <- get "bank_bic"
+  fvName <- get "name"
+  
+  let branchBic = fromJust $ fromSqlValue (SqlChar 9) fvBranchBic
+  let bankBic = fromJust $ fromSqlValue (SqlChar 3) fvBankBic
+  let name = fromJust $ fromSqlValue (SqlVarChar 200) fvName
+      
+  return $ Bank branchBic bankBic name
       
 --------------------------------------------------------------------------------
 -- Companies
@@ -217,6 +241,14 @@ findAccountByPK apk = sqlQueryRec withServerDB fetchAccount q
             "AND bank_bic = " ++ (bicToSql $ bankBic apk) ++ ";"
 
 --------------------------------------------------------------------------------
+-- Bank
+--------------------------------------------------------------------------------
+
+findBankByBIC bic = sqlQueryRec withManualDB fetchBank q
+  where q = "SELECT * FROM Branch " ++
+            "WHERE branch_bic = " ++ (bicToSql $ bic) ++ ";"
+
+--------------------------------------------------------------------------------
 -- Transactions
 --------------------------------------------------------------------------------
 
@@ -234,7 +266,6 @@ findAccountByPK apk = sqlQueryRec withServerDB fetchAccount q
 
 -- findCompanyByUNP
 -- findAccountByACC
--- findBankByBIC
 -- findCompanyByACC
 
 -- insertTransaction

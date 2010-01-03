@@ -31,7 +31,7 @@ client: third_party Src/Client/Main.hs
 	ghc --make -iSrc/Client -optP $(CFLAGS) -o Bin/Client/client $(HSFLAGS_OUR) Src/Client/Main.hs $(CBITS_O)
 
 .PHONY: dummy_client
-dummy_client: third_party Src/DummyClient/Main.hs
+dummy_client: Src/DummyClient/Main.hs
 	ghc --make -iSrc/DummyClient -o Bin/DummyClient/client $(HSFLAGS_OUR) Src/DummyClient/Main.hs $(CBITS_O)
 
 # .PHONY : clean
@@ -39,9 +39,9 @@ dummy_client: third_party Src/DummyClient/Main.hs
 # 	rm -f $(wildcard $(addprefix Src/Server/, *.hc, *.hi, *.o, *.ho))
 # 	rm -f $(wildcard $(addprefix Src/Client/, *.hc, *.hi, *.o, *.ho))
 
-# .PHONY: debug
-# debug: third_party
-# 	ghci -i./ -iSrc/ThirdParty -iSrc/Server -iSrc/Client -iSrc/Common
+.PHONY: debug
+debug: third_party
+	ghci -i./ -iSrc/ThirdParty -iSrc/Server -iSrc/Client -iSrc/Common
 
 # clean_system
 
