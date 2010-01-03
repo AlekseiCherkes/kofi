@@ -7,7 +7,6 @@ import Graphics.UI.Gtk
 -- Common imports
 
 -- Client imports
-import ClientEntities
 import MainWindow     (showMainWindow)
 import ProfileChooser (showProfileChooser)
 

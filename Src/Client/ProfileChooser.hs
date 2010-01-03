@@ -5,7 +5,6 @@ import Data.IORef
 import Control.Monad
 import Data.List ( isPrefixOf )
 import System.Directory
-import System.Time
 
 -- Gtk imports
 import Graphics.UI.Gtk
@@ -70,15 +69,12 @@ updateProfileData gui mprofile = do
     case mprofile of 
         Just prof -> do
             writeIORef   (selected_unp gui) $ (Just    . profileUnp )   prof
-            labelSetText (unp_lbl      gui) $ (unp2str . profileUnp )   prof
-            labelSetText (name_lbl     gui) $  profileName              prof
-            labelSetText (date_lbl     gui) $ (showDate. profileDate)   prof
+            renderProfileInfo prof (name_lbl gui) (unp_lbl gui) (date_lbl gui)
         Nothing -> do
             writeIORef   (selected_unp gui) Nothing
             labelSetText (unp_lbl      gui) "N/A"
             labelSetText (name_lbl     gui) "N/A"
             labelSetText (date_lbl     gui) "N/A"
-     where showDate d = (show $ ctYear d) ++ " " ++ (show $ ctMonth d) ++ " " ++ (show $ ctDay d)
             
             
 getSessionData :: ProfileChooserDialog -> IO (Maybe Session)

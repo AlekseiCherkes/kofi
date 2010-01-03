@@ -5,6 +5,11 @@ import System.IO
 
 import Graphics.UI.Gtk
 import System.Glib.Signals (on)
+import System.Time
+
+
+import Types
+import ClientEntities
 
 
 type MatchFunc  a = (a -> String -> Bool)
@@ -79,3 +84,13 @@ refillListStore :: ListStore a -> [a] -> IO ()
 refillListStore store newItems = do
     listStoreClear store
     mapM_ (listStoreAppend store) newItems
+
+    
+showDate :: CalendarTime -> String
+showDate d = (show $ ctYear d) ++ " " ++ (show $ ctMonth d) ++ " " ++ (show $ ctDay d)
+
+renderProfileInfo :: Profile -> Label -> Label -> Label -> IO ()
+renderProfileInfo prof name_l unp_l date_l = do
+    labelSetText unp_l  $ (unp2str . profileUnp )   prof
+    labelSetText name_l $  profileName              prof
+    labelSetText date_l $ (showDate. profileDate)   prof 

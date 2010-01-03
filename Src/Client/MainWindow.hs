@@ -1,16 +1,12 @@
 module MainWindow where
 
 
-import System.Time
-
-
-
 -- Gtk imports
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.Glade
 
 -- Common imports
-import Types
+
 
 
 -- Client imports
@@ -18,7 +14,7 @@ import ClientEntities
 import TransactionDialog (showTransactionDialog)
 import BalanceDialog     (showBalanceDialog)
 import StaRequestDialog  (showStaRequestDialog)
-import ProfileChooser    (showProfileChooser)
+import GtkCommon
 
 
 actionEntries = 
@@ -110,11 +106,18 @@ bindActions gui session = do
     onActionActivate staAction (showStaRequestDialog session)
     return ()
  
+
+setCompanyData :: MainWindow -> Session -> IO ()
+setCompanyData gui session = do
+    let profile = sessionProfile session
+    renderProfileInfo profile (name_lbl gui) (unp_lbl gui) (date_lbl gui)
+    
  
 showMainWindow :: Session -> IO ResponseId
 showMainWindow session = do
     gui <- loadMainWindow
-    bindActions   gui session
+    setCompanyData gui session
+    bindActions    gui session
     responce <- dialogRun (dialog_wnd  gui)
     widgetDestroy (dialog_wnd gui)
     return responce
