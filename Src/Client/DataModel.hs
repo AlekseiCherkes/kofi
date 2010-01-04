@@ -89,6 +89,28 @@ fetchAccount stmt = do
   let bic = str2bic $ fromJust $ fromSqlValue (SqlChar 13) fvBic
   let payerAcc = Account (AccountPK acc bic) unp
   return payerAcc
+  
+fetchProfile :: Statement -> IO Profile
+fetchProfile stmt = do 
+  fvUnp <- getFieldValue stmt "unp"
+  fvName <- getFieldValue stmt "name"
+  fvDate <- getFieldValue stmt "date"
+  
+  let unp = str2unp $ fromJust $ fromSqlValue (SqlChar 13) fvUnp
+  let name = fromJust $ fromSqlValue (SqlVarChar 256) fvName
+  date <- toCalendarTime $ fromJust $ fromSqlValue (SqlDateTime) fvDate
+  
+  return $ Profile unp name date
+  
+fetchKeys :: Statement -> IO (RSAKey, RSAKey)
+fetchKeys stmt = do 
+  fvRecvKey <- getFieldValue stmt "recv_key"
+  fvSendKey <- getFieldValue stmt "send_key"
+  
+  let recvKey = read $ fromJust $ fromSqlValue (SqlVarChar 1024) fvRecvKey
+  let sendKey = read $ fromJust $ fromSqlValue (SqlVarChar 1024) fvSendKey
+  
+  return $ (recvKey, sendKey)
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -99,16 +121,20 @@ fetchAccount stmt = do
 --------------------------------------------------------------------------------
 -- Profiles
 --------------------------------------------------------------------------------
-findProfileByUNP :: UNP -> IO (Maybe Profile)
-findProfileByUNP unp = do
-    clock <- getClockTime
-    time  <- toCalendarTime clock 
-    return $ Just $ Profile unp "Some company." time
 
-loadSessionByUNP :: UNP -> IO (Maybe Session)
-loadSessionByUNP unp =  do
-    Just profile <- findProfileByUNP unp
-    return $ Just $ Session profile "FilePath"
+findProfileByPath :: FilePath -> IO Profile
+findProfileByPath file = sqlQueryGetFirst $
+                         sqlQuery (withDB file) fetchProfile $
+                         "SELECT * FROM Config;"
+
+loadSessionByProfilePath :: FilePath -> IO (Maybe Session)
+loadSessionByProfilePath file = do 
+  profile <- findProfileByPath file
+  (recvKey, sendKey) <- sqlQueryGetFirst $
+                       sqlQuery (withDB file) fetchKeys  $
+                       "SELECT * FROM Config;"
+
+  return $ Just (Session profile file recvKey sendKey)
 
 --------------------------------------------------------------------------------
 -- Companies
