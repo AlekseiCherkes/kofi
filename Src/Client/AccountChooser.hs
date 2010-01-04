@@ -42,8 +42,8 @@ loadAccChooser gladePath = do
     return $ AccChooserDialog accChooser_dlg banks_tv accounts_tv bickAcc_btn pickNoAcc_btn acc bnk
 
 
-initAccChooser :: Session -> AccChooserDialog -> IO()
-initAccChooser session gui = do
+initAccChooser :: Session -> UNP -> AccChooserDialog -> IO()
+initAccChooser session unp gui = do
     -- let unp = sessionUnp session
     --writeIORef (selected_bic gui) (Nothing)         
            
@@ -103,10 +103,10 @@ accDoesMatch acc str = str `isPrefixOf` acc2str acc
 
 
 
-showAccountChooser :: (WindowClass twin)=> Session -> twin -> IO (Maybe (AccountPK, Name))
-showAccountChooser session parent = do
+showAccountChooser :: (WindowClass twin)=> twin -> Session -> UNP -> IO (Maybe (AccountPK, Name))
+showAccountChooser parent session unp  = do
     gui <- loadAccChooser "Resources/accountChooser_dialog.glade"
-    initAccChooser session gui
+    initAccChooser session unp gui
     windowSetTransientFor (accChooser_dlg gui) parent 
     responce <- dialogRun (accChooser_dlg gui)
     putStrLn "Responce received"

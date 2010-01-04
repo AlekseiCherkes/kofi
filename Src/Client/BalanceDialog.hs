@@ -74,9 +74,7 @@ initBalanceDialog chooseAcc commitRequest gui = do
 updateAccountData :: BalanceDialog -> (AccountPK, Name) -> IO ()
 updateAccountData gui (accpk, name) = do
     writeIORef (selected_acc gui) (Just accpk)
-    labelSetText (bnk_lbl gui)  name
-    labelSetText (bic_lbl gui) (show $ bankBic accpk)
-    labelSetText (acc_lbl gui) (show $ accId   accpk)    
+    renderAccountInfo (accpk, name) (bnk_lbl gui) (bic_lbl gui) (acc_lbl gui)
         
     
 

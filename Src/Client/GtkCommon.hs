@@ -94,3 +94,9 @@ renderProfileInfo prof name_l unp_l date_l = do
     labelSetText unp_l  $ (unp2str . profileUnp )   prof
     labelSetText name_l $  profileName              prof
     labelSetText date_l $ (showDate. profileDate)   prof 
+
+renderAccountInfo :: (AccountPK, Name) -> Label -> Label -> Label -> IO ()
+renderAccountInfo (AccountPK accid accbic, name) bnk_l bic_l acc_l = do
+    labelSetText (bnk_lbl gui)  name
+    labelSetText (bic_lbl gui) (bic2str ccbic)
+    labelSetText (acc_lbl gui) (acc2str accid)    

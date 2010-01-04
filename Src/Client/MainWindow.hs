@@ -1,5 +1,7 @@
 module MainWindow where
 
+import Data.IORef
+
 
 -- Gtk imports
 import Graphics.UI.Gtk
@@ -59,6 +61,7 @@ data MainWindow = MainWindow {dialog_wnd :: Dialog
                              ,date_lbl   :: Label
                              ,name_lbl   :: Label
                              ,unp_lbl    :: Label
+                             ,session    :: IORef (Maybe Session)
                              }  
    
 
@@ -81,9 +84,9 @@ loadMainWindow = do
   [ date_lbl ,  name_lbl ,  unp_lbl ] <- mapM (xmlGetWidget glade castToLabel) [
    "date_lbl", "name_lbl", "unp_lbl"]
    
+  session <- (newIORef Nothing) 
    
-   
-  return $ MainWindow dialog_wnd actions date_lbl name_lbl unp_lbl
+  return $ MainWindow dialog_wnd actions date_lbl name_lbl unp_lbl session
   
   
 bindActions :: MainWindow -> Session -> IO ()
