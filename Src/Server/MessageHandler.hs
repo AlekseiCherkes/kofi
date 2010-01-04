@@ -43,7 +43,7 @@ handleMessage cnts = catch (perform cnts) handle
                    >> return (fromJust c)
               else ioError 
                    (userError $ "Can't find company with unp = " 
-                    ++ unp ++ " in server database.")
+                    ++ (unp2str unp) ++ " in server database.")
                    
           let recvKey = DM.serverRecvKey $ cmp
           let sendKey = DM.serverSendKey $ cmp

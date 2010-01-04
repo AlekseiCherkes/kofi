@@ -43,9 +43,9 @@ fromSqlClockMaybe (Just v) = do
   
 formatValues values = foldl1 (++) $ intersperse ", " values
 
-unpToSql unp = toSqlValue unp
-bicToSql bic = toSqlValue bic
-accToSql acc = toSqlValue acc
+unpToSql unp = toSqlValue $ unp2str unp
+bicToSql bic = toSqlValue $ bic2str bic
+accToSql acc = toSqlValue $ acc2str acc
 
 --------------------------------------------------------------------------------
 -- Common functions
