@@ -68,7 +68,7 @@ handleMessage cnts = catch (perform cnts) handle
           -- Формирование ответа
           response <- case r of
             MSG.CommitTransaction ct -> return $ MSG.Error "CommitTransaction not implemented."
-            MSG.GetBalance apk -> getBalance cmp apk
+            MSG.GetBalance apk -> runHandler $ getBallance cmp apk
             MSG.GetStatement apk ct1 ct2 -> return $ MSG.Error "GetStatement not implemented."
             MSG.GetLog apk ct1 ct2 -> return $ MSG.Error "GetLog not implemented."
             
@@ -86,36 +86,57 @@ handleMessage cnts = catch (perform cnts) handle
 
 type MessageMonad = ErrorT String IO MSG.Response
 
-getBalance :: DM.Company -> AccountPK -> IO MSG.Response
-getBalance cmp apk = do
-  res <- runErrorT $ perform cmp apk
+runHandler :: MessageMonad -> IO MSG.Response
+runHandler handler = do
+  res <- runErrorT $ handler
   return $ 
     case res of
-    (Right r) -> r
-    (Left error_msg) -> MSG.Error error_msg
+      (Right r) -> r
+      (Left e) -> MSG.Error e
     
-perform :: DM.Company -> AccountPK -> MessageMonad
-perform cmp apk = do
-  acc <- liftIO $ DM.findAccountByPK apk
-  if (isJust acc)
-    then liftIO $ infoM $ "Found account: " ++ (show $ fromJust acc)
-    else throwError $ 
-         "Can't find account by apk = " ++ 
-         (show apk) ++ " in server database."
-         
-  bnk <- liftIO $ DM.findBankByBIC (bankBic $ DM.acc_pk $ fromJust acc)
-  if (isJust bnk)
-    then liftIO $ infoM $ "Found accounts bank: " ++ (show $ fromJust bnk)
-    else throwError $ 
-         "Can't find account's bank by UNP = " ++ 
-         (show $ bankBic $ DM.acc_pk $ fromJust acc) ++ 
-         "in banks manual database."
+--------------------------------------------------------------------------------
+-- Checkers
+--------------------------------------------------------------------------------
 
-  if ((DM.owner_unp $ fromJust acc) == (DM.unp cmp)) 
+checkAcc acc = do
+  if (isJust acc)
+    then do
+    liftIO $ infoM $ "Found account: " ++ (show $ fromJust acc)
+    return $ fromJust acc
+    else throwError $ "Can't find account by apk in server database."
+
+checkDate field = do
+  if (isNothing $ field)
+    then liftIO $ infoM $ "Entity is opened: " ++ (show field)
+    else throwError $ "Entity closed: " ++ (show field)
+
+checkBank bnk = do
+  if (isJust bnk)
+    then do
+    liftIO $ infoM $ "Found bank: " ++ (show $ fromJust bnk)
+    return $ fromJust bnk   
+    else throwError $ 
+         "Can't find bank by UNP = " ++ 
+         -- (show $ bankBic $ DM.acc_pk acc) ++ 
+         "in banks manual database."
+  
+checkAccountOwner acc cmp = do
+  if ((DM.owner_unp acc) == (DM.unp cmp)) 
     then liftIO $ infoM "Account belongs to author of the reqest."
     else throwError "Author of the request hasn't have responsed account."
 
-  return $ MSG.Balance (DM.ballance $ fromJust acc)
+--------------------------------------------------------------------------------
+-- Handlers
+--------------------------------------------------------------------------------
+
+getBallance :: DM.Company -> AccountPK -> MessageMonad
+getBallance cmp apk = do
+  acc <- (liftIO $ DM.findAccountByPK apk) >>= checkAcc
+  bnk <- (liftIO $ DM.findBankByBIC (bankBic $ DM.acc_pk $ acc)) >>= checkBank
+  checkAccountOwner acc cmp
+  checkDate $ DM.unregistryDate cmp
+  checkDate $ DM.close_date acc
+  return $ MSG.Balance (DM.ballance acc)
 
 --------------------------------------------------------------------------------
 -- End of file
