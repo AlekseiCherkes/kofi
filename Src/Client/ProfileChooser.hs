@@ -63,15 +63,15 @@ initProfileChooser gui = do
 updateProfileData :: ProfileChooserDialog -> FilePath -> IO ()
 updateProfileData gui path = do
     writeIORef   (selected_path gui) $ Just path  
-    mprofile <- findProfileByPath path
-    renderProfileInfo mprofile (name_lbl gui) (unp_lbl gui) (date_lbl gui)
+    profile <- findProfileByPath path
+    renderProfileInfo (Just profile) (name_lbl gui) (unp_lbl gui) (date_lbl gui)
             
             
 getSessionData :: ProfileChooserDialog -> IO (Maybe Session)
 getSessionData gui = do
     mpath <- readIORef $ selected_path gui
     case mpath of
-        Just path -> loadSessionByPath path
+        Just path -> loadSessionByProfilePath path
         Nothing   -> return Nothing
 
     
