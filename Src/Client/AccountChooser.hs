@@ -96,10 +96,10 @@ getChoosedAccountPk gui = do
 
 
 bankDoesMatch :: MatchFunc Bank
-bankDoesMatch bank str = map toLower str `isPrefixOf` map toLower (bic2str $ bnkBic bank)
+bankDoesMatch str bank  = map toLower str `isPrefixOf` map toLower (bic2str $ bnkBic bank)
 
 accDoesMatch :: MatchFunc ACC
-accDoesMatch acc str = str `isPrefixOf` acc2str acc     
+accDoesMatch str acc  = str `isPrefixOf` acc2str acc     
 
 
 

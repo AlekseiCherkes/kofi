@@ -1,7 +1,5 @@
 module MainWindow where
 
-import Data.IORef
-
 
 -- Gtk imports
 import Graphics.UI.Gtk
@@ -61,7 +59,6 @@ data MainWindow = MainWindow {dialog_wnd :: Dialog
                              ,date_lbl   :: Label
                              ,name_lbl   :: Label
                              ,unp_lbl    :: Label
-                             ,session    :: IORef (Maybe Session)
                              }  
    
 
@@ -79,14 +76,10 @@ loadMainWindow = do
   boxPackStart vBox menuBar PackNatural 0
   boxReorderChild vBox menuBar 0 
   
-  --dialogSetDefaultResponse dialog_wnd ResponseOk
-  
   [ date_lbl ,  name_lbl ,  unp_lbl ] <- mapM (xmlGetWidget glade castToLabel) [
    "date_lbl", "name_lbl", "unp_lbl"]
-   
-  session <- (newIORef Nothing) 
-   
-  return $ MainWindow dialog_wnd actions date_lbl name_lbl unp_lbl session
+
+  return $ MainWindow dialog_wnd actions date_lbl name_lbl unp_lbl
   
   
 bindActions :: MainWindow -> Session -> IO ()
@@ -113,17 +106,22 @@ bindActions gui session = do
 setCompanyData :: MainWindow -> Session -> IO ()
 setCompanyData gui session = do
     let profile = sessionProfile session
-    renderProfileInfo profile (name_lbl gui) (unp_lbl gui) (date_lbl gui)
+    renderProfileInfo (Just profile) (name_lbl gui) (unp_lbl gui) (date_lbl gui)
     
  
-showMainWindow :: Session -> IO ResponseId
-showMainWindow session = do
+showMainWindow :: Session -> (ResponseId -> IO ()) -> IO ()
+showMainWindow session onresponse = do
     gui <- loadMainWindow
     setCompanyData gui session
     bindActions    gui session
-    responce <- dialogRun (dialog_wnd  gui)
-    widgetDestroy (dialog_wnd gui)
-    return responce
+    
+    onResponse    (dialog_wnd gui) $ \resp -> do
+        widgetDestroy (dialog_wnd gui)
+        onresponse resp
+    
+    widgetShowAll (dialog_wnd gui)
+   
+            
 
 
 

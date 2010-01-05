@@ -12,10 +12,10 @@ import Types
 import ClientEntities
 
 
-type MatchFunc  a = (a -> String -> Bool)
+type MatchFunc  a = (String -> a -> Bool)
 type SelectFunc a = (a -> IO())
 
-
+-- The purpose of this module is to reduce copypaste application in client files
 
 setComboEntryItems :: ComboBoxEntry -> [String] -> IO ()
 setComboEntryItems combo items = do
@@ -51,6 +51,7 @@ makeTextTreeViewColumn model title row2str  = do
     cellLayoutSetAttributes col renderer model $ \row -> [ cellText := row2str row ]
     return col
     
+    
 initTreeViewColumns :: TreeView -> ListStore a -> [(String, a -> String)] -> IO ()
 initTreeViewColumns view model cols = do
     treeViewSetModel view model
@@ -69,7 +70,7 @@ bindTreeViewHandlers match select view model = do
     treeViewSetSearchEqualFunc view $ Just $ \str iter -> do
         (i:_) <- treeModelGetPath  model iter
         row   <- listStoreGetValue model i
-        return $ match row str 
+        return $ match str row
 
     -- selection handling is hardcoded to ListStore  
     on view cursorChanged $ do
@@ -89,14 +90,28 @@ refillListStore store newItems = do
 showDate :: CalendarTime -> String
 showDate d = (show $ ctYear d) ++ " " ++ (show $ ctMonth d) ++ " " ++ (show $ ctDay d)
 
-renderProfileInfo :: Profile -> Label -> Label -> Label -> IO ()
-renderProfileInfo prof name_l unp_l date_l = do
-    labelSetText unp_l  $ (unp2str . profileUnp )   prof
-    labelSetText name_l $  profileName              prof
-    labelSetText date_l $ (showDate. profileDate)   prof 
 
-renderAccountInfo :: (AccountPK, Name) -> Label -> Label -> Label -> IO ()
-renderAccountInfo (AccountPK accid accbic, name) bnk_l bic_l acc_l = do
-    labelSetText (bnk_lbl gui)  name
-    labelSetText (bic_lbl gui) (bic2str ccbic)
-    labelSetText (acc_lbl gui) (acc2str accid)    
+renderProfileInfo :: Maybe Profile -> Label -> Label -> Label -> IO ()
+renderProfileInfo mprof name_l unp_l date_l = do
+    case mprof of
+        Nothing   -> do
+            labelSetText unp_l  "N/A"
+            labelSetText name_l "N/A"
+            labelSetText date_l "N/A"
+        Just prof -> do
+            labelSetText unp_l  $ (unp2str . profileUnp )   prof
+            labelSetText name_l $  profileName              prof
+            labelSetText date_l $ (showDate. profileDate)   prof 
+            
+
+renderAccountInfo :: Maybe (AccountPK, Name) -> Label -> Label -> Label -> IO ()
+renderAccountInfo mpair bnk_l bic_l acc_l = do
+    case mpair of
+        Nothing -> do
+            labelSetText bnk_l "N/A"
+            labelSetText bic_l "N/A"
+            labelSetText acc_l "N/A"
+        Just (AccountPK accid ccbic, name) -> do
+            labelSetText bnk_l name
+            labelSetText bic_l (bic2str ccbic)
+            labelSetText acc_l (acc2str accid)    

@@ -107,44 +107,45 @@ loadTransactionDialog gladePath = do
 
 initTransactionDialog :: TransactionDialog -> (Session -> UNP -> IO (Maybe (AccountPK, Name))) -> Session -> IO ()
 initTransactionDialog gui chooseAcc session = do
-    onClicked (changePayerAcc_btn gui) $ do
+    onClicked (changePayerAcc_btn gui) $ (do
         chosenAcc <- chooseAcc session  (profileUnp $ sessionProfile session) 
         case chosenAcc of
-            Nothing            -> writeIORef (payer_acc gui) Nothing
-            Just (accpk, name) -> do
-                writeIORef (payer_acc gui) (Just accpk)
-                renderAccountInfo (accpk, name) (payerBank_lbl gui) (payerBankBic_lbl gui) (payerAcc_lbl gui)
+            Nothing         -> writeIORef (payer_acc gui) Nothing
+            Just (accpk, _) -> writeIORef (payer_acc gui) (Just accpk)
+        renderAccountInfo chosenAcc (payerBank_lbl gui) (payerBankBic_lbl gui) (payerAcc_lbl gui));
                 
-    onClicked (changePayeeAcc_btn gui) $ do
+    onClicked (changePayeeAcc_btn gui) $ (do
         munp <- readIORef (payee_unp gui)
         case munp of
             Nothing  -> return ()
             Just unp -> do
                 chosenAcc <- chooseAcc session unp
                 case chosenAcc of
-                    Nothing            -> writeIORef (payee_acc gui) Nothing
-                    Just (accpk, name) -> do
-                        writeIORef (payee_acc gui) (Just accpk)
-                        renderAccountInfo (accpk, name) (payeeBank_lbl gui) (payeeBankBic_lbl gui) (payeeAcc_lbl gui)
-                
+                    Nothing         -> writeIORef (payee_acc gui) Nothing
+                    Just (accpk, _) -> writeIORef (payee_acc gui) (Just accpk)
+                renderAccountInfo chosenAcc (payeeBank_lbl gui) (payeeBankBic_lbl gui) (payeeAcc_lbl gui));
+     return ()           
    
         
-initPayeesCombobox :: ComboBox -> ListStore UNP -> IO ()
-initPayeesCombobox combo model = do
+initPayeesCombobox :: ComboBox -> ListStore UNP -> IO () -> IO ()
+initPayeesCombobox combo model cangeHandler = do
     comboBoxSetModel combo $ Just model
     renderer <- cellRendererTextNew
     cellLayoutPackStart combo renderer True
     cellLayoutSetAttributes combo renderer model $ \row -> [ cellText := unp2str row ]
     
-    on combo changed $ do
-        writeIORef (payee_acc gui) Nothing
-        i <- comboBoxGetActive combo
-        if i == -1 
-            then do
-                writeIORef (payee_unp gui) Nothing
-            else do
-                unp <- listStoreGetValue model
-                writeIORef (payee_unp gui) (Just unp)
+    on combo changed cangeHandler
+--    on combo changed $ do
+--        writeIORef (payee_acc gui) Nothing
+--        i <- comboBoxGetActive combo
+--        if i == -1 
+--            then do
+--                writeIORef (payee_unp gui) Nothing
+--            else do
+--                unp <- listStoreGetValue model
+--                writeIORef (payee_unp gui) (Just unp)
+                
+    return ()
                 
 
 getTransactionDialogData :: TransactionDialog -> IO CommitedTransaction

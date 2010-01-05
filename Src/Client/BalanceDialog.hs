@@ -12,6 +12,7 @@ import Graphics.UI.Gtk.Glade
 import Types
 
 -- Client imports
+import GtkCommon
 import ClientEntities
 import AccountChooser (showAccountChooser)
 
@@ -48,16 +49,16 @@ initBalanceDialog chooseAcc commitRequest gui = do
         chosenAcc <- chooseAcc
         putStrLn $ show chosenAcc
         case chosenAcc of
-            Nothing   -> return ()
-            Just pair -> updateAccountData gui pair
+            Nothing         -> writeIORef (selected_acc gui) Nothing
+            Just (accpk, _) -> writeIORef (selected_acc gui) (Just accpk)
+            
+        renderAccountInfo chosenAcc (bnk_lbl gui) (bic_lbl gui) (acc_lbl gui)
         
     
     let dialog = dialog_wnd gui
     onResponse dialog $ \responce -> do
-        putStrLn "Dialog responce received."
         case responce of
             ResponseOk     -> do
-                (putStrLn "Response Ok")
                 maccpk <- readIORef $ selected_acc gui
                 case (maccpk) of
                     Nothing    ->  (putStrLn "No account selected!")
@@ -65,26 +66,21 @@ initBalanceDialog chooseAcc commitRequest gui = do
                         commitRequest accpk
                         widgetDestroy dialog
             ResponseCancel -> do
-                (putStrLn "Response Cancel")
                 widgetDestroy dialog
             otherwise      -> return ()
      
     return ()
     
-updateAccountData :: BalanceDialog -> (AccountPK, Name) -> IO ()
-updateAccountData gui (accpk, name) = do
-    writeIORef (selected_acc gui) (Just accpk)
-    renderAccountInfo (accpk, name) (bnk_lbl gui) (bic_lbl gui) (acc_lbl gui)
-        
-    
-
-
+--validateBalanceDialog :: BalanceDialog -> IO ()
+--validateBalanceDialog :: gui = do
+         
+--    set (commit_btn gui) [widgetSensitive ]
 
 showBalanceDialog :: Session -> IO()
 showBalanceDialog session = do
     gui <- loadBalanceDialog "Resources/balanceRequest_dialog.glade"
     initBalanceDialog 
-        (showAccountChooser session (dialog_wnd gui))
+        (showAccountChooser (dialog_wnd gui) session (profileUnp $ sessionProfile session) )
         (\_ ->  putStrLn "The request is to be commited...")
         gui
         

@@ -3,7 +3,7 @@ module ProfileChooser where
 
 import Data.IORef
 import Control.Monad
-import Data.List ( isPrefixOf )
+import Data.List ( isPrefixOf, isSuffixOf)
 import System.Directory
 
 -- Gtk imports
@@ -11,8 +11,7 @@ import Graphics.UI.Gtk
 import Graphics.UI.Gtk.Glade
 
 -- Common imports
-import Types
-import Validation
+
 
 -- Client imports
 import ClientEntities
@@ -21,14 +20,14 @@ import GtkCommon
 
 
 
-data ProfileChooserDialog = ProfileChooserDialog { dialog_wnd  :: Dialog
-                                                 , ok_btn      :: Button
-                                                 , close_btn   :: Button
-                                                 , name_lbl    :: Label
-                                                 , unp_lbl     :: Label
-                                                 , date_lbl    :: Label
-                                                 , profiles_tv :: TreeView
-                                                 , selected_unp:: IORef (Maybe UNP ) 
+data ProfileChooserDialog = ProfileChooserDialog { dialog_wnd   :: Dialog
+                                                 , ok_btn       :: Button
+                                                 , close_btn    :: Button
+                                                 , name_lbl     :: Label
+                                                 , unp_lbl      :: Label
+                                                 , date_lbl     :: Label
+                                                 , profiles_tv  :: TreeView
+                                                 , selected_path:: IORef (Maybe FilePath ) 
                                                  }
                                                  
 loadProfileChooser :: FilePath -> IO ProfileChooserDialog
@@ -52,37 +51,28 @@ loadProfileChooser gladePath = do
 
 initProfileChooser :: ProfileChooserDialog -> IO ()
 initProfileChooser gui = do
-    paths <- (getDirectoryContents "Profiles") -- >>= (filterM doesFileExist)
-    putStrLn $ show paths 
-    model <- listStoreNew (map str2unp $ filter isValidUnp paths)
+    paths <- (getDirectoryContents "profile") 
+    model <- listStoreNew (filter (isSuffixOf ".db") paths)
     
-    initTreeViewColumns (profiles_tv gui) model [("УНП профиля", unp2str)]
+    initTreeViewColumns (profiles_tv gui) model [("Профили", \p -> take (length p - 3) p)]
     
-    let unpDoesMatch = \unp str -> str `isPrefixOf` unp2str unp
-    
-    bindTreeViewHandlers unpDoesMatch (findProfileByUNP >=> updateProfileData gui) (profiles_tv gui) model
+    bindTreeViewHandlers isPrefixOf (updateProfileData gui) (profiles_tv gui) model
 
     
     
-updateProfileData :: ProfileChooserDialog -> Maybe Profile -> IO ()
-updateProfileData gui mprofile = do
-    case mprofile of 
-        Just prof -> do
-            writeIORef   (selected_unp gui) $ (Just    . profileUnp )   prof
-            renderProfileInfo prof (name_lbl gui) (unp_lbl gui) (date_lbl gui)
-        Nothing -> do
-            writeIORef   (selected_unp gui) Nothing
-            labelSetText (unp_lbl      gui) "N/A"
-            labelSetText (name_lbl     gui) "N/A"
-            labelSetText (date_lbl     gui) "N/A"
+updateProfileData :: ProfileChooserDialog -> FilePath -> IO ()
+updateProfileData gui path = do
+    writeIORef   (selected_path gui) $ Just path  
+    mprofile <- findProfileByPath path
+    renderProfileInfo mprofile (name_lbl gui) (unp_lbl gui) (date_lbl gui)
             
             
 getSessionData :: ProfileChooserDialog -> IO (Maybe Session)
 getSessionData gui = do
-    munp <- readIORef $ selected_unp gui
-    case munp of
-        Just unp -> loadSessionByUNP unp
-        Nothing  -> return Nothing
+    mpath <- readIORef $ selected_path gui
+    case mpath of
+        Just path -> loadSessionByPath path
+        Nothing   -> return Nothing
 
     
 
@@ -97,14 +87,14 @@ showProfileChooser handler = do
 
         
     where responceHandler gui resp = do
-                                    case resp of
-                                        ResponseOk -> do
-                                            putStrLn "something -> handler"
-                                            ms <- getSessionData gui
-                                            widgetDestroy (dialog_wnd gui)
-                                            handler ms
-                                        otherwise  -> do
-                                            putStrLn "Nothing->handler"
-                                            widgetDestroy (dialog_wnd gui)
-                                            handler Nothing
+            case resp of
+                ResponseOk -> do
+                    putStrLn "something -> handler"
+                    ms <- getSessionData gui
+                    widgetDestroy (dialog_wnd gui)
+                    handler ms
+                otherwise  -> do
+                    putStrLn "Nothing->handler"
+                    widgetDestroy (dialog_wnd gui)
+                    handler Nothing
 
