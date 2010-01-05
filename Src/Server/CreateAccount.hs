@@ -3,6 +3,7 @@ module Main()
 
 import DataModel
 import Loggers
+import Types
 
 import System.Environment
 import System.Time
@@ -23,7 +24,7 @@ rand min max = getStdRandom $ randomR (min, max)
 
 generateAccId = do
   aid <- rand min max
-  return (show $ aid)
+  return $ str2acc (show $ aid)
   where 
     min = 10^12::Integer
     max = 10^13 - 1::Integer
@@ -45,7 +46,8 @@ main = withUtilityLoggers $ \_ -> do
   aid <- generateAccId
   date <- getClockTime >>= toCalendarTime
                          
-  let account = Account aid bic unp ballance date Nothing
+  let account = Account (AccountPK aid (str2bic bic))
+                (str2unp unp) ballance date Nothing
 
   insertAccount account
   

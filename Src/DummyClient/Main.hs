@@ -13,11 +13,12 @@ import System.IO
 --------------------------------------------------------------------------------
 
 sendRSAKey = ("MI8=","DQ==")
+recvRSAKey = ("R2s=","BV0=")
 servRecvRSAKey = ("MI8=","K0U=")
 
-myUNP = "554977918" -- "603137587" 
-apk1 = AccountPK "6165997170898" "153001266"
-apk2 = AccountPK "2094858017386" "153001266"
+myUNP = str2unp "7011293625508"
+apk1 = AccountPK (str2acc "6801954585389") (str2bic "151501267")
+apk2 = AccountPK (str2acc "8519545454900") (str2bic "153001266")
 
 testTransaction = CommitedTransaction { reason = "test this client server communication"
                                       , creditAccount = apk1
@@ -43,7 +44,7 @@ main = do
   print mb
   print emb
   print dmb
-  testSend msg
+  testSendAndRecv msg
 
 --------------------------------------------------------------------------------
 -- Network utilits
@@ -58,10 +59,12 @@ testSend message = withSocketsDo $ do
     hClose handle
 
 testSendAndRecv message = withSocketsDo $ do
-    handle <- connectTo host port
-    hPrint handle message
-    (hGetContents handle >>= print)
-    hClose handle
+    h <- connectTo host port
+    hPrint h message
+    hClose h
+    -- ret <- hGetLine h
+    -- print ret
+    -- hClose handle
 
 --------------------------------------------------------------------------------
 -- End

@@ -77,7 +77,7 @@ handleMessage cnts = catch (perform cnts) handle
           infoM $ "Response: " ++ (show response)
             
           return $ Just $ show $ 
-            createMessage sendKey (MSG.BankId "0") $
+            createMessage sendKey (MSG.BankId $ "0") $
             encodeMessageBody sendKey (show response)
 
 --------------------------------------------------------------------------------
@@ -103,12 +103,12 @@ perform cmp apk = do
          "Can't find account by apk = " ++ 
          (show apk) ++ " in server database."
          
-  bnk <- liftIO $ DM.findBankByBIC (DM.bank_bic $ fromJust acc)
+  bnk <- liftIO $ DM.findBankByBIC (bankBic $ DM.acc_pk $ fromJust acc)
   if (isJust bnk)
     then liftIO $ infoM $ "Found accounts bank: " ++ (show $ fromJust bnk)
     else throwError $ 
          "Can't find account's bank by UNP = " ++ 
-         (show $ DM.bank_bic $ fromJust acc) ++ 
+         (show $ bankBic $ DM.acc_pk $ fromJust acc) ++ 
          "in banks manual database."
 
   if ((DM.owner_unp $ fromJust acc) == (DM.unp cmp)) 

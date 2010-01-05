@@ -89,7 +89,7 @@ sqlQueryRec connector fetcher q = do
 -- Data types
 --------------------------------------------------------------------------------
 
-data Company = Company { unp :: String
+data Company = Company { unp :: UNP
                        , name :: String
                        , registryDate :: CalendarTime
                        , unregistryDate :: Maybe CalendarTime
@@ -100,16 +100,15 @@ data Company = Company { unp :: String
                        }
                deriving (Read, Show)
                         
-data Account = Account { acc_id :: String
-                       , bank_bic :: String
-                       , owner_unp :: String
+data Account = Account { acc_pk :: AccountPK
+                       , owner_unp :: UNP
                        , ballance :: Double
                        , open_date :: CalendarTime
-                       , close_date :: Maybe CalendarTime 
+                       , close_date :: Maybe CalendarTime
                        }               
                deriving (Read, Show)
                         
-data Bank = Bank { branch_bic :: String                 
+data Bank = Bank { branch_bic :: BIC
                  , bank_bank_bic :: String
                  , bank_name :: String 
                  }
@@ -133,7 +132,7 @@ fetchCompany stmt = do
   fvClientRecvKey <- get "client_recv_key"
   fvClientSendKey <- get "client_send_key"  
   
-  let unp = fromJust $ fromSqlValue (SqlChar 13) fvUnp 
+  let unp = str2unp $ fromJust $ fromSqlValue (SqlChar 13) fvUnp 
   let name = fromJust $ fromSqlValue (SqlVarChar 256) fvName
   regDate <- toCalendarTime $ fromJust $ fromSqlValue (SqlDateTime) fvRegDate
   unregDate <- case fvUnregDate of 
@@ -169,9 +168,9 @@ fetchAccount stmt = do
   print fvOpenDate
   print fvCloseDate
     
-  let accId = fromJust $ fromSqlValue (SqlChar 13) fvAccId
-  let bankBic = fromJust $ fromSqlValue (SqlChar 9) fvBankBic
-  let ownerUnp = fromJust $ fromSqlValue (SqlChar 13) fvOwnerUnp
+  let accId = str2acc $ fromJust $ fromSqlValue (SqlChar 13) fvAccId
+  let bankBic = str2bic $ fromJust $ fromSqlValue (SqlChar 9) fvBankBic
+  let ownerUnp = str2unp $ fromJust $ fromSqlValue (SqlChar 13) fvOwnerUnp
   let ballance = fromJust $ fromSqlValue SqlMoney fvBallance
   openDate <- toCalendarTime $ fromJust $ fromSqlValue (SqlDateTime) fvOpenDate
   closeDate <- case fvCloseDate of 
@@ -180,7 +179,7 @@ fetchAccount stmt = do
       return $ Just r
     Nothing -> return Nothing
     
-  return $ Account accId bankBic ownerUnp 
+  return $ Account (AccountPK accId bankBic) ownerUnp 
     ballance 
     openDate closeDate
     
@@ -193,7 +192,7 @@ fetchBank stmt = do
   fvBankBic <- get "bank_bic"
   fvName <- get "name"
   
-  let branchBic = fromJust $ fromSqlValue (SqlChar 9) fvBranchBic
+  let branchBic = str2bic $ fromJust $ fromSqlValue (SqlChar 9) fvBranchBic
   let bankBic = fromJust $ fromSqlValue (SqlChar 3) fvBankBic
   let name = fromJust $ fromSqlValue (SqlVarChar 200) fvName
       
@@ -205,7 +204,7 @@ fetchBank stmt = do
 
 insertCompany company = sqlExec withServerDB cmd
   where cmd = "INSERT INTO Company VALUES (" ++ values ++");"
-        values = formatValues [ toSqlValue $ unp company
+        values = formatValues [ toSqlValue $ unp2str $ unp company
                               , toSqlValue $ name company
                               , toSqlValue $ toClockTime (registryDate company)
                               , clockValue $ unregistryDate company
@@ -226,9 +225,9 @@ findCompanyByUNP unp = sqlQueryRec withServerDB fetchCompany q
 
 insertAccount account = sqlExec withServerDB cmd
   where cmd = "INSERT INTO Account VALUES(" ++ values ++");"
-        values = formatValues [ toSqlValue $ acc_id account
-                              , toSqlValue $ bank_bic account
-                              , toSqlValue $ owner_unp account
+        values = formatValues [ toSqlValue $ acc2str $ accId $ acc_pk account
+                              , toSqlValue $ bic2str $ bankBic $ acc_pk account
+                              , toSqlValue $ unp2str $ owner_unp account
                               , toSqlValue $ ballance account
                               , toSqlValue $ toClockTime (open_date account)
                               , clockValue $ close_date account ]

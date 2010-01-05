@@ -37,7 +37,7 @@ acquireServerLoggers appName = do
 acquireUtilityLoggers appName = do
   createDirectoryIfMissing True logDir
   
-  stderrH <- verboseStreamHandler stderr INFO
+  stderrH <- verboseStreamHandler stderr ERROR
   h <- logFileHandler (appName ++ "-root") DEBUG
   dbH <- logFileHandler (appName ++ "-root-db") DEBUG
   
