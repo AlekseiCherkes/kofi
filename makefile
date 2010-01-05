@@ -12,7 +12,8 @@ HSFLAGS_OUR := $(HSFLAGS) -XDisambiguateRecordFields -W -iSrc/Common -i./ -iSrc/
 CFLAGS_UOR := -ISrc/ThirdParty/CBits/sqlite3
 
 .PHONY: all
-all: third_party create_company create_account server client
+all: third_party create_company create_account server client dummy_client
+	make -C ./Bin
 
 .PHONY: server
 server: Src/Server/Main.hs
