@@ -17,8 +17,8 @@ recvRSAKey = ("R2s=","BV0=")
 servRecvRSAKey = ("MI8=","K0U=")
 
 myUNP = str2unp "7011293625508"
-apk1 = AccountPK (str2acc "6801954585389") (str2bic "151501267")
-apk2 = AccountPK (str2acc "8519545454900") (str2bic "153001266")
+apk1 = AccountPK (str2acc "6801954585387") (str2bic "151501267")
+apk2 = AccountPK (str2acc "8519545454900") (str2bic "153001267") -- 6
 
 testTransaction = CommitedTransaction { reason = "test this client server communication"
                                       , creditAccount = apk1
@@ -34,16 +34,15 @@ msg_body = GetBalance apk2
 -- Main
 --------------------------------------------------------------------------------
 
-main = do
+main = withSocketsDo $ do
   let mb = (show msg_body)  
   let emb = encodeMessageBody sendRSAKey mb
   let msg = createMessage sendRSAKey (ClientId myUNP) emb
   let dmb = decodeMessageBody servRecvRSAKey emb      
       
-  print "Message to send: "
-  print mb
-  print emb
-  print dmb
+  print $ "Message body: " ++ mb
+  print $ "Encrypted message body: " ++ emb
+  print $ "Decrypted message body: " ++ dmb
   testSendAndRecv msg
 
 --------------------------------------------------------------------------------
@@ -53,18 +52,17 @@ main = do
 host = "127.0.0.1"
 port = PortNumber 6555
 
-testSend message = withSocketsDo $ do
-    handle <- connectTo host port
-    hPrint handle message
-    hClose handle
-
-testSendAndRecv message = withSocketsDo $ do
-    h <- connectTo host port
-    hPrint h message
-    hClose h
-    -- ret <- hGetLine h
-    -- print ret
-    -- hClose handle
+testSendAndRecv message = do
+  h <- connectTo host port
+  hPutStrLn h (show message)
+  hFlush h
+  ret <- hGetLine h
+  hClose h
+  print $ "Response: " ++ ret
+  let msg = read ret :: Message
+  print $ "Msg: " ++ (show msg)
+  let dmb = decodeMessageBody recvRSAKey $ body msg
+  print $ "Decoded response: " ++ dmb
 
 --------------------------------------------------------------------------------
 -- End
