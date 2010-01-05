@@ -23,8 +23,6 @@ data Profile = Profile{ profileUnp  :: UNP
                       }               
 data Session = Session{ sessionProfile  :: Profile 
                       , sessionPath     :: FilePath
-                      , sessionSendKey  :: RSAKey
-                      , sessionRecvKey  :: RSAKey  
                       }
 
  

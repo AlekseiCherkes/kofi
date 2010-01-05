@@ -30,7 +30,7 @@ withBanksManual :: (Connection -> IO a) -> IO a
 withBanksManual = bracket
                   (connect banksManualFilePath ReadMode)
                   (\conection -> disconnect conection)
-                  
+
 --------------------------------------------------------------------------------
 -- Utility functions
 --------------------------------------------------------------------------------
@@ -41,16 +41,16 @@ sqlHandleError e = do
   -- throwIO (ErrorCall $ "SQL Error: " ++ (show e))
   return []
 
-sqlPerformQuery fetchRowFunction q connection = 
+sqlPerformQuery fetchRowFunction q connection =
   print q >>
   query connection q >>=
   collectRows fetchRowFunction >>=
   return
-  
-sqlQuery connectFunction 
-  fetchRowFunction 
-  sqlQuery = catchSql 
-             (connectFunction (sqlPerformQuery fetchRowFunction sqlQuery )) 
+
+sqlQuery connectFunction
+  fetchRowFunction
+  sqlQuery = catchSql
+             (connectFunction (sqlPerformQuery fetchRowFunction sqlQuery ))
              sqlHandleError
 
 sqlQueryGetFirst q = do
@@ -76,7 +76,7 @@ fetchBankBranch stmt = do
   let name = fromJust $ fromSqlValue (SqlVarChar 200) fvName
   let bic = str2bic $ fromJust $ fromSqlValue (SqlVarChar 9) fvBic
   return $ Bank name bic
-  
+
 fetchAccount :: Statement -> IO Account
 fetchAccount stmt = do
   fvAcc <- getFieldValue stmt "acc_id"
@@ -87,27 +87,27 @@ fetchAccount stmt = do
   let bic = str2bic $ fromJust $ fromSqlValue (SqlChar 13) fvBic
   let payerAcc = Account (AccountPK acc bic) unp
   return payerAcc
-  
+
 fetchProfile :: Statement -> IO Profile
-fetchProfile stmt = do 
+fetchProfile stmt = do
   fvUnp <- getFieldValue stmt "unp"
   fvName <- getFieldValue stmt "name"
   fvDate <- getFieldValue stmt "date"
-  
+
   let unp = str2unp $ fromJust $ fromSqlValue (SqlChar 13) fvUnp
   let name = fromJust $ fromSqlValue (SqlVarChar 256) fvName
   date <- toCalendarTime $ fromJust $ fromSqlValue (SqlDateTime) fvDate
-  
+
   return $ Profile unp name date
-  
+
 fetchKeys :: Statement -> IO (RSAKey, RSAKey)
-fetchKeys stmt = do 
+fetchKeys stmt = do
   fvRecvKey <- getFieldValue stmt "recv_key"
   fvSendKey <- getFieldValue stmt "send_key"
-  
+
   let recvKey = read $ fromJust $ fromSqlValue (SqlVarChar 1024) fvRecvKey
   let sendKey = read $ fromJust $ fromSqlValue (SqlVarChar 1024) fvSendKey
-  
+
   return $ (recvKey, sendKey)
 
 --------------------------------------------------------------------------------
@@ -119,31 +119,16 @@ fetchKeys stmt = do
 --------------------------------------------------------------------------------
 -- Profiles
 --------------------------------------------------------------------------------
-
 findProfileByPath :: FilePath -> IO Profile
-findProfileByPath file = sqlQueryGetFirst $
-                         sqlQuery (withDB file) fetchProfile $
-                         "SELECT * FROM Config;"
+findProfileByPath file = do
+    clock <- getClockTime
+    time  <- toCalendarTime clock
+    return $ Profile (str2unp "0123456789012") "Some company." time
 
 loadSessionByProfilePath :: FilePath -> IO (Maybe Session)
-loadSessionByProfilePath file = do 
-  profile <- findProfileByPath file
-  (recvKey, sendKey) <- sqlQueryGetFirst $
-                       sqlQuery (withDB file) fetchKeys  $
-                       "SELECT * FROM Config;"
-
-  return $ Just (Session profile file recvKey sendKey)
-
---findProfileByPath :: FilePath -> IO Profile
---findProfileByPath file = do
---    clock <- getClockTime
---    time  <- toCalendarTime clock 
---    return $ Profile (str2unp "0123456789012") "Some company." time
-
---loadSessionByPath :: FilePath -> IO (Maybe Session)
---loadSessionByPath file =  do
---    profile <- findProfileByPath file
---    return $ Just $ Session profile "FilePath"
+loadSessionByProfilePath file =  do
+    profile <- findProfileByPath file
+    return $ Just $ Session profile "FilePath"
 
 
 --------------------------------------------------------------------------------
@@ -193,23 +178,23 @@ findBanksByCompany file unp = do
   accounts <- fetchAccountsByCompany
   banks <- fetchBanksByBics $ map (bankBic . accPk) accounts
   return banks
-  where 
+  where
     fetchAccountsByCompany = sqlQuery (withDB file) fetchAccount $
-                             "SELECT Account.bank_bic " ++  
-                             "FROM Company " ++ 
+                             "SELECT Account.bank_bic " ++
+                             "FROM Company " ++
                              "INNER JOIN Account ON Account.company_unp = Company.company_unp " ++
                              "WHERE Company.company_unp = " ++ unpValue ++ ";"
                                where unpValue = (toSqlValue . unp2str) unp
-                 
+
     fetchBanksByBics bics = sqlQuery withBanksManual fetchBankBranch $
-                            "SELECT * " ++ 
+                            "SELECT * " ++
                             "FROM Branch " ++
                             "WHERE branch_bic IN (" ++ bicsValue ++ ");"
-                              where bicsValue = foldl1 (++) $ intersperse ", " $ 
+                              where bicsValue = foldl1 (++) $ intersperse ", " $
                                                 map (toSqlValue . bic2str) bics
 
 listBanks :: IO [Bank]
-listBanks = sqlQuery withBanksManual fetchBankBranch 
+listBanks = sqlQuery withBanksManual fetchBankBranch
             "SELECT * FROM Branch;"
 
 --------------------------------------------------------------------------------

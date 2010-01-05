@@ -40,10 +40,10 @@ loadBalanceDialog gladePath = do
 
     accpk <- (newIORef Nothing)
     return $ BalanceDialog dialog_wnd bnk_lbl bic_lbl acc_lbl chooseAcc_btn commit_btn cancel_btn accpk
-                
+
 
 initBalanceDialog :: (IO (Maybe(AccountPK, Name))) -> (AccountPK -> IO()) -> BalanceDialog -> IO()
-initBalanceDialog chooseAcc commitRequest gui = do   
+initBalanceDialog chooseAcc commitRequest gui = do
     onClicked (chooseAcc_btn gui) $ do
         putStrLn "Changing account..."
         chosenAcc <- chooseAcc
@@ -51,10 +51,11 @@ initBalanceDialog chooseAcc commitRequest gui = do
         case chosenAcc of
             Nothing         -> writeIORef (selected_acc gui) Nothing
             Just (accpk, _) -> writeIORef (selected_acc gui) (Just accpk)
-            
+
         renderAccountInfo chosenAcc (bnk_lbl gui) (bic_lbl gui) (acc_lbl gui)
-        
-    
+        validateBalanceDialog gui
+
+
     let dialog = dialog_wnd gui
     onResponse dialog $ \responce -> do
         case responce of
@@ -68,26 +69,25 @@ initBalanceDialog chooseAcc commitRequest gui = do
             ResponseCancel -> do
                 widgetDestroy dialog
             otherwise      -> return ()
-     
+
     return ()
-    
---validateBalanceDialog :: BalanceDialog -> IO ()
---validateBalanceDialog :: gui = do
-         
---    set (commit_btn gui) [widgetSensitive ]
+
+validateBalanceDialog :: BalanceDialog -> IO ()
+validateBalanceDialog gui = (setButtonSensitive $ commit_btn gui) =<< (isRefSet $ selected_acc gui)
 
 showBalanceDialog :: Session -> IO()
 showBalanceDialog session = do
     gui <- loadBalanceDialog "Resources/balanceRequest_dialog.glade"
-    initBalanceDialog 
+    initBalanceDialog
         (showAccountChooser (dialog_wnd gui) session (profileUnp $ sessionProfile session) )
         (\_ ->  putStrLn "The request is to be commited...")
         gui
-        
-    widgetShowAll (dialog_wnd gui)
-         
 
-       
+    validateBalanceDialog gui
+    widgetShowAll (dialog_wnd gui)
+
+
+
 
 
 

@@ -13,28 +13,23 @@ import ProfileChooser (showProfileChooser)
 main :: IO ()
 main = do
     initGUI
-    showProfileChooser onSessionSelected 
+    showProfileChooser onSessionSelected
     mainGUI
-    putStrLn "MainGui" 
-    
-    where onSessionSelected msession = do
+
+    where onSessionSelected msession =
             case msession of
-                Nothing -> do
-                    putStrLn "handler>>>Nothing"
-                    mainQuit
+                Nothing -> mainQuit
                 Just session -> do
-                    putStrLn "handler>>>Just"
                     showMainWindow session onMainResponse
-                    where onMainResponse resp = do
-                            putStrLn $ show resp
+                    where onMainResponse resp =
                             if resp == ResponseOk
                                 then showProfileChooser onSessionSelected
-                                else mainQuit 
-    
-    
-    
-                                    
-     
-        
-            
-        
+                                else mainQuit
+
+
+
+
+
+
+
+

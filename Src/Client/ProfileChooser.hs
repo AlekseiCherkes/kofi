@@ -94,7 +94,7 @@ showProfileChooser handler = do
                     widgetDestroy (dialog_wnd gui)
                     handler ms
                 otherwise  -> do
-                    putStrLn "Nothing->handler"
+                    putStrLn "Nothing-> handler"
                     widgetDestroy (dialog_wnd gui)
                     handler Nothing
 
