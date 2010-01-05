@@ -14,6 +14,8 @@ import Control.Exception
 import Prelude hiding (catch)
 import qualified System.Log.Logger as Logger
 
+import Control.Monad.Error
+
 --------------------------------------------------------------------------------
 -- Logging utility functions
 --------------------------------------------------------------------------------
@@ -60,32 +62,60 @@ handleMessage cnts = catch (perform cnts) handle
           -- 4) Расшифровка сообщения.
           let dmb = decodeMessageBody recvKey (MSG.body msg)
           infoM $ "Decoded message body: " ++ dmb
-          
+    
           let r = (read dmb) :: MSG.Request
               
           -- Формирование ответа
           response <- case r of
-            MSG.CommitTransaction ct -> return $ Just "CommitTransaction not implemented."
+            MSG.CommitTransaction ct -> return $ MSG.Error "CommitTransaction not implemented."
             MSG.GetBalance apk -> getBalance cmp apk
-            MSG.GetStatement apk ct1 ct2 -> return $ Just "GetStatement not implemented."
-            MSG.GetLog apk ct1 ct2 -> return $ Just "GetLog not implemented."
+            MSG.GetStatement apk ct1 ct2 -> return $ MSG.Error "GetStatement not implemented."
+            MSG.GetLog apk ct1 ct2 -> return $ MSG.Error "GetLog not implemented."
             
-          return response
+          -- кодирование и возврат ответа
+            
+          infoM $ "Response: " ++ (show response)
+            
+          return $ Just $ show $ 
+            createMessage sendKey (MSG.BankId "0") $
+            encodeMessageBody sendKey (show response)
 
 --------------------------------------------------------------------------------
 -- Messages
 --------------------------------------------------------------------------------
 
-getBalance cmp apk = do
-  akk <- (DM.findAccountByPK apk) >>= \a ->
-    if (isJust a)
-    then (infoM $ "Found account: " ++ (show $ fromJust a))
-         >> return (fromJust a)
-    else ioError 
-         (userError $ "Can't find account by apk = " 
-          ++ (show apk) ++ " in server database.")
+type MessageMonad = ErrorT String IO MSG.Response
 
-  return $ Just $ show (DM.ballance akk)
+getBalance :: DM.Company -> AccountPK -> IO MSG.Response
+getBalance cmp apk = do
+  res <- runErrorT $ perform cmp apk
+  return $ 
+    case res of
+    (Right r) -> r
+    (Left error_msg) -> MSG.Error error_msg
+    
+perform :: DM.Company -> AccountPK -> MessageMonad
+perform cmp apk = do
+  acc <- liftIO $ DM.findAccountByPK apk
+  if (isJust acc)
+    then liftIO $ infoM $ "Found account: " ++ (show $ fromJust acc)
+    else throwError $ 
+         "Can't find account by apk = " ++ 
+         (show apk) ++ " in server database."
+         
+  bnk <- liftIO $ DM.findBankByBIC (DM.bank_bic $ fromJust acc)
+  if (isJust bnk)
+    then liftIO $ infoM $ "Found accounts bank: " ++ (show $ fromJust bnk)
+    else throwError $ 
+         "Can't find account's bank by UNP = " ++ 
+         (show $ DM.bank_bic $ fromJust acc) ++ 
+         "in banks manual database."
+
+  if ((DM.owner_unp $ fromJust acc) == (DM.unp cmp)) 
+    then liftIO $ infoM "Account belongs to author of the reqest."
+    else throwError "Author of the request hasn't have responsed account."
+
+  return $ MSG.Balance (DM.ballance $ fromJust acc)
 
 --------------------------------------------------------------------------------
 -- End of file

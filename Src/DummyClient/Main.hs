@@ -15,9 +15,9 @@ import System.IO
 sendRSAKey = ("MI8=","DQ==")
 servRecvRSAKey = ("MI8=","K0U=")
 
-myUNP = "554977918"
-apk1 = AccountPK "123456789" "000000001"
-apk2 = AccountPK "987654321" "000000001"
+myUNP = "554977918" -- "603137587" 
+apk1 = AccountPK "6165997170898" "153001266"
+apk2 = AccountPK "2094858017386" "153001266"
 
 testTransaction = CommitedTransaction { reason = "test this client server communication"
                                       , creditAccount = apk1
@@ -26,7 +26,7 @@ testTransaction = CommitedTransaction { reason = "test this client server commun
                                       , priority = Normal
                                       }
 
-msg_body = GetBalance apk1
+msg_body = GetBalance apk2
 -- body = CommitedTransaction testTransaction
 
 --------------------------------------------------------------------------------
@@ -59,7 +59,7 @@ testSend message = withSocketsDo $ do
 
 testSendAndRecv message = withSocketsDo $ do
     handle <- connectTo host port
-    hPrint handle (show message)
+    hPrint handle message
     (hGetContents handle >>= print)
     hClose handle
 
