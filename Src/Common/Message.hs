@@ -10,7 +10,7 @@ import System.Time
 -- Messages
 --------------------------------------------------------------------------------
 data SenderId = ClientId { unp :: UNP }  -- Client UNP
-              | BankId   { bin :: BIC }  -- BIC (ignored now)
+              | BankId   { bic :: String }  -- BIC (ignored now)
               deriving (Read, Show)
 
 data Message = Message { senderId :: SenderId

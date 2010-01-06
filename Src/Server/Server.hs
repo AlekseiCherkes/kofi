@@ -42,24 +42,27 @@ runServer connHandler = do
     handleException (e::SomeException) = do
       errorM $ "Exception in main thread: " ++ (show e)
 
-serviceConn name h connHandler = do
+serviceConn name handle connHandler = do
   infoM $ "Accept connection: " ++ name
-  cnts <- hGetContents h
-  infoM $ "Request contents: " ++ cnts
-  threadId <- forkIO $ (perform cnts) `catch` handleException
+  infoM $ "Starting client thread."
+  threadId <- forkIO $ (perform handle) `catch` handleException
   return ()
   where
-    perform cnts = do
+    perform h = do
+      cnts <- hGetLine h
+      infoM $ "Request contents: " ++ cnts
       resp <- connHandler cnts
       if (isJust resp)
         then do
           infoM $ "Response contents: " ++ (fromJust resp)
-          hPrint h (fromJust resp)
+          hPutStrLn h (fromJust resp)
+          hFlush h
         else 
           infoM $ "No response."
+      -- hClose h
     handleException (e::SomeException) = do
       errorM $ "Exception in client thread( " ++ name ++ " ): " ++ (show e)
-      hClose h
+      hClose handle
 
 --------------------------------------------------------------------------------
 -- End

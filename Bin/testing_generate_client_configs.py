@@ -63,13 +63,18 @@ def create_client_db(con):
                     		references Account(bank_bic)
                     );''')
 
-def fill_client_db(client_con, server_db_path, client_unp):
+def fill_client_db(client_con, server_db_path, client_info):
     client_cur = client_con.cursor()
     server_con = db.connect(database = server_db_path)
     server_cur = server_con.cursor()
     try:
-# TODO: не создавать профайлы для закрытых компаний
-        server_cur.execute('select company_unp, company_name from Company;')
+        client_cur.execute('''insert into Config values (?, ?, ?, ?, ?);''',
+                           (client_info[0], client_info[1], client_info[2],
+                           client_info[3], client_info[4]))
+        client_con.commit()
+        server_cur.execute('select company_unp, company_name \
+                            from Company \
+                            where unregistry_date is not null;')
         companies = server_cur.fetchall()
         # Create list of companies, available for our client.
         for company in companies:
@@ -91,7 +96,7 @@ def fill_client_db(client_con, server_db_path, client_unp):
         # Fill Statement table.
         for account in accounts:
             # Create statements only for accounts of this client.
-            if account[2] == client_unp:
+            if account[2] == client_info[0]:
                 statement_id = str(random.randint(0, 1000000000))
                 client_cur.execute('''insert into Statement
                                       values (?,
@@ -122,7 +127,8 @@ if __name__ == '__main__':
     server_con = db.connect(database = server_db_path)
     server_cur = server_con.cursor()
     try:
-        server_cur.execute('select company_unp, company_name from Company;')
+        server_cur.execute('select company_unp, company_name, registry_date, \
+                            client_recv_key, client_send_key from Company;')
         clients_info = server_cur.fetchall()
     finally:
         server_con.close()
@@ -143,7 +149,7 @@ if __name__ == '__main__':
         client_con = db.connect(database = client_name)
         try:
             create_client_db(client_con)
-            fill_client_db(client_con, server_db_path, client_info[0])
+            fill_client_db(client_con, server_db_path, client_info)
         finally:
             client_con.close()
 

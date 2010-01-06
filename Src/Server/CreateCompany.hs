@@ -3,6 +3,7 @@ module Main()
 
 import Crypto
 import DataModel
+import Types
 
 import Loggers
 
@@ -60,10 +61,10 @@ rand min max = getStdRandom $ randomR (min, max)
                              
 generateUnp = do
   unp <- rand min max
-  return (show $ unp)
+  return $ str2unp (show $ unp)
   where 
-    min = 10^8::Integer
-    max = 10^9 - 1::Integer
+    min = 10^12::Integer
+    max = 10^13 - 1::Integer
     
 findNearestPrime r fn | fn `mod` p == 0 = findNearestPrime (r + 1) fn
                       | otherwise = p
@@ -107,6 +108,8 @@ main = withUtilityLoggers $ \_ -> do
   let (clientSendKey, serverRecvKey) = generateKeyPair r1 r2 r3
   let (serverSendKey, clientRecvKey) = generateKeyPair r4 r5 r6
       
+  print $ unp2str unp
+      
   let cmp = Company { unp = unp
                     , name = name
                     , registryDate = date
@@ -119,7 +122,7 @@ main = withUtilityLoggers $ \_ -> do
 
   insertCompany cmp
   
-  print unp
+  print $ unp2str unp
   print name
   print date
   print clientRecvKey

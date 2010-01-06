@@ -10,6 +10,7 @@ import qualified System.Log.Handler
 
 withServerLoggers = bracket (acquireServerLoggers "server") releaseLoggers
 withUtilityLoggers = bracket (acquireUtilityLoggers "uility") releaseLoggers
+withClientLogger unp = bracket (acquireClientLogger "server" unp) releaseLoggers
 
 logDir = "log/"
 logFileHandler path = fileHandler (logDir ++ path)
@@ -36,7 +37,7 @@ acquireServerLoggers appName = do
 acquireUtilityLoggers appName = do
   createDirectoryIfMissing True logDir
   
-  stderrH <- verboseStreamHandler stderr INFO
+  stderrH <- verboseStreamHandler stderr ERROR
   h <- logFileHandler (appName ++ "-root") DEBUG
   dbH <- logFileHandler (appName ++ "-root-db") DEBUG
   
@@ -45,6 +46,16 @@ acquireUtilityLoggers appName = do
   updateGlobalLogger "root.db" (setLevel DEBUG . setHandlers [dbH])
   
   return [h, dbH]
+  
+acquireClientLogger appName unp = do 
+  createDirectoryIfMissing True logDir
+  
+  h <- logFileHandler (appName ++ "-root-client-" ++ unp) DEBUG
+  
+  updateGlobalLogger ("root.client." ++ unp) (setLevel DEBUG . setHandlers [h])
+  
+  return [h]
+
 
 
 releaseLoggers loggers = mapM (System.Log.Handler.close) loggers

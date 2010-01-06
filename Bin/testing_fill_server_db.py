@@ -108,8 +108,8 @@ def fill_Account(companies, accounts_per_company, banks):
             for i in range(accounts_per_company):
                 #balance = (int(company[0]) + int(bank_bic)) / 1000000
                 balance = 100 + 10 * total_acc_count
-                process = subprocess.Popen(['Server\create_account', company[0], \
-                    bank_bic, str(balance)], cwd = 'Server', shell=False, \
+                args = ['Server\create_account', company[0], bank_bic, str(balance)]
+                process = subprocess.Popen(args, cwd = 'Server', shell=False, \
                     stdin=subprocess.PIPE, stdout=subprocess.PIPE, \
                     stderr=subprocess.PIPE)
                 # Get return code.
@@ -117,7 +117,10 @@ def fill_Account(companies, accounts_per_company, banks):
                 returncode = process.returncode
                 if returncode != 0:
                     # Error occure.
-                    print 'Error ' + str(returncode) + ': ', process.stdout.readlines()
+                    print 'Error ' + str(returncode) + ' in create_account.exe: '
+                    print 'stdout: ', process.stdout.readlines()
+                    print 'stderr: ', process.stderr.readlines()
+                    print 'args: ', args
                     print 'In [testing_fill_server_db.py].fill_Account(...)'
                     exit()
                 account_id = process.stdout.readlines()
