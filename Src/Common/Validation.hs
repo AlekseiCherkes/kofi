@@ -17,7 +17,7 @@ isValidDouble lexem =
         
         
 isValidAmount :: String -> Bool
-isValidAmount = isValidDouble
+isValidAmount str = (isValidDouble str) && ((read str)::Double) > 0
 
 
 
