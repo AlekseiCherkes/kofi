@@ -5,6 +5,8 @@
   <widget class="GtkDialog" id="dialog_wnd">
     <property name="border_width">5</property>
     <property name="title" translatable="yes">&#x412;&#x44B;&#x431;&#x43E;&#x440; &#x43F;&#x440;&#x43E;&#x444;&#x438;&#x43B;&#x44F;</property>
+    <property name="default_width">300</property>
+    <property name="default_height">140</property>
     <property name="type_hint">normal</property>
     <property name="has_separator">False</property>
     <child internal-child="vbox">
@@ -16,11 +18,12 @@
           <widget class="GtkHPaned" id="hpaned1">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="position">100</property>
             <child>
               <widget class="GtkScrolledWindow" id="scrolledwindow1">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="vadjustment">0 0 203 20.300000000000001 182.70000000000002 203</property>
+                <property name="vadjustment">0 0 187 18.699999999999999 168.30000000000001 187</property>
                 <property name="hscrollbar_policy">automatic</property>
                 <property name="vscrollbar_policy">automatic</property>
                 <property name="shadow_type">etched-in</property>

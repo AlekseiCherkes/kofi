@@ -118,17 +118,20 @@ fetchKeys stmt = do
 
 --------------------------------------------------------------------------------
 -- Profiles
---------------------------------------------------------------------------------
+--------------------------------------------------------------------------------   
 findProfileByPath :: FilePath -> IO Profile
-findProfileByPath file = do
-    clock <- getClockTime
-    time  <- toCalendarTime clock
-    return $ Profile (str2unp "0123456789012") "Some company." time
+findProfileByPath file = sqlQueryGetFirst $
+                         sqlQuery (withDB file) fetchProfile $
+                         "SELECT * FROM Config;"
 
 loadSessionByProfilePath :: FilePath -> IO (Maybe Session)
-loadSessionByProfilePath file =  do
-    profile <- findProfileByPath file
-    return $ Just $ Session profile "FilePath"
+loadSessionByProfilePath file = do 
+  profile <- findProfileByPath file
+  (recvKey, sendKey) <- sqlQueryGetFirst $
+                       sqlQuery (withDB file) fetchKeys  $
+                       "SELECT * FROM Config;"
+
+  return $ Just (Session profile file recvKey sendKey)
 
 
 --------------------------------------------------------------------------------

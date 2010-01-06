@@ -25,7 +25,7 @@ isValidBic :: String -> Bool
 isValidBic str = ((length str) `elem` [3, 9]) && isValidInteger str
 
 isValidUnp :: String -> Bool
-isValidUnp str = (length str == 13) && isValidInteger str
+isValidUnp str = ((length str) `elem` [13, 9]) && isValidInteger str
 
 isValidAcc :: String -> Bool
 isValidAcc str = (length str == 13) && isValidInteger str
