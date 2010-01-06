@@ -150,11 +150,17 @@ def fill_CommitedTransaction(server_db_path, accounts):
             for bnfc_account in accounts:
                 if payer_account != bnfc_account:
                     trn_id = str(random.randint(0, 1000000000))
+                    minutes = str(random.randint(0, 60))
+                    hours = str(random.randint(0, 24))
+                    day = str(random.randint(1, 30))
+                    month = str(random.randint(1, 12))
+                    year = '2009'
+                    open_date = year + '-' + month + '-' + day + ' ' + hours + ':' + minutes
                     money_amount = payer_account[3] / 2.0
                     cu.execute('''insert into CommitedTransaction
                                   values(?,
-                                         current_timestamp,
-                                         current_timestamp,
+                                         ?,
+                                         ?,
                                          0,
                                         'trn_content',
                                         'trn_reason',
@@ -164,6 +170,8 @@ def fill_CommitedTransaction(server_db_path, accounts):
                                         0
                                         );''',
                                 (trn_id,
+                                open_date,
+                                open_date,
                                 payer_account[0],
                                 payer_account[2],
                                 payer_account[3] - money_amount,
@@ -199,6 +207,9 @@ def print_statistic(server_db_path):
 
 
 if __name__ == '__main__':
+    company_names = []
+    for line in open('Server/clients.txt'):
+        company_names.append(line)
     banks = get_banks_manual(banks_manual_db_path, banks_count)
     companies = fill_Company(company_names)
     accounts = fill_Account(companies, accounts_per_company, banks)
