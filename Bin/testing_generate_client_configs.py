@@ -73,8 +73,8 @@ def fill_client_db(client_con, server_db_path, client_info):
                            client_info[3], client_info[4]))
         client_con.commit()
         server_cur.execute('select company_unp, company_name \
-                            from Company \
-                            where unregistry_date is not null;')
+                            from Company ;')
+                            ##where unregistry_date is not null;')
         companies = server_cur.fetchall()
         # Create list of companies, available for our client.
         for company in companies:

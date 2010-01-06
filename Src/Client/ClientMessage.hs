@@ -4,8 +4,12 @@ import Network
 import System.IO
 
 -- Common imports
-import Types ()
+import Types
 import Message
+import Crypto
+
+-- Client imports
+import ClientEntities
 
 
 
@@ -13,22 +17,38 @@ host = "127.0.0.1"
 port = PortNumber 6555
 
 
-
-testSend message = withSocketsDo $ do
-    handle <- connectTo host port
-    hPrint handle (show message)
-    hClose handle
-                                                  
-
+sendRequest :: Session -> Request -> IO Response
+sendRequest session request = do
+  let unp        = (profileUnp .sessionProfile) session
+  let sendRSAKey = ("MI8=","DQ==") --sessionSendKey session
+  let recvRSAKey = ("R2s=","BV0=") --sessionRecvKey session
+  
     
-testLogToConsole :: (Show a) => a -> IO ()
-testLogToConsole message= do
-  print ("Send transaction: " ++ (show message))
+  let mb = (show request)  
+  let emb = encodeMessageBody sendRSAKey mb
+  let msg = createMessage sendRSAKey (ClientId unp) emb
+       
+  print $ "Message body: " ++ mb
+  print $ "Encrypted message body: " ++ emb
+  testSendAndRecv msg recvRSAKey
+
+testSendAndRecv :: Message -> RSAKey -> IO Response
+testSendAndRecv message recvRSAKey = do
+  h <- connectTo host port
+  hPutStrLn h (show message)
+  hFlush h
+  ret <- hGetLine h
+  hClose h
+  print $ "Response: " ++ ret
+  let msg = read ret :: Message
+  print $ "Msg: " ++ (show msg)
+  let dmb = decodeMessageBody recvRSAKey $ body msg
+  print $ "Decoded response: " ++ dmb
+  return $ read dmb
+
+
+
   
   
   
-makeMessage :: String -> Request -> Message
-makeMessage unp request = Message { senderId = ClientId unp
-                                  , body = show request
-                                  , digest = "0"
-                                  }
+

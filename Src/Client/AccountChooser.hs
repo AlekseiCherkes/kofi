@@ -4,6 +4,7 @@ module AccountChooser where
 import Data.List ( isPrefixOf )
 import Data.Char ( toLower )
 import Data.IORef
+import Control.Monad (liftM2)
 
 -- Gtk imports
 import Graphics.UI.Gtk
@@ -16,6 +17,7 @@ import Types
 --Client imports
 import GtkCommon
 import ClientEntities
+import DataModel
 
 
 
@@ -44,8 +46,7 @@ loadAccChooser gladePath = do
 
 initAccChooser :: Session -> UNP -> AccChooserDialog -> IO()
 initAccChooser session unp gui = do
-    -- let unp = sessionUnp session
-    --writeIORef (selected_bic gui) (Nothing)         
+    let path = sessionPath session         
            
     bnkModel <- listStoreNew ([]::[Bank])
     accModel <- listStoreNew ([]::[ACC ])
@@ -58,31 +59,29 @@ initAccChooser session unp gui = do
         ("Номер Счета", acc2str)]
         
     let onBankSelected = \bank -> do
-        putStrLn $ show bank
         writeIORef (selected_acc gui) (Nothing)
         writeIORef (selected_bnk gui) (Just bank)
-        let accs = ["1234567890123", "9876543210987"] 
-        refillListStore accModel $ map str2acc accs
+        accs <- findAccountsByCompanyAndBank path unp (bnkBic bank) 
+        refillListStore accModel $ map (accId . accPk) accs
+        validateAccountChooser gui
         
     let onAccSelected = \acc -> do
         putStrLn "AccountSelected"
         writeIORef (selected_acc gui) (Just acc)
+        validateAccountChooser gui
       
     bindTreeViewHandlers  bankDoesMatch onBankSelected (banks_tv    gui) bnkModel
     bindTreeViewHandlers  accDoesMatch  onAccSelected  (accounts_tv gui) accModel
     
-
-    let banks = [Bank { bnkBic = str2bic "001", bnkName = "Альфа Банк"      }
-                ,Bank { bnkBic = str2bic "002", bnkName = "Приор Банк"      }
-                ,Bank { bnkBic = str2bic "003", bnkName = "БелАгроПром Банк"}
-                ,Bank { bnkBic = str2bic "004", bnkName = "ВТБ Банк"        }
-                ,Bank { bnkBic = str2bic "005", bnkName = "БПС Банк"        }
-                ,Bank { bnkBic = str2bic "006", bnkName = "БелСвис Банк"    }
-                ,Bank { bnkBic = str2bic "007", bnkName = "Белинвест Банк"  }]
-    
+    banks <- findBanksByCompany path unp
     refillListStore bnkModel banks  
     
-    
+
+validateAccountChooser :: AccChooserDialog -> IO ()
+validateAccountChooser gui = do
+    let isSet = \getter -> isRefSet $ getter gui
+    let andM  = liftM2 (&&)
+    setButtonSensitive (pickAcc_btn gui) =<< isSet selected_bnk `andM` isSet selected_acc    
 
 getChoosedAccountPk :: AccChooserDialog -> IO ( Maybe (AccountPK, Name) )
 getChoosedAccountPk gui = do
@@ -107,6 +106,7 @@ showAccountChooser :: (WindowClass twin)=> twin -> Session -> UNP -> IO (Maybe (
 showAccountChooser parent session unp  = do
     gui <- loadAccChooser "Resources/accountChooser_dialog.glade"
     initAccChooser session unp gui
+    validateAccountChooser gui
     windowSetTransientFor (accChooser_dlg gui) parent 
     responce <- dialogRun (accChooser_dlg gui)
     putStrLn "Responce received"

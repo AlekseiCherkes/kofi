@@ -10,11 +10,13 @@ import Graphics.UI.Gtk.Glade
 
 -- Common imports
 import Types
+import Message
 
 -- Client imports
 import GtkCommon
 import ClientEntities
 import AccountChooser (showAccountChooser)
+import ClientMessage  (sendRequest)
 
 
 
@@ -45,9 +47,7 @@ loadBalanceDialog gladePath = do
 initBalanceDialog :: (IO (Maybe(AccountPK, Name))) -> (AccountPK -> IO()) -> BalanceDialog -> IO()
 initBalanceDialog chooseAcc commitRequest gui = do
     onClicked (chooseAcc_btn gui) $ do
-        putStrLn "Changing account..."
         chosenAcc <- chooseAcc
-        putStrLn $ show chosenAcc
         case chosenAcc of
             Nothing         -> writeIORef (selected_acc gui) Nothing
             Just (accpk, _) -> writeIORef (selected_acc gui) (Just accpk)
@@ -80,13 +80,25 @@ showBalanceDialog session = do
     gui <- loadBalanceDialog "Resources/balanceRequest_dialog.glade"
     initBalanceDialog
         (showAccountChooser (dialog_wnd gui) session (profileUnp $ sessionProfile session) )
-        (\_ ->  putStrLn "The request is to be commited...")
+        (commitRequest gui)
         gui
 
     validateBalanceDialog gui
     widgetShowAll (dialog_wnd gui)
-
-
+    
+    where commitRequest gui accpk = do
+            servResp <- sendRequest session (GetBalance accpk)
+            dialog <- case servResp of
+                Balance amount -> messageDialogNew Nothing [DialogModal] MessageInfo ButtonsOk ("Баланс вашего счета: " ++ show amount ++ ".")
+                Error   msg    -> messageDialogNew Nothing [DialogModal] MessageError ButtonsClose ("Ошибка: " ++ msg ++ ".")
+                otherwise      -> do
+                    msg_dialog <- messageDialogNew Nothing [DialogModal] MessageError ButtonsClose ("Сервер ответил неверно: ")
+                    messageDialogSetSecondaryText msg_dialog (show servResp)
+                    return msg_dialog
+            
+            windowSetTransientFor dialog (dialog_wnd gui)
+            dialogRun dialog
+            widgetDestroy dialog
 
 
 
