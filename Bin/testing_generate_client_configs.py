@@ -5,7 +5,7 @@ import random
 import sqlite3 as db
 
 server_db_path = 'Server/server.db'
-client_dir = 'Client/profile'
+client_dir = 'Client/Profiles'
 
 def create_client_db(con):
     cur = con.cursor()
@@ -75,6 +75,7 @@ def fill_client_db(client_con, server_db_path, client_info):
         server_cur.execute('select company_unp, company_name \
                             from Company ;')
                             ##where unregistry_date is not null;')
+
         companies = server_cur.fetchall()
         # Create list of companies, available for our client.
         for company in companies:

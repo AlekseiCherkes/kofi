@@ -2,7 +2,7 @@ module DataModel
     where
 
 import Types
-import Crypto
+import Message
 
 import Data.List
 import Data.Maybe
@@ -46,6 +46,7 @@ formatValues values = foldl1 (++) $ intersperse ", " values
 unpToSql unp = toSqlValue $ unp2str unp
 bicToSql bic = toSqlValue $ bic2str bic
 accToSql acc = toSqlValue $ acc2str acc
+amountToSql amount = toSqlValue amount
 
 --------------------------------------------------------------------------------
 -- Common functions
@@ -89,28 +90,42 @@ sqlQueryRec connector fetcher q = do
 -- Data types
 --------------------------------------------------------------------------------
 
-data Company = Company { unp :: UNP
-                       , name :: String
-                       , registryDate :: CalendarTime
-                       , unregistryDate :: Maybe CalendarTime
-                       , serverRecvKey :: RSAKey
-                       , serverSendKey :: RSAKey
-                       , clientRecvKey :: RSAKey
-                       , clientSendKey :: RSAKey
+data Company = Company { companyUnp :: UNP
+                       , companyName :: String
+                       , companyRegistryDate :: CalendarTime
+                       , companyUnregistryDate :: Maybe CalendarTime
+                       , companyServerRecvKey :: RSAKey
+                       , companyServerSendKey :: RSAKey
+                       , companyClientRecvKey :: RSAKey
+                       , companyClientSendKey :: RSAKey
                        }
                deriving (Read, Show)
                         
-data Account = Account { acc_pk :: AccountPK
-                       , owner_unp :: UNP
-                       , ballance :: Double
-                       , open_date :: CalendarTime
-                       , close_date :: Maybe CalendarTime
+data Account = Account { accountPK :: AccountPK
+                       , accountOwnerUnp :: UNP
+                       , accountBallance :: Double
+                       , accountOpenDate :: CalendarTime
+                       , accountCloseDate :: Maybe CalendarTime
                        }               
                deriving (Read, Show)
                         
-data Bank = Bank { branch_bic :: BIC
-                 , bank_bank_bic :: String
-                 , bank_name :: String 
+data Transaction = Transaction { transactionId :: Int -- may be 0 while insertion
+                               , transactionCommitDate :: CalendarTime -- hasn't using while insertion
+                               , transactionReciveDate :: CalendarTime
+                               , transactionStatusId :: Int
+                               , transactionContent :: String
+                               , transactionReason :: String
+                               , transactionPayerAccountPK :: AccountPK
+                               , transactionBnfcAccountPK :: AccountPK
+                               , transactionPayerFinalBalance :: Maybe Double
+                               , transactionBnfcFinalBalance :: Maybe Double
+                               , transactionAmount :: Double
+                               , transactionPriority :: TransactionPriority
+                               }
+                        
+data Bank = Bank { bankBranchBic :: BIC
+                 , bankBankBic :: String
+                 , bankName :: String 
                  }
           deriving (Read, Show)
                    
@@ -204,14 +219,14 @@ fetchBank stmt = do
 
 insertCompany company = sqlExec withServerDB cmd
   where cmd = "INSERT INTO Company VALUES (" ++ values ++");"
-        values = formatValues [ toSqlValue $ unp2str $ unp company
-                              , toSqlValue $ name company
-                              , toSqlValue $ toClockTime (registryDate company)
-                              , clockValue $ unregistryDate company
-                              , toSqlValue $ show $ serverRecvKey company 
-                              , toSqlValue $ show $ serverSendKey company
-                              , toSqlValue $ show $ clientRecvKey company 
-                              , toSqlValue $ show $ clientSendKey company ]
+        values = formatValues [ toSqlValue $ unp2str $ companyUnp company
+                              , toSqlValue $ companyName company
+                              , toSqlValue $ toClockTime (companyRegistryDate company)
+                              , clockValue $ companyUnregistryDate company
+                              , toSqlValue $ show $ companyServerRecvKey company 
+                              , toSqlValue $ show $ companyServerSendKey company
+                              , toSqlValue $ show $ companyClientRecvKey company 
+                              , toSqlValue $ show $ companyClientSendKey company ]
           where clockValue (Just a) = toSqlValue $ toClockTime a
                 clockValue Nothing = "NULL"
 
@@ -225,12 +240,12 @@ findCompanyByUNP unp = sqlQueryRec withServerDB fetchCompany q
 
 insertAccount account = sqlExec withServerDB cmd
   where cmd = "INSERT INTO Account VALUES(" ++ values ++");"
-        values = formatValues [ toSqlValue $ acc2str $ accId $ acc_pk account
-                              , toSqlValue $ bic2str $ bankBic $ acc_pk account
-                              , toSqlValue $ unp2str $ owner_unp account
-                              , toSqlValue $ ballance account
-                              , toSqlValue $ toClockTime (open_date account)
-                              , clockValue $ close_date account ]
+        values = formatValues [ toSqlValue $ acc2str $ accId $ accountPK account
+                              , toSqlValue $ bic2str $ bankBic $ accountPK account
+                              , toSqlValue $ unp2str $ accountOwnerUnp account
+                              , toSqlValue $ accountBallance account
+                              , toSqlValue $ toClockTime (accountOpenDate account)
+                              , clockValue $ accountCloseDate account ]
           where clockValue (Just a) = toSqlValue $ toClockTime a
                 clockValue Nothing = "NULL"                 
 
@@ -238,6 +253,12 @@ findAccountByPK apk = sqlQueryRec withServerDB fetchAccount q
   where q = "SELECT * FROM Account " ++
             "WHERE acc_id = " ++ (accToSql $ accId apk) ++ 
             "AND bank_bic = " ++ (bicToSql $ bankBic apk) ++ ";"
+            
+updateAccountBallance accountPK ballance = sqlExec withServerDB cmd
+  where cmd = "UPDATE Account " ++ 
+              "SET ballance = " ++ (toSqlValue $ show ballance) ++ " " ++
+              "WHERE acc_id = " ++ (accToSql $ accId  accountPK) ++ " " ++
+              "AND bank_bic = " ++ (bicToSql $ bankBic accountPK) ++ ";"
 
 --------------------------------------------------------------------------------
 -- Bank
@@ -250,6 +271,23 @@ findBankByBIC bic = sqlQueryRec withManualDB fetchBank q
 --------------------------------------------------------------------------------
 -- Transactions
 --------------------------------------------------------------------------------
+
+insertTransaction t = sqlExec withServerDB cmd
+  where cmd = "INSERT INTO CommitedTransaction VALUES(" ++ values ++ ");"
+        values = formatValues [ "NULL" -- autoincremented primary key
+                              , "current_timestamp" -- commit date
+                              , toSqlValue $ toClockTime (transactionReciveDate t)
+                              , toSqlValue $ transactionStatusId t
+                              , toSqlValue $ transactionContent t
+                              , toSqlValue $ transactionReason t
+                              , toSqlValue $ acc2str $ accId $ transactionPayerAccountPK t
+                              , toSqlValue $ bic2str $ bankBic $ transactionPayerAccountPK t
+                              , toSqlValue $ acc2str $ accId $ transactionBnfcAccountPK t
+                              , toSqlValue $ bic2str $ bankBic $ transactionBnfcAccountPK t
+                              , toSqlValue $ transactionPayerFinalBalance t
+                              , toSqlValue $ transactionBnfcFinalBalance t
+                              , toSqlValue $ transactionAmount t
+                              , toSqlValue $ (0 :: Int) ] -- transactionPriority t ]
 
 --------------------------------------------------------------------------------
 -- End

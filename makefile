@@ -12,8 +12,7 @@ HSFLAGS_OUR := $(HSFLAGS) -XDisambiguateRecordFields -W -iSrc/Common -i./ -iSrc/
 CFLAGS_UOR := -ISrc/ThirdParty/CBits/sqlite3
 
 .PHONY: all
-all: third_party create_company create_account server client dummy_client
-	make -C ./Bin
+all: third_party create_company create_account server client dummy_client bin
 
 .PHONY: server
 server: Src/Server/Main.hs
@@ -34,6 +33,10 @@ client: third_party Src/Client/Main.hs
 .PHONY: dummy_client
 dummy_client: Src/DummyClient/Main.hs
 	ghc --make -iSrc/DummyClient -o Bin/DummyClient/client $(HSFLAGS_OUR) Src/DummyClient/Main.hs $(CBITS_O)
+
+.PHONY: bin
+bin:
+	make -C ./Bin
 
 # .PHONY : clean
 # clean: #clean_database clean # clean_cbits 
