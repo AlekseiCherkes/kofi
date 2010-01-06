@@ -25,7 +25,7 @@ create table Company (
 );
 					  
 create table CommitedTransaction (
-	trn_id int not null,
+	trn_id integer not null,
 	commit_date datetime not null,
 	recive_date datetime not null,
 	status_id int not null,
@@ -33,9 +33,9 @@ create table CommitedTransaction (
 	reason varchar(1000) not null,
 	payer_acc_id char(13) not null,
 	payer_bank_bic char(9) not null,
-	payer_final_balance money null,
 	bnfc_acc_id char(13) not null,
 	bnfc_bank_unp char(9) not null,
+	payer_final_balance money null,
 	bnfc_final_balance money null,
 	amount money not null,
 	priority int not null,

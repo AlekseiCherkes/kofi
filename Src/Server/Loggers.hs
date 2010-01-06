@@ -12,7 +12,7 @@ withServerLoggers = bracket (acquireServerLoggers "server") releaseLoggers
 withUtilityLoggers = bracket (acquireUtilityLoggers "uility") releaseLoggers
 withClientLogger unp = bracket (acquireClientLogger "server" unp) releaseLoggers
 
-logDir = "log/"
+logDir = "Logs/"
 logFileHandler path = fileHandler (logDir ++ path)
 
 acquireServerLoggers appName = do

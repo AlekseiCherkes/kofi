@@ -2,7 +2,7 @@ module DataModel
     where
 
 import Types
-import Crypto
+import Message
 
 import Data.List
 import Data.Maybe
@@ -46,6 +46,7 @@ formatValues values = foldl1 (++) $ intersperse ", " values
 unpToSql unp = toSqlValue $ unp2str unp
 bicToSql bic = toSqlValue $ bic2str bic
 accToSql acc = toSqlValue $ acc2str acc
+amountToSql amount = toSqlValue amount
 
 --------------------------------------------------------------------------------
 -- Common functions
@@ -107,6 +108,20 @@ data Account = Account { accountPK :: AccountPK
                        , accountCloseDate :: Maybe CalendarTime
                        }               
                deriving (Read, Show)
+                        
+data Transaction = Transaction { transactionId :: Int -- may be 0 while insertion
+                               , transactionCommitDate :: CalendarTime -- hasn't using while insertion
+                               , transactionReciveDate :: CalendarTime
+                               , transactionStatusId :: Int
+                               , transactionContent :: String
+                               , transactionReason :: String
+                               , transactionPayerAccountPK :: AccountPK
+                               , transactionBnfcAccountPK :: AccountPK
+                               , transactionPayerFinalBalance :: Maybe Double
+                               , transactionBnfcFinalBalance :: Maybe Double
+                               , transactionAmount :: Double
+                               , transactionPriority :: TransactionPriority
+                               }
                         
 data Bank = Bank { bankBranchBic :: BIC
                  , bankBankBic :: String
@@ -238,6 +253,12 @@ findAccountByPK apk = sqlQueryRec withServerDB fetchAccount q
   where q = "SELECT * FROM Account " ++
             "WHERE acc_id = " ++ (accToSql $ accId apk) ++ 
             "AND bank_bic = " ++ (bicToSql $ bankBic apk) ++ ";"
+            
+updateAccountBallance accountPK ballance = sqlExec withServerDB cmd
+  where cmd = "UPDATE Account " ++ 
+              "SET ballance = " ++ (toSqlValue $ show ballance) ++ " " ++
+              "WHERE acc_id = " ++ (accToSql $ accId  accountPK) ++ " " ++
+              "AND bank_bic = " ++ (bicToSql $ bankBic accountPK) ++ ";"
 
 --------------------------------------------------------------------------------
 -- Bank
@@ -250,6 +271,23 @@ findBankByBIC bic = sqlQueryRec withManualDB fetchBank q
 --------------------------------------------------------------------------------
 -- Transactions
 --------------------------------------------------------------------------------
+
+insertTransaction t = sqlExec withServerDB cmd
+  where cmd = "INSERT INTO CommitedTransaction VALUES(" ++ values ++ ");"
+        values = formatValues [ "NULL" -- autoincremented primary key
+                              , "current_timestamp" -- commit date
+                              , toSqlValue $ toClockTime (transactionReciveDate t)
+                              , toSqlValue $ transactionStatusId t
+                              , toSqlValue $ transactionContent t
+                              , toSqlValue $ transactionReason t
+                              , toSqlValue $ acc2str $ accId $ transactionPayerAccountPK t
+                              , toSqlValue $ bic2str $ bankBic $ transactionPayerAccountPK t
+                              , toSqlValue $ acc2str $ accId $ transactionBnfcAccountPK t
+                              , toSqlValue $ bic2str $ bankBic $ transactionBnfcAccountPK t
+                              , toSqlValue $ transactionPayerFinalBalance t
+                              , toSqlValue $ transactionBnfcFinalBalance t
+                              , toSqlValue $ transactionAmount t
+                              , toSqlValue $ (0 :: Int) ] -- transactionPriority t ]
 
 --------------------------------------------------------------------------------
 -- End

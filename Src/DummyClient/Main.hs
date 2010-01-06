@@ -27,8 +27,8 @@ testTransaction = CommitedTransaction { reason = "test this client server commun
                                       , priority = Normal
                                       }
 
-msg_body = GetBalance apk2
--- body = CommitedTransaction testTransaction
+-- msg_body = GetBalance apk2
+msg_body = CommitTransaction testTransaction
 
 --------------------------------------------------------------------------------
 -- Main
