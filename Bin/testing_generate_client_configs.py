@@ -134,6 +134,16 @@ if __name__ == '__main__':
     finally:
         server_con.close()
 
+    # Remove old dir.
+    for root, dirs, files in os.walk(client_dir):
+        for _file in files:
+            full_path = os.path.join(root, _file)
+            os.remove(full_path)
+    try:
+        os.rmdir(client_dir)
+    except:
+        pass
+
     # Create directory for clients DBs.
     try:
         os.mkdir(client_dir)
@@ -141,12 +151,7 @@ if __name__ == '__main__':
         pass
     # Create clients DBs.
     for client_info in clients_info:
-        client_name = client_dir + '/' + client_info[0] + '.db'# + '(' + client_info[1] + ').db'
-        # Remove previous DB.
-        try:
-            os.remove(client_name)
-        except:
-            pass
+        client_name = client_dir + '/' + client_info[0] + '.db'
         client_con = db.connect(database = client_name)
         try:
             create_client_db(client_con)
