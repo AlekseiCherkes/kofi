@@ -12,13 +12,13 @@ import Control.Exception
 import Control.Concurrent
 import Control.Concurrent.Chan
 
-data Transaction = Transaction { unp :: UNP
-                               , payerAccPk :: AccountPK
-                               , bnfcAccPk :: AccountPK
-                               , amount :: Double
-                               , reciveDate :: CalendarTime
-                               , content :: String
-                               , reason :: String }
+data Transaction = Transaction { transactionUnp :: UNP
+                               , transactionPayerAccPk :: AccountPK
+                               , transactionBnfcAccPk :: AccountPK
+                               , transactionAmount :: Double
+                               , transactionReciveDate :: CalendarTime
+                               , transactionContent :: String
+                               , transactionReason :: String }
                  deriving(Read, Show)
           
 processTransaction :: Transaction -> IO ()

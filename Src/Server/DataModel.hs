@@ -89,28 +89,28 @@ sqlQueryRec connector fetcher q = do
 -- Data types
 --------------------------------------------------------------------------------
 
-data Company = Company { unp :: UNP
-                       , name :: String
-                       , registryDate :: CalendarTime
-                       , unregistryDate :: Maybe CalendarTime
-                       , serverRecvKey :: RSAKey
-                       , serverSendKey :: RSAKey
-                       , clientRecvKey :: RSAKey
-                       , clientSendKey :: RSAKey
+data Company = Company { companyUnp :: UNP
+                       , companyName :: String
+                       , companyRegistryDate :: CalendarTime
+                       , companyUnregistryDate :: Maybe CalendarTime
+                       , companyServerRecvKey :: RSAKey
+                       , companyServerSendKey :: RSAKey
+                       , companyClientRecvKey :: RSAKey
+                       , companyClientSendKey :: RSAKey
                        }
                deriving (Read, Show)
                         
-data Account = Account { acc_pk :: AccountPK
-                       , owner_unp :: UNP
-                       , ballance :: Double
-                       , open_date :: CalendarTime
-                       , close_date :: Maybe CalendarTime
+data Account = Account { accountPK :: AccountPK
+                       , accountOwnerUnp :: UNP
+                       , accountBallance :: Double
+                       , accountOpenDate :: CalendarTime
+                       , accountCloseDate :: Maybe CalendarTime
                        }               
                deriving (Read, Show)
                         
-data Bank = Bank { branch_bic :: BIC
-                 , bank_bank_bic :: String
-                 , bank_name :: String 
+data Bank = Bank { bankBranchBic :: BIC
+                 , bankBankBic :: String
+                 , bankName :: String 
                  }
           deriving (Read, Show)
                    
@@ -204,14 +204,14 @@ fetchBank stmt = do
 
 insertCompany company = sqlExec withServerDB cmd
   where cmd = "INSERT INTO Company VALUES (" ++ values ++");"
-        values = formatValues [ toSqlValue $ unp2str $ unp company
-                              , toSqlValue $ name company
-                              , toSqlValue $ toClockTime (registryDate company)
-                              , clockValue $ unregistryDate company
-                              , toSqlValue $ show $ serverRecvKey company 
-                              , toSqlValue $ show $ serverSendKey company
-                              , toSqlValue $ show $ clientRecvKey company 
-                              , toSqlValue $ show $ clientSendKey company ]
+        values = formatValues [ toSqlValue $ unp2str $ companyUnp company
+                              , toSqlValue $ companyName company
+                              , toSqlValue $ toClockTime (companyRegistryDate company)
+                              , clockValue $ companyUnregistryDate company
+                              , toSqlValue $ show $ companyServerRecvKey company 
+                              , toSqlValue $ show $ companyServerSendKey company
+                              , toSqlValue $ show $ companyClientRecvKey company 
+                              , toSqlValue $ show $ companyClientSendKey company ]
           where clockValue (Just a) = toSqlValue $ toClockTime a
                 clockValue Nothing = "NULL"
 
@@ -225,12 +225,12 @@ findCompanyByUNP unp = sqlQueryRec withServerDB fetchCompany q
 
 insertAccount account = sqlExec withServerDB cmd
   where cmd = "INSERT INTO Account VALUES(" ++ values ++");"
-        values = formatValues [ toSqlValue $ acc2str $ accId $ acc_pk account
-                              , toSqlValue $ bic2str $ bankBic $ acc_pk account
-                              , toSqlValue $ unp2str $ owner_unp account
-                              , toSqlValue $ ballance account
-                              , toSqlValue $ toClockTime (open_date account)
-                              , clockValue $ close_date account ]
+        values = formatValues [ toSqlValue $ acc2str $ accId $ accountPK account
+                              , toSqlValue $ bic2str $ bankBic $ accountPK account
+                              , toSqlValue $ unp2str $ accountOwnerUnp account
+                              , toSqlValue $ accountBallance account
+                              , toSqlValue $ toClockTime (accountOpenDate account)
+                              , clockValue $ accountCloseDate account ]
           where clockValue (Just a) = toSqlValue $ toClockTime a
                 clockValue Nothing = "NULL"                 
 

@@ -110,15 +110,9 @@ main = withUtilityLoggers $ \_ -> do
       
   print $ unp2str unp
       
-  let cmp = Company { unp = unp
-                    , name = name
-                    , registryDate = date
-                    , unregistryDate = Nothing
-                    , serverRecvKey = serverRecvKey
-                    , serverSendKey = serverSendKey
-                    , clientRecvKey = clientRecvKey
-                    , clientSendKey = clientSendKey
-                    }
+  let cmp = Company unp name date Nothing 
+            serverRecvKey serverSendKey
+            clientRecvKey clientSendKey
 
   insertCompany cmp
   

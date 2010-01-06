@@ -5,16 +5,16 @@ import Types
 import Crypto
 import Loggers
 import qualified Message as MSG
-import qualified DataModel as DM
+import DataModel hiding (infoM, errorM)
+import Teller
 
 import Data.Maybe
-import System.IO
-import System.IO.Error hiding (catch)
 import Control.Exception
 import Prelude hiding (catch)
 import qualified System.Log.Logger as Logger
 
 import Control.Monad.Error
+import Control.Concurrent.Chan
 
 --------------------------------------------------------------------------------
 -- Logging utility functions
@@ -27,8 +27,8 @@ errorM = Logger.errorM "root.client"
 -- Main handler
 --------------------------------------------------------------------------------
 
-handleMessage :: String -> IO (Maybe String)
-handleMessage cnts = catch (perform cnts) handle
+handleMessage :: (Chan Transaction) -> (Chan Transaction) -> String -> IO (Maybe String)
+handleMessage urgents normals cnts = catch (perform cnts) handle
   where 
     handle e = (errorM $ "Error while handle user message: " 
                ++ (show (e :: SomeException)))
@@ -39,7 +39,7 @@ handleMessage cnts = catch (perform cnts) handle
           let unp = MSG.unp $ MSG.senderId msg
 
           -- 2) Обращение в БД для поиска ключа ЭЦП данного UNP.          
-          cmp <- (DM.findCompanyByUNP unp) >>= \c ->
+          cmp <- (findCompanyByUNP unp) >>= \c ->
             if (isJust c)
               then (infoM $ "Found company: " ++ (show $ fromJust c))
                    >> return (fromJust c)
@@ -47,8 +47,8 @@ handleMessage cnts = catch (perform cnts) handle
                    (userError $ "Can't find company with unp = " 
                     ++ (unp2str unp) ++ " in server database.")
                    
-          let recvKey = DM.serverRecvKey $ cmp
-          let sendKey = DM.serverSendKey $ cmp
+          let recvKey = companyServerRecvKey $ cmp
+          let sendKey = companyServerSendKey $ cmp
 
           infoM $ "Keys for use: " ++
             "recvKey: " ++ (show recvKey) ++ ", " ++
@@ -117,11 +117,11 @@ checkBank bnk = do
     return $ fromJust bnk   
     else throwError $ 
          "Can't find bank by UNP = " ++ 
-         -- (show $ bankBic $ DM.acc_pk acc) ++ 
+         -- (show $ bankBic $ acc_pk acc) ++ 
          "in banks manual database."
   
 checkAccountOwner acc cmp = do
-  if ((DM.owner_unp acc) == (DM.unp cmp)) 
+  if ((accountOwnerUnp acc) == (companyUnp cmp)) 
     then liftIO $ infoM "Account belongs to author of the reqest."
     else throwError "Author of the request hasn't have responsed account."
 
@@ -129,14 +129,14 @@ checkAccountOwner acc cmp = do
 -- Handlers
 --------------------------------------------------------------------------------
 
-getBallance :: DM.Company -> AccountPK -> MessageMonad
+getBallance :: Company -> AccountPK -> MessageMonad
 getBallance cmp apk = do
-  acc <- (liftIO $ DM.findAccountByPK apk) >>= checkAcc
-  bnk <- (liftIO $ DM.findBankByBIC (bankBic $ DM.acc_pk $ acc)) >>= checkBank
+  acc <- (liftIO $ findAccountByPK apk) >>= checkAcc
+  bnk <- (liftIO $ findBankByBIC (bankBic $ accountPK $ acc)) >>= checkBank
   checkAccountOwner acc cmp
-  checkDate $ DM.unregistryDate cmp
-  checkDate $ DM.close_date acc
-  return $ MSG.Balance (DM.ballance acc)
+  checkDate $ companyUnregistryDate cmp
+  checkDate $ accountCloseDate acc
+  return $ MSG.Balance (accountBallance acc)
 
 --------------------------------------------------------------------------------
 -- End of file
