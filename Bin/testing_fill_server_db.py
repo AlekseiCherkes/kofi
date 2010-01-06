@@ -155,7 +155,7 @@ def fill_CommitedTransaction(server_db_path, accounts):
                     day = str(random.randint(1, 30))
                     month = str(random.randint(1, 12))
                     year = '2009'
-                    open_date = year + '-' + month + '-' + day + ' ' + hours + ':' + minutes
+                    recive_date = year + '-' + month + '-' + day + ' ' + hours + ':' + minutes
                     money_amount = payer_account[3] / 2.0
                     cu.execute('''insert into CommitedTransaction
                                   values(?,
@@ -170,8 +170,8 @@ def fill_CommitedTransaction(server_db_path, accounts):
                                         0
                                         );''',
                                 (trn_id,
-                                open_date,
-                                open_date,
+                                recive_date,
+                                recive_date,
                                 payer_account[0],
                                 payer_account[2],
                                 payer_account[3] - money_amount,
