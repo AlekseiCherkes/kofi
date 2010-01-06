@@ -5,7 +5,7 @@ import random
 import sqlite3 as db
 
 server_db_path = 'Server/server.db'
-client_dir = 'Client/profile'
+client_dir = 'Client/Profiles'
 
 def create_client_db(con):
     cur = con.cursor()
