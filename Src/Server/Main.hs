@@ -14,4 +14,4 @@ main = withServerLoggers $ \_ -> do
   normals <- newChan
   forkIO $ startTeller urgents "urgents" (20 * 10^6)
   forkIO $ startTeller normals "normals" (50 * 10^6) 
-  runServer handleMessage
+  runServer $ handleMessage urgents normals
