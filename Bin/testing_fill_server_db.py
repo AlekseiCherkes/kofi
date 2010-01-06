@@ -207,9 +207,6 @@ def print_statistic(server_db_path):
 
 
 if __name__ == '__main__':
-    company_names = []
-    for line in open('Server/clients.txt'):
-        company_names.append(line)
     banks = get_banks_manual(banks_manual_db_path, banks_count)
     companies = fill_Company(company_names)
     accounts = fill_Account(companies, accounts_per_company, banks)
