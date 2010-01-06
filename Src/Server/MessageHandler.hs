@@ -124,7 +124,7 @@ retriveBank bic = do
 checkDate field = do
   if (isNothing $ field)
     then liftIO $ infoM $ "Entity is opened: " ++ (show field)
-    else throwError $ "Entity closed: " ++ (show field)
+    else throwError $ "Entity closed."
   
 checkAccountOwner acc cmp = do
   if ((accountOwnerUnp acc) == (companyUnp cmp)) 

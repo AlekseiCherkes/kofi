@@ -60,22 +60,26 @@ create table Status (
 insert into Status 
 values (0, "Success.");
 insert into Status 
-values (1, "Invalid payer's BIC.");
+values (1, "System error.");
 insert into Status 
-values (2, "Invalid beneficiary's BIC.");
+values (2, "Invalid payer's BIC.");
 insert into Status 
-values (3, "Invalid payer's account.");
+values (3, "Invalid beneficiary's BIC.");
 insert into Status 
-values (4, "Invalid beneficiary's account.");
+values (4, "Invalid payer's account.");
 insert into Status 
-values (5, "Payer hasn't this account.");
+values (5, "Invalid beneficiary's account.");
 insert into Status 
-values (6, "Payer is closed already.");
+values (6, "Payer hasn't this account.");
 insert into Status 
-values (7, "Beneficiary is closed already.");
+values (7, "Payer is closed already.");
 insert into Status 
-values (8, "Payer's account is closed already.");
+values (8, "Beneficiary is closed already.");
 insert into Status 
-values (9, "Beneficiary's account is closed already.");
+values (9, "Payer's account is closed already.");
 insert into Status 
-values (10, "Payer hasn't enough money for commited this transaction.");
+values (10, "Beneficiary's account is closed already.");
+insert into Status 
+values (11, "Coincidence of payer and beneficiary's accounts.");
+insert into Status 
+values (12, "Payer hasn't enough money for commited this transaction.");

@@ -17,8 +17,8 @@ recvRSAKey = ("R2s=","BV0=")
 servRecvRSAKey = ("MI8=","K0U=")
 
 myUNP = str2unp "7011293625508"
-apk1 = AccountPK (str2acc "6801954585387") (str2bic "151501267")
-apk2 = AccountPK (str2acc "8519545454900") (str2bic "153001266")
+apk1 = AccountPK (str2acc "6801954585389") (str2bic "151501267")
+apk2 = AccountPK (str2acc "5308275477924") (str2bic "151501267")
 
 testTransaction = CommitedTransaction { reason = "test this client server communication"
                                       , creditAccount = apk1
