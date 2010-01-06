@@ -161,6 +161,10 @@ findCompaniesByBank file bic = sqlQuery (withDB file) fetchCompany $
                                "Account.company_unp = Company.company_unp " ++
                                "WHERE Account.bank_bic = " ++ bicValue ++";"
                                  where bicValue = (toSqlValue . bic2str) bic
+                                 
+fetchAllCompanies :: FilePath -> IO [Company]
+fetchAllCompanies file = sqlQuery (withDB file) fetchCompany $
+                               "SELECT * FROM Company;"
 --------------------------------------------------------------------------------
 -- Banks
 --------------------------------------------------------------------------------
@@ -178,7 +182,7 @@ findBankByBic bic = sqlQueryGetFirst $
                     "WHERE branch_bic = " ++ bicValue ++ ";"
                       where bicValue = (toSqlValue . bic2str) bic
 
--- not tested yet !!!                             
+                            
 findBanksByCompany :: FilePath -> UNP -> IO [Bank]
 findBanksByCompany file unp = fetchBanksByBics =<< fetchBicsByCompany
   where

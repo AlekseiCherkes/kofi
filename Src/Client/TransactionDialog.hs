@@ -20,6 +20,7 @@ import DataModel ()
 -- Client imports
 import Message
 import GtkCommon
+import DataModel
 import AccountChooser (showAccountChooser)
 
 
@@ -113,6 +114,8 @@ loadTransactionDialog gladePath = do
 
 initTransactionDialog :: TransactionDialog -> (Session -> UNP -> IO (Maybe (AccountPK, Name))) -> Session -> IO ()
 initTransactionDialog gui chooseAcc session = do
+    let path = sessionPath session
+    
     onClicked (changePayerAcc_btn gui) $ do
         chosenAcc <- chooseAcc session  (profileUnp $ sessionProfile session)
         case chosenAcc of
@@ -137,7 +140,7 @@ initTransactionDialog gui chooseAcc session = do
                 validateTransactionDialog gui
                 return()
 
-    model <- listStoreNew $ map str2unp ["1234567890123", "3123456789012", "2312345678901", "1231234567890"]
+    model <- listStoreNew =<< fetchAllCompanies path
     let combo = payee_cmb gui
     initPayeesCombobox combo model $ do
         writeIORef (payee_acc gui) Nothing
@@ -147,9 +150,9 @@ initTransactionDialog gui chooseAcc session = do
                 writeIORef (payee_unp gui) Nothing
                 labelSetText (payeeName_lbl gui) "N/A"
             else do
-                unp <- listStoreGetValue model i
-                writeIORef   (payee_unp     gui) (Just unp)
-                labelSetText (payeeName_lbl gui) "String from DB"
+                cmp <- listStoreGetValue model i 
+                writeIORef   (payee_unp     gui) (Just $ cmpUnp cmp)
+                labelSetText (payeeName_lbl gui) (cmpName cmp)
         validateTransactionDialog gui
         return ()
 
@@ -182,12 +185,12 @@ showWarningMessage gui = do
     
 
 
-initPayeesCombobox :: ComboBox -> ListStore UNP -> IO () -> IO ()
+initPayeesCombobox :: ComboBox -> ListStore Company -> IO () -> IO ()
 initPayeesCombobox combo model cangeHandler = do
     comboBoxSetModel combo $ Just model
     renderer <- cellRendererTextNew
     cellLayoutPackStart combo renderer True
-    cellLayoutSetAttributes combo renderer model $ \row -> [ cellText := unp2str row ]
+    cellLayoutSetAttributes combo renderer model $ \row -> [ cellText := (unp2str . cmpUnp) row ]
 
     on combo changed cangeHandler
     return ()
