@@ -181,7 +181,7 @@ loadSessionByProfilePath file = do
                        sqlQuery (withDB file) fetchKeys  $
                        "SELECT * FROM Config;"
 
-  return $ Just (E.Session profile file recvKey sendKey)
+  return $ Just (E.Session profile file sendKey recvKey)
 
 
 --------------------------------------------------------------------------------

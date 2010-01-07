@@ -26,6 +26,9 @@ sendRequest session request = do
     --let recvRSAKey = ("R2s=","BV0=")
     let sendRSAKey = sessionSendKey session
     let recvRSAKey = sessionRecvKey session
+    
+    putStrLn $ show sendRSAKey
+    putStrLn $ show recvRSAKey
   
     
     let mb = (show request)  

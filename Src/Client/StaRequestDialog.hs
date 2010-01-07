@@ -166,7 +166,7 @@ commitStaRequest gui session = do
     mservResp <- showWaitDialog (dialog_wnd gui) session requst
     dialog <- case mservResp of
         Nothing               -> messageDialogNew Nothing [DialogModal] MessageInfo  ButtonsOk ("Запрос был отменен.")
-        Just (Statement am xs)-> messageDialogNew Nothing [DialogModal] MessageInfo  ButtonsOk ("Запрос отправлен.")
+        Just (Message.Statement am xs)-> messageDialogNew Nothing [DialogModal] MessageInfo  ButtonsOk ("Запрос отправлен.")
         Just (Error   msg    )-> messageDialogNew Nothing [DialogModal] MessageError ButtonsClose ("Ошибка: " ++ msg ++ ".")
         otherwise             -> do
             msg_dialog <- messageDialogNew Nothing [DialogModal] MessageError ButtonsClose ("Сервер ответил неверно: ")
