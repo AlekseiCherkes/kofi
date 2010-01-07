@@ -34,7 +34,7 @@ create table CommitedTransaction (
 	payer_acc_id char(13) not null,
 	payer_bank_bic char(9) not null,
 	bnfc_acc_id char(13) not null,
-	bnfc_bank_unp char(9) not null,
+	bnfc_bank_bic char(9) not null,
 	payer_final_balance money null,
 	bnfc_final_balance money null,
 	amount money not null,
@@ -46,7 +46,7 @@ create table CommitedTransaction (
 		references Account(bank_bic),
 	foreign key(bnfc_acc_id)
 		references Account(acc_id),
-	foreign key(bnfc_bank_unp)
+	foreign key(bnfc_bank_bic)
 		references Account(bank_unp),
 	foreign key(status_id)
 		references status(status_id)

@@ -166,7 +166,7 @@ def fill_CommitedTransaction(server_db_path, accounts):
                                         'trn_reason',
                                         ?, ?, ?,
                                         ?, ?, ?,
-                                        2,
+                                        ?,
                                         0
                                         );''',
                                 (trn_id,
@@ -174,10 +174,11 @@ def fill_CommitedTransaction(server_db_path, accounts):
                                 recive_date,
                                 payer_account[0],
                                 payer_account[2],
-                                payer_account[3] - money_amount,
                                 bnfc_account[0],
                                 bnfc_account[2],
-                                bnfc_account[3] + money_amount)
+                                payer_account[3] - money_amount,
+                                bnfc_account[3] + money_amount,
+                                money_amount)
                               )
                     c.commit()
     finally:
