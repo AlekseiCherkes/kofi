@@ -150,12 +150,15 @@ def fill_CommitedTransaction(server_db_path, accounts):
             for bnfc_account in accounts:
                 if payer_account != bnfc_account:
                     trn_id = str(random.randint(0, 1000000000))
-                    minutes = str(random.randint(0, 60))
-                    hours = str(random.randint(0, 24))
-                    day = str(random.randint(1, 30))
-                    month = str(random.randint(1, 12))
-                    year = '2009'
-                    recive_date = year + '-' + month + '-' + day + ' ' + hours + ':' + minutes
+                    minutes = str(random.randint(0, 59))
+                    hours = str(random.randint(0, 23))
+                    day = str(random.randint(1, 29))
+                    month = random.choice(["January", "February",  "March",
+                                           "April",  "May",  "June",  "July",
+                                           "August",  "September",  "October",
+                                           "November",  "December"])
+                    year = random.choice(['2009', '2008', '2007'])
+                    recive_date = year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + '0'
                     money_amount = payer_account[3] / 2.0
                     cu.execute('''insert into CommitedTransaction
                                   values(?,
