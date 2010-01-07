@@ -108,8 +108,6 @@ main = withUtilityLoggers $ \_ -> do
   let (clientSendKey, serverRecvKey) = generateKeyPair r1 r2 r3
   let (serverSendKey, clientRecvKey) = generateKeyPair r4 r5 r6
       
-  print $ unp2str unp
-      
   let cmp = Company unp name date Nothing 
             serverRecvKey serverSendKey
             clientRecvKey clientSendKey
