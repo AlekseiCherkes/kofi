@@ -39,6 +39,7 @@ data Request = CommitTransaction CommitedTransaction
              | GetBalance AccountPK
              | GetStatement AccountPK CalendarTime CalendarTime -- без ошибок
              | GetLog AccountPK CalendarTime CalendarTime -- с ошибками
+             | GetCurrencyRates
              deriving (Read, Show)
                       
 --------------------------------------------------------------------------------
@@ -62,11 +63,17 @@ data LogRecordStatus = Bad String
 data LogRecord = LogRecord { statement :: StatementRecord
                            , status :: LogRecordStatus }
                deriving (Read, Show)
+                        
+data CurrencyRate = CurrencyRate { primaryName :: String
+                                 , secondaryName :: String
+                                 , rate :: Double }
+                    deriving (Read, Show)
 
 data Response = Balance Double
               | Statement Double [StatementRecord]
               | Log [LogRecord]
               | Error String
+              | CurrencyRates [CurrencyRate]
               | Silence
               deriving (Read, Show)
 

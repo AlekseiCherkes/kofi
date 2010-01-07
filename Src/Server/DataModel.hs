@@ -139,6 +139,12 @@ data Bank = Bank { bankBranchBic :: BIC
                  }
           deriving (Read, Show)
                    
+data CurrencyRate = CurrencyRate { currencyRatePrimaryName :: String
+                                 , currencyRateSecondaryName :: String
+                                 , currencyRateRate :: Double 
+                                 }
+                  deriving (Read, Show)
+                   
 --------------------------------------------------------------------------------
 -- Fetchers
 --------------------------------------------------------------------------------
@@ -266,6 +272,18 @@ fetchTransactionStatus stmt = do
   fvMessage <- getFieldValue stmt "message"
   let msg = fromJust $ fromSqlValue (SqlVarChar 256) fvMessage
   return msg
+  
+fetchCurrencyRate stmt = do
+  let get = getFieldValue stmt
+  fvPrimary <- get "primary_name"
+  fvSecondary <- get "secondary_name"
+  fvRate <- get "rate"
+    
+  let primary = fromJust $ fromSqlValue (SqlChar 3) fvPrimary
+  let secondary = fromJust $ fromSqlValue (SqlChar 3) fvSecondary
+  let rate = read $ fromJust $ fromSqlValue (SqlDouble) fvRate
+           
+  return $ DataModel.CurrencyRate primary secondary rate
 
 --------------------------------------------------------------------------------
 -- Companies
@@ -361,6 +379,13 @@ findTransactionsForLog apk from to = sqlQueryList withServerDB fetchTransaction 
 findTransactionStatusMessageById id = sqlQueryRec withServerDB fetchTransactionStatus q
   where q = "SELECT message FROM Status " ++
             "WHERE status_id = " ++ (toSqlValue id) ++ ";"
+
+--------------------------------------------------------------------------------
+-- Currency rates
+--------------------------------------------------------------------------------
+
+fetchCurrencyRates = sqlQueryList withServerDB fetchCurrencyRate q
+  where q = "SELECT * FROM CurrencyRate;"
 
 --------------------------------------------------------------------------------
 -- End

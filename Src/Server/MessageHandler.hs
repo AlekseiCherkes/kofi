@@ -76,6 +76,7 @@ handleMessage urgents normals cnts = catch (perform cnts) handle
             GetBalance apk -> runHandler $ getBallance cmp apk
             GetStatement apk ct1 ct2 -> runHandler $ getStatement cmp apk ct1 ct2
             GetLog apk ct1 ct2 -> runHandler $ getLog cmp apk ct1 ct2
+            GetCurrencyRates -> runHandler $ getCurrencyRates cmp
             
           -- кодирование и возврат ответа
           
@@ -120,6 +121,14 @@ retriveBank bic = do
     liftIO $ infoM $ "Bank retrived: " ++ (show $ fromJust bnk)
     return $ fromJust bnk
     else throwError $ "Can't retrive bank by BIC = " ++ (show bic)
+         
+retriveCurrencyRates = do
+  rs <- liftIO $ fetchCurrencyRates
+  if (isJust rs)
+    then do
+    liftIO $ infoM $ "CurrencyRates retrived: " ++ (show $ fromJust rs)
+    return $ fromJust rs
+    else throwError $ "Can't retrive currency rates."
 
 checkDate field = do
   if (isNothing $ field)
@@ -232,6 +241,17 @@ getLog cmp apk from to = do
                                    (transactionBnfcAccountPK t)
                                    (transactionAmount t)
                                    (transactionPriority t)
+                                   
+getCurrencyRates :: Company -> MessageMonad                                   
+getCurrencyRates cmp = do
+  checkDate $ companyUnregistryDate cmp  
+  rs <- retriveCurrencyRates
+  return $ CurrencyRates $ map rs2dm rs
+  where rs2dm r = Message.CurrencyRate
+                  (currencyRatePrimaryName r)
+                  (currencyRateSecondaryName r)
+                  (currencyRateRate r)
+  
 
 
 --------------------------------------------------------------------------------
