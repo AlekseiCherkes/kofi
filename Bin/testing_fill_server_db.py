@@ -161,7 +161,7 @@ def fill_CommitedTransaction(server_db_path, accounts):
                     t = time.strptime(year + ' ' + month + ' ' + day +  ' ' + \
                         hours + ' ' + minutes + ' ' + seconds, "%Y %m %d %H %M %S")
                     t = time.mktime(t)
-                    recive_date = time.strftime("%Y %m %d %H %M %S", time.gmtime(t))
+                    recive_date = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(t))
                     money_amount = payer_account[3] / 2.0
                     cu.execute('''insert into CommitedTransaction
                                   values(?,
