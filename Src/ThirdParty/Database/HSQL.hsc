@@ -294,6 +294,7 @@ instance SqlBind Double where
 	fromSqlValue SqlReal s = Just (read s)
 	fromSqlValue SqlFloat s = Just (read s)
 	fromSqlValue SqlText   s = Just (read s)
+        fromSqlValue SqlMoney s = Just (read s)
 	fromSqlValue _ _ = Nothing
 
 	toSqlValue d = show d
