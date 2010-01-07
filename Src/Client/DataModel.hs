@@ -231,15 +231,19 @@ findBankByBic bic = sqlQueryGetFirst $
 
                             
 findBanksByCompany :: FilePath -> UNP -> IO [E.Bank]
-findBanksByCompany file unp = fetchBanksByBics =<< fetchBicsByCompany
-  where
-    fetchBicsByCompany = sqlQuery (withDB file) fetchBic $
+findBanksByCompany file unp = do
+    bics <- fetchBicsByCompany
+    if (null bics)
+        then return []
+        else fetchBanksByBics bics
+    where
+        fetchBicsByCompany = sqlQuery (withDB file) fetchBic $
                              "SELECT DISTINCT bank_bic " ++
                              "FROM Account " ++
                              "WHERE company_unp = " ++ unpValue ++ ";"
                                where unpValue = (toSqlValue . unp2str) unp
 
-    fetchBanksByBics bics = sqlQuery withBanksManual fetchBankBranch $
+        fetchBanksByBics bics = sqlQuery withBanksManual fetchBankBranch $
                             "SELECT * " ++
                             "FROM Branch " ++
                             "WHERE branch_bic IN (" ++ bicsValue ++ ");"

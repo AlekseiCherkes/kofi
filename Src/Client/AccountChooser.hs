@@ -72,6 +72,7 @@ initAccChooser session unp gui = do
     bindTreeViewHandlers  bankDoesMatch onBankSelected (banks_tv    gui) bnkModel
     bindTreeViewHandlers  accDoesMatch  onAccSelected  (accounts_tv gui) accModel
     
+    putStrLn "Fetching banks"
     banks <- findBanksByCompany path unp
     refillListStore bnkModel banks  
     
