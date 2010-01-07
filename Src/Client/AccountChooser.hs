@@ -66,7 +66,6 @@ initAccChooser session unp gui = do
         validateAccountChooser gui
         
     let onAccSelected = \acc -> do
-        putStrLn "AccountSelected"
         writeIORef (selected_acc gui) (Just acc)
         validateAccountChooser gui
       
@@ -87,7 +86,6 @@ getChoosedAccountPk :: AccChooserDialog -> IO ( Maybe (AccountPK, Name) )
 getChoosedAccountPk gui = do
     bnk <- (readIORef $ selected_bnk gui)
     acc <- (readIORef $ selected_acc gui)
-    putStrLn ("Selection:" ++ show bnk ++ " " ++ show acc)
     return $ fetchChoosedAccount  bnk acc
     where fetchChoosedAccount Nothing     _          = Nothing
           fetchChoosedAccount _           Nothing    = Nothing
@@ -109,7 +107,6 @@ showAccountChooser parent session unp  = do
     validateAccountChooser gui
     windowSetTransientFor (accChooser_dlg gui) parent 
     responce <- dialogRun (accChooser_dlg gui)
-    putStrLn "Responce received"
     widgetDestroy (accChooser_dlg gui)
     
     if responce == ResponseOk 

@@ -17,6 +17,7 @@ import GtkCommon
 import ClientEntities
 import AccountChooser (showAccountChooser)
 import ClientMessage  (sendRequest)
+import WaitDialog     (showWaitDialog)
 
 
 
@@ -49,10 +50,10 @@ initBalanceDialog chooseAcc commitRequest gui = do
     onClicked (chooseAcc_btn gui) $ do
         chosenAcc <- chooseAcc
         case chosenAcc of
-            Nothing         -> writeIORef (selected_acc gui) Nothing
-            Just (accpk, _) -> writeIORef (selected_acc gui) (Just accpk)
-
-        renderAccountInfo chosenAcc (bnk_lbl gui) (bic_lbl gui) (acc_lbl gui)
+            Nothing         -> return () --writeIORef (selected_acc gui) Nothing
+            Just (accpk, _) -> do 
+                writeIORef (selected_acc gui) (Just accpk) 
+                renderAccountInfo chosenAcc (bnk_lbl gui) (bic_lbl gui) (acc_lbl gui)
         validateBalanceDialog gui
 
 
@@ -66,8 +67,7 @@ initBalanceDialog chooseAcc commitRequest gui = do
                     Just accpk ->  do
                         commitRequest accpk
                         widgetDestroy dialog
-            ResponseCancel -> do
-                widgetDestroy dialog
+            ResponseCancel -> widgetDestroy dialog
             otherwise      -> return ()
 
     return ()
@@ -75,30 +75,35 @@ initBalanceDialog chooseAcc commitRequest gui = do
 validateBalanceDialog :: BalanceDialog -> IO ()
 validateBalanceDialog gui = (setButtonSensitive $ commit_btn gui) =<< (isRefSet $ selected_acc gui)
 
+
+commitRequest :: BalanceDialog -> Session -> AccountPK -> IO ()
+commitRequest gui session accpk = do
+    mservResp <- showWaitDialog (dialog_wnd gui) session (GetBalance accpk)
+    dialog <- case mservResp of
+        Nothing               -> messageDialogNew Nothing [DialogModal] MessageInfo  ButtonsOk ("Запрос был отменен.")
+        Just (Balance amount) -> messageDialogNew Nothing [DialogModal] MessageInfo  ButtonsOk ("Баланс вашего счета: " ++ show amount ++ ".")
+        Just (Error   msg   ) -> messageDialogNew Nothing [DialogModal] MessageError ButtonsClose ("Ошибка: " ++ msg ++ ".")
+        otherwise             -> do
+            msg_dialog <- messageDialogNew Nothing [DialogModal] MessageError ButtonsClose ("Сервер ответил неверно: ")
+            messageDialogSetSecondaryText msg_dialog (show mservResp)
+            return msg_dialog
+    
+    windowSetTransientFor dialog (dialog_wnd gui)
+    dialogRun dialog
+    widgetDestroy dialog
+
+
 showBalanceDialog :: Session -> IO()
 showBalanceDialog session = do
     gui <- loadBalanceDialog "Resources/balanceRequest_dialog.glade"
     initBalanceDialog
         (showAccountChooser (dialog_wnd gui) session (profileUnp $ sessionProfile session) )
-        (commitRequest gui)
+        (commitRequest gui session)
         gui
 
     validateBalanceDialog gui
     widgetShowAll (dialog_wnd gui)
-    
-    where commitRequest gui accpk = do
-            servResp <- sendRequest session (GetBalance accpk)
-            dialog <- case servResp of
-                Balance amount -> messageDialogNew Nothing [DialogModal] MessageInfo ButtonsOk ("Баланс вашего счета: " ++ show amount ++ ".")
-                Error   msg    -> messageDialogNew Nothing [DialogModal] MessageError ButtonsClose ("Ошибка: " ++ msg ++ ".")
-                otherwise      -> do
-                    msg_dialog <- messageDialogNew Nothing [DialogModal] MessageError ButtonsClose ("Сервер ответил неверно: ")
-                    messageDialogSetSecondaryText msg_dialog (show servResp)
-                    return msg_dialog
             
-            windowSetTransientFor dialog (dialog_wnd gui)
-            dialogRun dialog
-            widgetDestroy dialog
 
 
 

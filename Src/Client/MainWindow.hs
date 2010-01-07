@@ -65,11 +65,8 @@ data MainWindow = MainWindow {dialog_wnd :: Dialog
 loadMainWindow :: IO MainWindow
 loadMainWindow = do
   actions <- initMainActionGroup
-  putStrLn "Actions initialized"
   menuBar <- loadMenuBar "Resources/ActionMenu.xml" actions
-  putStrLn "Menu loaded"
   Just glade <- xmlNew "Resources/mainWindow_1.glade"
-  putStrLn "main glade loaded"
   dialog_wnd <- xmlGetWidget glade castToDialog "dialog_wnd"
   vBox       <- xmlGetWidget glade castToVBox   "dialog-vbox1"
 

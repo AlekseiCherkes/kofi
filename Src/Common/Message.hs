@@ -67,6 +67,7 @@ data Response = Balance Double
               | Statement Double [StatementRecord]
               | Log [LogRecord]
               | Error String
+              | Silence
               deriving (Read, Show)
 
 --------------------------------------------------------------------------------

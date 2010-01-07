@@ -51,17 +51,17 @@ loadProfileChooser gladePath = do
 
 initProfileChooser :: ProfileChooserDialog -> IO ()
 initProfileChooser gui = do
-    paths <- (getDirectoryContents "profile") 
-    model <- listStoreNew (filter (isSuffixOf ".db") paths)
+    paths <- (getDirectoryContents "Profiles") 
+    model <- listStoreNew $ map (\p -> ("Profiles/"++p, take (length p - 3) p)) (filter (isSuffixOf ".db") paths)
     
-    initTreeViewColumns (profiles_tv gui) model [("Профили", \p -> take (length p - 3) p)]
+    initTreeViewColumns (profiles_tv gui) model [("Профили", snd) ]
     
-    bindTreeViewHandlers isPrefixOf (updateProfileData gui) (profiles_tv gui) model
+    bindTreeViewHandlers (\str p -> isPrefixOf str (snd p)) (updateProfileData gui) (profiles_tv gui) model
 
     
     
-updateProfileData :: ProfileChooserDialog -> FilePath -> IO ()
-updateProfileData gui path = do
+updateProfileData :: ProfileChooserDialog -> (FilePath, String) -> IO ()
+updateProfileData gui (path, str) = do
     writeIORef   (selected_path gui) $ Just path  
     profile <- findProfileByPath path
     renderProfileInfo (Just profile) (name_lbl gui) (unp_lbl gui) (date_lbl gui)
