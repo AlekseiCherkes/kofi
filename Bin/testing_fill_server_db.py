@@ -108,7 +108,7 @@ def fill_Account(companies, accounts_per_company, banks):
         for bank_bic in banks:
             for i in range(accounts_per_company):
                 #balance = 100 + 10 * total_acc_count
-                balance = random.randint(100, 10000)
+                balance = random.randint(10, 1000) * 10
                 args = ['Server\create_account', company[0], bank_bic, str(balance)]
                 process = subprocess.Popen(args, cwd = 'Server', shell=False, \
                     stdin=subprocess.PIPE, stdout=subprocess.PIPE, \
