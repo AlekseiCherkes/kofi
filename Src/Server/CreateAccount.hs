@@ -51,7 +51,7 @@ main = withUtilityLoggers $ \_ -> do
 
   insertAccount account
   
-  print aid
+  print $ acc2str aid
 
 --------------------------------------------------------------------------------
 -- End

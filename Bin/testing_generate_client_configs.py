@@ -31,7 +31,7 @@ def create_client_db(con):
 		                  references Company(company_unp)
                     );''')
     cur.execute('''create table Statement(
-	                   statement_id int not null,
+	                   statement_id integer not null,
 	                   start_date datetime not null,
 	                   end_date datetime not null,
 	                   acc_id char(13) not null,
@@ -44,6 +44,7 @@ def create_client_db(con):
                             references Account(bank_bic)
                     );''')
     cur.execute('''create table TransactionTemplate(
+                    	transaction_template_id integer not null,
                     	tmpl_name varchar(16) not null,
                     	payer_bank_bic char(9) not null,
                     	payer_acc_id char(13) not null,
@@ -52,7 +53,7 @@ def create_client_db(con):
                     	amount money not null,
                     	reason varchar(256) not null,
                     	is_urgent bit not null,
-                    	primary key (tmpl_name),
+                    	primary key (transaction_template_id),
                     	foreign key (payer_acc_id)
                     		references Account(acc_id)
                     	foreign key (payer_bank_bic)
@@ -111,7 +112,7 @@ def fill_client_db(client_con, server_db_path, client_info):
         if len(accounts) > 1:
             tmpl_name = str(random.randint(0, 1000000000))
             client_cur.execute('''insert into TransactionTemplate
-                                  values (?,?,?,?,?,
+                                  values (NULL, ?,?,?,?,?,
                                           150,
                                           'reason',
                                           1);''',
@@ -134,6 +135,16 @@ if __name__ == '__main__':
     finally:
         server_con.close()
 
+    # Remove old dir.
+    for root, dirs, files in os.walk(client_dir):
+        for _file in files:
+            full_path = os.path.join(root, _file)
+            os.remove(full_path)
+    try:
+        os.rmdir(client_dir)
+    except:
+        pass
+
     # Create directory for clients DBs.
     try:
         os.mkdir(client_dir)
@@ -141,12 +152,7 @@ if __name__ == '__main__':
         pass
     # Create clients DBs.
     for client_info in clients_info:
-        client_name = client_dir + '/' + client_info[0] + '.db'# + '(' + client_info[1] + ').db'
-        # Remove previous DB.
-        try:
-            os.remove(client_name)
-        except:
-            pass
+        client_name = client_dir + '/' + client_info[0] + '.db'
         client_con = db.connect(database = client_name)
         try:
             create_client_db(client_con)

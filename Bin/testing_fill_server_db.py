@@ -5,6 +5,7 @@ import random
 import datetime
 import sqlite3 as db
 import subprocess
+import time
 
 
 ##company_names = [
@@ -150,26 +151,40 @@ def fill_CommitedTransaction(server_db_path, accounts):
             for bnfc_account in accounts:
                 if payer_account != bnfc_account:
                     trn_id = str(random.randint(0, 1000000000))
+                    seconds = str(random.randint(0, 59))
+                    minutes = str(random.randint(0, 59))
+                    hours = str(random.randint(0, 23))
+                    day = str(random.randint(1, 28))
+                    month = str(random.randint(1, 12))
+                    year = random.choice(['2009', '2008', '2007'])
+                    #recive_date = year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + '0'
+                    t = time.strptime(year + ' ' + month + ' ' + day +  ' ' + \
+                        hours + ' ' + minutes + ' ' + seconds, "%Y %m %d %H %M %S")
+                    t = time.mktime(t)
+                    recive_date = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(t))
                     money_amount = payer_account[3] / 2.0
                     cu.execute('''insert into CommitedTransaction
                                   values(?,
-                                         current_timestamp,
-                                         current_timestamp,
+                                         ?,
+                                         ?,
                                          0,
                                         'trn_content',
                                         'trn_reason',
                                         ?, ?, ?,
                                         ?, ?, ?,
-                                        2,
+                                        ?,
                                         0
                                         );''',
                                 (trn_id,
+                                recive_date,
+                                recive_date,
                                 payer_account[0],
                                 payer_account[2],
-                                payer_account[3] - money_amount,
                                 bnfc_account[0],
                                 bnfc_account[2],
-                                bnfc_account[3] + money_amount)
+                                payer_account[3] - money_amount,
+                                bnfc_account[3] + money_amount,
+                                money_amount)
                               )
                     c.commit()
     finally:

@@ -7,6 +7,7 @@ import Crypto
 
 import Network
 import System.IO
+import System.Time
 
 --------------------------------------------------------------------------------
 -- Messages
@@ -17,8 +18,36 @@ recvRSAKey = ("R2s=","BV0=")
 servRecvRSAKey = ("MI8=","K0U=")
 
 myUNP = str2unp "7011293625508"
-apk1 = AccountPK (str2acc "6801954585387") (str2bic "151501267")
-apk2 = AccountPK (str2acc "8519545454900") (str2bic "153001266")
+apk1 = AccountPK (str2acc "6801954585389") (str2bic "151501267")
+apk2 = AccountPK (str2acc "5308275477924") (str2bic "151501267")
+
+ct1 = CalendarTime { ctYear = 2008
+                   , ctMonth = January
+                   , ctDay = 12
+                   , ctHour = 0
+                   , ctMin = 0
+                   , ctSec = 0
+                   , ctPicosec = 0
+                   , ctWDay = Sunday
+                   , ctYDay = 0
+                   , ctTZName = ""
+                   , ctTZ = 0
+                   , ctIsDST = True
+                   }
+
+ct2 = CalendarTime { ctYear = 2009
+                   , ctMonth = January
+                   , ctDay = 12
+                   , ctHour = 0
+                   , ctMin = 0
+                   , ctSec = 0
+                   , ctPicosec = 0
+                   , ctWDay = Sunday
+                   , ctYDay = 0
+                   , ctTZName = ""
+                   , ctTZ = 0
+                   , ctIsDST = True
+                   }
 
 testTransaction = CommitedTransaction { reason = "test this client server communication"
                                       , creditAccount = apk1
@@ -27,19 +56,23 @@ testTransaction = CommitedTransaction { reason = "test this client server commun
                                       , priority = Normal
                                       }
 
--- msg_body = GetBalance apk2
-msg_body = CommitTransaction testTransaction
-
 --------------------------------------------------------------------------------
 -- Main
 --------------------------------------------------------------------------------
 
 main = withSocketsDo $ do
+  ctc <- getClockTime >>= toCalendarTime
+
+  -- let msg_body = GetBalance apk1
+  -- let msg_body = GetStatement apk1 ct1 ct2
+  let msg_body = GetLog apk1 ct1 ct2
+  -- let msg_body = CommitTransaction testTransaction
+
   let mb = (show msg_body)  
   let emb = encodeMessageBody sendRSAKey mb
   let msg = createMessage sendRSAKey (ClientId myUNP) emb
   let dmb = decodeMessageBody servRecvRSAKey emb      
-      
+  
   print $ "Message body: " ++ mb
   print $ "Encrypted message body: " ++ emb
   print $ "Decrypted message body: " ++ dmb

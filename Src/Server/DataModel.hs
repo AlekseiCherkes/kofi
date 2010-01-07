@@ -48,6 +48,15 @@ bicToSql bic = toSqlValue $ bic2str bic
 accToSql acc = toSqlValue $ acc2str acc
 amountToSql amount = toSqlValue amount
 
+priority2sql Normal = toSqlValue $ show 0
+priority2sql Urgent = toSqlValue $ show 1
+
+sql2priority str = 
+  case (read str :: Int) of
+    0 -> Normal
+    1 -> Urgent
+    _ -> error "Can't read transaction priority level from database."
+
 --------------------------------------------------------------------------------
 -- Common functions
 --------------------------------------------------------------------------------
@@ -122,7 +131,8 @@ data Transaction = Transaction { transactionId :: Int -- may be 0 while insertio
                                , transactionAmount :: Double
                                , transactionPriority :: TransactionPriority
                                }
-                        
+                 deriving (Read, Show)                        
+
 data Bank = Bank { bankBranchBic :: BIC
                  , bankBankBic :: String
                  , bankName :: String 
@@ -175,14 +185,7 @@ fetchAccount stmt = do
   fvBallance <- get "ballance"
   fvOpenDate <- get "open_date"
   fvCloseDate <- getMB "close_date"
-  
-  print fvAccId
-  print fvBankBic
-  print fvOwnerUnp
-  print fvBallance
-  print fvOpenDate
-  print fvCloseDate
-    
+
   let accId = str2acc $ fromJust $ fromSqlValue (SqlChar 13) fvAccId
   let bankBic = str2bic $ fromJust $ fromSqlValue (SqlChar 9) fvBankBic
   let ownerUnp = str2unp $ fromJust $ fromSqlValue (SqlChar 13) fvOwnerUnp
@@ -196,9 +199,7 @@ fetchAccount stmt = do
     
   return $ Account (AccountPK accId bankBic) ownerUnp 
     ballance 
-    openDate closeDate
-    
-  
+    openDate closeDate  
   
 fetchBank stmt = do
   let get = getFieldValue stmt
@@ -213,9 +214,62 @@ fetchBank stmt = do
       
   return $ Bank branchBic bankBic name
       
+fetchTransaction stmt = do
+  let get = getFieldValue stmt
+  let getMB = getFieldValueMB stmt
+
+  fvId <- get "trn_id"                        
+  fvCommitDate <- get "commit_date"
+  fvReciveDate <- get "recive_date"
+  fvStatusId <- get "status_id"
+  fvContent <- get "content"
+  fvReason <- get "reason"
+  fvPayerAccId <- get "payer_acc_id"
+  fvPayerBankBic <- get "payer_bank_bic"
+  fvBnfcAccId <- get "bnfc_acc_id"
+  fvBnfcBankBic <- get "bnfc_bank_bic"
+  fvPayerFinalBalance <- getMB "payer_final_balance"
+  fvBnfcFinalBalance <- getMB "bnfc_final_balance"
+  fvAmount <- get "amount"
+  fvPriority <- get "priority"
+  
+  let xid = fromJust $ fromSqlValue SqlInteger fvId
+  commitDate <- toCalendarTime $ fromJust $ fromSqlValue (SqlDateTime) fvCommitDate
+  reciveDate <- toCalendarTime $ fromJust $ fromSqlValue (SqlDateTime) fvReciveDate
+      
+  let statusId = fromJust $ fromSqlValue SqlInteger fvStatusId
+  let content = fromJust $ fromSqlValue (SqlVarChar 4000) fvContent
+  let reason = fromJust $ fromSqlValue (SqlVarChar 1000) fvReason
+  let payerAccId = str2acc $ fromJust $ fromSqlValue (SqlChar 13) fvPayerAccId
+  let payerBankBic = str2bic $ fromJust $ fromSqlValue (SqlChar 9) fvPayerBankBic
+  let bnfcAccId = str2acc $ fromJust $ fromSqlValue (SqlChar 13) fvBnfcAccId
+  let bnfcBankBic = str2bic $ fromJust $ fromSqlValue (SqlChar 9) fvBnfcBankBic
+      
+  let payerFinalBalance = case fvPayerFinalBalance of  
+        Just a -> fromJust $ fromSqlValue SqlMoney a
+        Nothing -> Nothing
+        
+  let bnfcFinalBalance = case fvPayerFinalBalance of  
+        Just a -> fromJust $ fromSqlValue SqlMoney a
+        Nothing -> Nothing
+        
+  let amount = fromJust $ fromSqlValue SqlMoney fvAmount
+  let priority = sql2priority $ fromJust $ fromSqlValue SqlInteger fvPriority
+                          
+  return $ Transaction xid commitDate reciveDate 
+    statusId content reason 
+    (AccountPK payerAccId payerBankBic) (AccountPK bnfcAccId bnfcBankBic)
+    payerFinalBalance bnfcFinalBalance amount 
+    priority
+    
+fetchTransactionStatus stmt = do
+  fvMessage <- getFieldValue stmt "message"
+  let msg = fromJust $ fromSqlValue (SqlVarChar 256) fvMessage
+  return msg
+
 --------------------------------------------------------------------------------
 -- Companies
---------------------------------------------------------------------------------
+-------------------------------------------------------------------------------- 
 
 insertCompany company = sqlExec withServerDB cmd
   where cmd = "INSERT INTO Company VALUES (" ++ values ++");"
@@ -287,29 +341,27 @@ insertTransaction t = sqlExec withServerDB cmd
                               , toSqlValue $ transactionPayerFinalBalance t
                               , toSqlValue $ transactionBnfcFinalBalance t
                               , toSqlValue $ transactionAmount t
-                              , toSqlValue $ (0 :: Int) ] -- transactionPriority t ]
+                              , toSqlValue $ priority2sql $ transactionPriority t]
+                 
+findTransactionsForStatement apk from to = sqlQueryList withServerDB fetchTransaction q
+  where q = "SELECT * FROM CommitedTransaction " ++
+            "WHERE commit_date BETWEEN " ++
+             fd ++ " AND " ++ td ++ " " ++
+             "AND status_id = 0;"
+             where fd = toSqlValue $ toClockTime from
+                   td = toSqlValue $ toClockTime to
+
+findTransactionsForLog apk from to = sqlQueryList withServerDB fetchTransaction q
+  where q = "SELECT * FROM CommitedTransaction " ++
+            "WHERE commit_date BETWEEN " ++
+             fd ++ " AND " ++ td ++ ";"
+             where fd = toSqlValue $ toClockTime from
+                   td = toSqlValue $ toClockTime to
+                   
+findTransactionStatusMessageById id = sqlQueryRec withServerDB fetchTransactionStatus q
+  where q = "SELECT message FROM Status " ++
+            "WHERE status_id = " ++ (toSqlValue id) ++ ";"
 
 --------------------------------------------------------------------------------
 -- End
 --------------------------------------------------------------------------------
-                
--- все Maybe
-  
--- insertAccount
--- updateAccount
-
--- insertCompany
--- updateCompany
-
--- findCompanyByUNP
--- findAccountByACC
--- findCompanyByACC
-
--- insertTransaction
-                
--- findTransactionsForStatement ACC From To
--- findTransactionsForLog ACC From To
-
-
-
-

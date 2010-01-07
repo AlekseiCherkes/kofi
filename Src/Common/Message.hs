@@ -45,7 +45,7 @@ data Request = CommitTransaction CommitedTransaction
 -- Responses
 --------------------------------------------------------------------------------
 
-data StatementRecord = StatementRecord { trnId :: Integer
+data StatementRecord = StatementRecord { trnId :: Int
                                        , commitDate :: CalendarTime
                                        , reciveDate :: CalendarTime
                                        , trnReason :: String

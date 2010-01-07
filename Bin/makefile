@@ -14,6 +14,7 @@ clean:
 	make -C Server/ clean
 	rm -f Server/*.db
 	rm -f Client/*.db
+	rm -f Client/Profiles/*.db
 
 .PHONY: propagate_banks_manual
 propagate_banks_manual:
