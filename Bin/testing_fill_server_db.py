@@ -154,7 +154,7 @@ def fill_CommitedTransaction(server_db_path, accounts):
                     seconds = str(random.randint(0, 59))
                     minutes = str(random.randint(0, 59))
                     hours = str(random.randint(0, 23))
-                    day = str(random.randint(1, 29))
+                    day = str(random.randint(1, 28))
                     month = str(random.randint(1, 12))
                     year = random.choice(['2009', '2008', '2007'])
                     #recive_date = year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + '0'

@@ -20,11 +20,28 @@ data Account = Account{accPk     :: AccountPK
 data Profile = Profile{ profileUnp  :: UNP
                       , profileName :: Name
                       , profileDate :: CalendarTime
-                      }               
+                      }
+
 data Session = Session{ sessionProfile  :: Profile 
                       , sessionPath     :: FilePath
                       , sessionSendKey  :: RSAKey
                       , sessionRecvKey  :: RSAKey 
                       }
 
+data Statement = Statement { statementId :: Int
+                           , statementStartDate :: CalendarTime
+                           , statementEndDate :: CalendarTime 
+                           , statementAccountPK :: AccountPK
+                           , statementText :: String
+                           }
+
+data TransactionTemplate = TransactionTemplate { transactionTemplateId :: Int
+                                               , transactionTemplateName :: String
+                                               , transactionTemplatePayerAccountPK :: AccountPK
+                                               , transactionTemplateBnfcAccountPK :: AccountPK
+                                               , transactionTemplateAmount :: Double
+                                               , transactionTemplateReason :: String
+                                               , transactionTemplateIsUrgent :: Bool 
+                                               }
+                             
  
