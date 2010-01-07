@@ -2,7 +2,6 @@
 module ProfileChooser where
 
 import Data.IORef
-import Control.Monad
 import Data.List ( isPrefixOf, isSuffixOf)
 import System.Directory
 
@@ -65,6 +64,7 @@ updateProfileData gui (path, str) = do
     writeIORef   (selected_path gui) $ Just path  
     profile <- findProfileByPath path
     renderProfileInfo (Just profile) (name_lbl gui) (unp_lbl gui) (date_lbl gui)
+    validateProfileChooser gui
             
             
 getSessionData :: ProfileChooserDialog -> IO (Maybe Session)
@@ -74,6 +74,10 @@ getSessionData gui = do
         Just path -> loadSessionByProfilePath path
         Nothing   -> return Nothing
 
+validateProfileChooser :: ProfileChooserDialog -> IO ()
+validateProfileChooser gui = do
+    let isSet = \getter -> isRefSet $ getter gui
+    setButtonSensitive (ok_btn gui) =<< isSet selected_path
     
 
 showProfileChooser :: (Maybe Session -> IO ()) -> IO()
@@ -82,19 +86,16 @@ showProfileChooser handler = do
     initProfileChooser gui
     
     onResponse (dialog_wnd gui) (responceHandler gui)
+    validateProfileChooser gui
     widgetShowAll (dialog_wnd gui)
-    
-
-        
+     
     where responceHandler gui resp = do
             case resp of
                 ResponseOk -> do
-                    putStrLn "something -> handler"
                     ms <- getSessionData gui
                     widgetDestroy (dialog_wnd gui)
                     handler ms
                 otherwise  -> do
-                    putStrLn "Nothing-> handler"
                     widgetDestroy (dialog_wnd gui)
                     handler Nothing
 

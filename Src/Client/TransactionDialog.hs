@@ -21,8 +21,9 @@ import DataModel ()
 import Message
 import GtkCommon
 import DataModel
-import AccountChooser (showAccountChooser)
-import WaitDialog     (showWaitDialog)
+import AccountChooser  (showAccountChooser)
+import WaitDialog      (showWaitDialog)
+import TemplateChooser (showTemplateChooser)
 
 
 
@@ -172,7 +173,8 @@ initTransactionDialog gui chooseAcc session = do
         putStrLn "Save template."
 
     onClicked (load_btn gui) $ do
-        putStrLn "Load template."
+        mtmpl <- showTemplateChooser session
+        putStrLn ("Load template." ++ show mtmpl)
 
     return ()
     
