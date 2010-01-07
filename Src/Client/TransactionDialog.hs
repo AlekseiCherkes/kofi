@@ -3,6 +3,7 @@ module TransactionDialog
 
 import System.IO
 import Data.IORef
+import Data.List (findIndex)
 import Control.Monad (liftM2)
 
 -- Gtk imports
@@ -14,7 +15,7 @@ import Graphics.UI.Gtk.Glade
 import Types
 import Validation
 import ClientEntities
-import DataModel ()
+import DataModel
 
 
 -- Client imports
@@ -176,7 +177,7 @@ initTransactionDialog gui chooseAcc session = do
         mtmpl <- showTemplateChooser (dialog_wnd gui) session
         case mtmpl of
             Nothing   -> return ()
-            Just tmpl -> setTransactionDialodData gui session tmpl
+            Just tmpl -> setTransactionDialodData gui model session tmpl
 
     return ()
     
@@ -217,8 +218,59 @@ validateTransactionDialog gui = do
         `andM` (return . isValidAmount =<< (entryGetText     .  amount_entry) gui)
 
 
-setTransactionDialodData :: TransactionDialog -> Session -> TransactionTemplate -> IO ()
-setTransactionDialodData gui session tmpl = return ()
+setTransactionDialodData :: TransactionDialog -> ListStore Company -> Session -> TransactionTemplate -> IO ()
+setTransactionDialodData gui model session tmpl = do
+    let path       = sessionPath session
+    let payerAccPk = transactionTemplatePayerAccountPK tmpl
+    let payeeAccPk = transactionTemplateBnfcAccountPK  tmpl
+    
+    --putStrLn $ show payerAccPk
+ 
+    putStrLn "Getting Bics..."
+    let bic1 = str2bic "151501267" --bankBic payerAccPk -- str2bic "151501267" --
+    let bic2 = str2bic "151501267" --bankBic payerAccPk
+    putStrLn "Bics are gotten."
+    putStrLn ("bic1: " ++ (bic2str bic1))
+    putStrLn ("bic2: " ++ (bic2str bic2))
+    
+    --bnk1 <- findBankByBic $ str2bic "151501267"
+    --bnk2 <- findBankByBic $ str2bic "151501267"
+    
+    --putStrLn "Getting bank names."
+    --let payerBnk = bnkName bnk1
+    --let payeeBnk = bnkName bnk2
+    --[payerBnk, payeeBnk] <- mapM (\apk -> (return . bnkName) =<< (findBankByBic . bankBic) apk) [payerAccPk, payeeAccPk]
+    --putStrLn "Bank names are inferred."
+    
+    --unp   <- return . accCompany =<< (findAccount path (str2bic "151501267") (accId payeeAccPk))
+    --putStrLn "Unp is found."
+    --cmp   <- findCompanyByUnp path unp 
+    --putStrLn "Cmp is found."
+    
+    --unps  <- return . (map cmpUnp) =<<  listStoreToList model
+    --putStrLn "Unps are exptracted."
+    
+    --idx   <- case (findIndex ((==) unp) unps) of
+    --  Just idx -> return idx
+    --  Nothing  -> return (-1)
+      
+    --putStrLn ("Index is determined: " ++ show idx)
+      
+    --comboBoxSetActive     (payee_cmb     gui) idx
+    --labelSetText          (payeeName_lbl gui) (cmpName cmp)
+    --writeIORef            (payer_acc     gui) (Just payerAccPk)
+    --writeIORef            (payee_acc     gui) (Just payeeAccPk)
+    
+    --renderAccountInfo (Just (payerAccPk, payerBnk)) (payerBank_lbl gui) (payerBankBic_lbl gui) (payerAcc_lbl gui)
+    --renderAccountInfo (Just (payeeAccPk, payeeBnk)) (payeeBank_lbl gui) (payeeBankBic_lbl gui) (payeeAcc_lbl gui)
+    
+    --setMultilineText      (reason_txt    gui) (transactionTemplateReason        tmpl)
+    --entrySetText          (amount_entry  gui) (show $ transactionTemplateAmount tmpl)
+    --toggleButtonSetActive (urgent_btn    gui) (transactionTemplateIsUrgent      tmpl)
+    
+    putStrLn "Template applied."
+    
+    
 
 getTransactionDialogData :: TransactionDialog -> IO CommitedTransaction
 getTransactionDialogData gui = do
