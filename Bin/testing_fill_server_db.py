@@ -107,8 +107,8 @@ def fill_Account(companies, accounts_per_company, banks):
     for company in companies:
         for bank_bic in banks:
             for i in range(accounts_per_company):
-                #balance = (int(company[0]) + int(bank_bic)) / 1000000
-                balance = 100 + 10 * total_acc_count
+                #balance = 100 + 10 * total_acc_count
+                balance = random.randint(100, 10000)
                 args = ['Server\create_account', company[0], bank_bic, str(balance)]
                 process = subprocess.Popen(args, cwd = 'Server', shell=False, \
                     stdin=subprocess.PIPE, stdout=subprocess.PIPE, \
@@ -163,13 +163,17 @@ def fill_CommitedTransaction(server_db_path, accounts):
                     t = time.mktime(t)
                     recive_date = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(t))
                     money_amount = payer_account[3] / 2.0
+                    trn_reason = random.choice(['Оплата коммунальных услуг.',
+                                                'Выплата гонорара.',
+                                                'Благотворительность.'
+                                                'Выплата кредита.'])
                     cu.execute('''insert into CommitedTransaction
                                   values(?,
                                          ?,
                                          ?,
                                          0,
                                         'trn_content',
-                                        'trn_reason',
+                                        ?,
                                         ?, ?, ?,
                                         ?, ?, ?,
                                         ?,
@@ -178,6 +182,7 @@ def fill_CommitedTransaction(server_db_path, accounts):
                                 (trn_id,
                                 recive_date,
                                 recive_date,
+                                trn_reason,
                                 payer_account[0],
                                 payer_account[2],
                                 bnfc_account[0],
