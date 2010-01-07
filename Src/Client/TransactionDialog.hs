@@ -25,6 +25,8 @@ import AccountChooser  (showAccountChooser)
 import WaitDialog      (showWaitDialog)
 import TemplateChooser (showTemplateChooser)
 
+import PrintTransaction
+
 
 
 
@@ -234,6 +236,9 @@ getTransactionDialogData gui = do
 commitTransaction :: TransactionDialog -> Session -> IO ()
 commitTransaction gui session = do
     trans <- getTransactionDialogData gui
+    
+    printTransaction (sessionPath session) trans >>= print
+    
     mservResp <- showWaitDialog (dialog_wnd gui) session (CommitTransaction trans)
     dialog <- case mservResp of
         Nothing               -> messageDialogNew Nothing [DialogModal] MessageInfo  ButtonsOk ("Запрос был отменен.")
