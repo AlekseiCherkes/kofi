@@ -26,9 +26,6 @@ sendRequest session request = do
     --let recvRSAKey = ("R2s=","BV0=")
     let sendRSAKey = sessionSendKey session
     let recvRSAKey = sessionRecvKey session
-    
-    putStrLn $ show sendRSAKey
-    putStrLn $ show recvRSAKey
   
     
     let mb = (show request)  
@@ -36,7 +33,7 @@ sendRequest session request = do
     let msg = createMessage sendRSAKey (ClientId unp) emb
   
     case request of
-        CommitTransaction trans -> do
+        CommitTransaction _ -> do
             sendOnly msg
             return Silence
         otherwise -> sendAndRecv msg recvRSAKey
@@ -66,8 +63,6 @@ sendAndRecv message recvRSAKey = do
         Just r  -> return r
 
 
-
-  
   
   
 

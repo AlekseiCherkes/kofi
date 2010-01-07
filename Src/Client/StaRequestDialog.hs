@@ -104,16 +104,6 @@ initStaRequestDialog gui session chooseAcc = do
     onNextYear     endc onEndDate
     onPrevYear     endc onEndDate
     
-    
-    onClicked (commit_btn gui) $ do
-        isValid <- validateStaRequestDialog gui
-        if isValid 
-            then do
-                commitStaRequest gui session
-                dialogResponse (dialog_wnd  gui) ResponseOk
-            else showWarningMessage gui
-
-    onClicked (cancel_btn gui) (dialogResponse (dialog_wnd  gui) ResponseCancel)
     return ()
         
 onDateChanged :: StaRequestDialog -> Calendar -> IORef (Maybe CalendarTime) -> Bool -> IO ()
@@ -162,6 +152,7 @@ getStaRequestData gui = do
     
 commitStaRequest :: StaRequestDialog -> Session -> IO ()
 commitStaRequest gui session = do
+    putStrLn "Commiting"
     requst <- getStaRequestData gui
     mservResp <- showWaitDialog (dialog_wnd gui) session requst
     dialog <- case mservResp of
@@ -178,6 +169,21 @@ commitStaRequest gui session = do
     widgetDestroy dialog
     
 
+handleResponse :: StaRequestDialog -> Session -> ResponseId -> IO ()
+handleResponse gui session respId = do
+    case respId of
+        ResponseOk -> do
+            isValid <- validateStaRequestDialog gui
+            if isValid 
+                then do
+                    commitStaRequest gui session
+                    widgetDestroy (dialog_wnd gui)
+                else showWarningMessage gui
+        ResponseCancel -> widgetDestroy (dialog_wnd gui)
+      
+            
+    
+
 showStaRequestDialog :: Session -> IO ()
 showStaRequestDialog session = do
     gui <- loadStaRequestDialog "Resources/staRequest_dialog.glade"
@@ -186,6 +192,6 @@ showStaRequestDialog session = do
     
     initStaRequestDialog gui session chooseAcc
     validateStaRequestDialog gui
-    onResponse (dialog_wnd gui) (\_ -> widgetDestroy $ dialog_wnd gui)
+    onResponse (dialog_wnd gui) (handleResponse gui session)
     widgetShowAll (dialog_wnd gui)
 
