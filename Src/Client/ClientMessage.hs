@@ -22,8 +22,6 @@ port = PortNumber 6555
 sendRequest :: Session -> Request -> IO Response
 sendRequest session request = do
     let unp        = (profileUnp .sessionProfile) session
-    --let sendRSAKey = ("MI8=","DQ==")
-    --let recvRSAKey = ("R2s=","BV0=")
     let sendRSAKey = sessionSendKey session
     let recvRSAKey = sessionRecvKey session
   

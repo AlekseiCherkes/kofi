@@ -22,7 +22,7 @@ data TemplateChooserDialog = TemplateChooserDialog { dialog_wnd       :: Dialog
                                                    , ok_btn           :: Button
                                                    , cancel_btn       :: Button
                                                    , templates_tv     :: TreeView
-                                                   , selected_template:: IORef (Maybe String ) 
+                                                   , selected_template:: IORef (Maybe TransactionTemplate ) 
                                                    }
                                                  
 loadTemplateChooser :: FilePath -> IO TemplateChooserDialog
@@ -43,17 +43,17 @@ loadTemplateChooser gladePath = do
 
 initTemplateChooser :: TemplateChooserDialog -> Session ->  IO ()
 initTemplateChooser gui session = do
-    
-    let templates = ["tmp1", "tmp2", "tmp3"] 
+    let path = sessionPath session
+    templates <- listTransactionTemplate path
     model <- listStoreNew templates
     
-    initTreeViewColumns (templates_tv gui) model [("Шаблоны", id) ]
+    initTreeViewColumns (templates_tv gui) model [("Шаблоны", transactionTemplateName) ]
     
-    bindTreeViewHandlers isPrefixOf (updateTemplateData gui) (templates_tv gui) model
+    bindTreeViewHandlers (\s t -> isPrefixOf s (transactionTemplateName t)) (updateTemplateData gui) (templates_tv gui) model
 
     
     
-updateTemplateData :: TemplateChooserDialog -> String -> IO ()
+updateTemplateData :: TemplateChooserDialog -> TransactionTemplate -> IO ()
 updateTemplateData gui str = do
     writeIORef   (selected_template gui) $ Just str  
     validateTemplateChooser gui
@@ -66,9 +66,10 @@ validateTemplateChooser gui = do
     setButtonSensitive (ok_btn gui) =<< isSet selected_template
     
 
-showTemplateChooser :: Session -> IO (Maybe String)
-showTemplateChooser session = do
+showTemplateChooser :: (WindowClass t_parent) => t_parent -> Session -> IO (Maybe TransactionTemplate)
+showTemplateChooser parent session = do
     gui <- loadTemplateChooser "Resources/templateChooser_dialog.glade"
+    windowSetTransientFor (dialog_wnd gui) parent 
     initTemplateChooser gui session
     validateTemplateChooser gui
     resp <- dialogRun (dialog_wnd gui)

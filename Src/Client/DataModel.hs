@@ -142,7 +142,7 @@ fetchTransactionTemplate stmt = do
   fvBnfcBankBic <- getFieldValue stmt "bnfc_bank_bic" 
   fvBnfcAccId <- getFieldValue stmt "bnfc_acc_id" 
   fvAmount <- getFieldValue stmt "amount" 
-  fvReason <- getFieldValue stmt "varchar"
+  fvReason <- getFieldValue stmt "reason"
   fvIsUrgent <- getFieldValue stmt "is_urgent" 
   
   let xid = read $ fromJust $ fromSqlValue (SqlInteger) fvTransactionTemplateId

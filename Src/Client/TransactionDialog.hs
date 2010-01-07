@@ -173,8 +173,10 @@ initTransactionDialog gui chooseAcc session = do
         putStrLn "Save template."
 
     onClicked (load_btn gui) $ do
-        mtmpl <- showTemplateChooser session
-        putStrLn ("Load template." ++ show mtmpl)
+        mtmpl <- showTemplateChooser (dialog_wnd gui) session
+        case mtmpl of
+            Nothing   -> return ()
+            Just tmpl -> setTransactionDialodData gui session tmpl
 
     return ()
     
@@ -215,6 +217,8 @@ validateTransactionDialog gui = do
         `andM` (return . isValidAmount =<< (entryGetText     .  amount_entry) gui)
 
 
+setTransactionDialodData :: TransactionDialog -> Session -> TransactionTemplate -> IO ()
+setTransactionDialodData gui session tmpl = return ()
 
 getTransactionDialogData :: TransactionDialog -> IO CommitedTransaction
 getTransactionDialogData gui = do
