@@ -19,6 +19,40 @@ type SelectFunc a = (a -> IO())
 
 -- The purpose of this module is to reduce copypaste application in client files
 
+int2month = [( 0, January )
+            ,( 1, February )
+            ,( 2, March    )
+            ,( 3, April    )
+            ,( 4, May      )
+            ,( 5, June     )
+            ,( 6, July     )
+            ,( 7, August   )
+            ,( 8, September)
+            ,( 9, October  )
+            ,(10, November )
+            ,(11, December )] :: [(Int, Month)]
+ 
+date2time :: Calendar -> Bool -> IO CalendarTime
+date2time clndr roundUp = do
+    (year, monthId, day) <- calendarGetDate clndr
+    let Just month = lookup monthId int2month
+    
+    return $ CalendarTime { ctYear    = year
+                 , ctMonth   = month 
+                 , ctDay     = day
+                 , ctHour    = if roundUp then 23 else 0
+                 , ctMin     = if roundUp then 59 else 0
+                 , ctSec     = if roundUp then 59 else 0
+                 , ctPicosec = 0
+                 , ctWDay    = Sunday
+                 , ctYDay    = 0
+                 , ctTZName  = ""
+                 , ctTZ      = 0
+                 , ctIsDST   = False}
+
+
+
+
 setComboEntryItems :: ComboBoxEntry -> [String] -> IO ()
 setComboEntryItems combo items = do
     comboBoxEntrySetModelText combo

@@ -16,7 +16,6 @@ import Message
 import GtkCommon
 import ClientEntities
 import AccountChooser (showAccountChooser)
-import ClientMessage  (sendRequest)
 import WaitDialog     (showWaitDialog)
 
 

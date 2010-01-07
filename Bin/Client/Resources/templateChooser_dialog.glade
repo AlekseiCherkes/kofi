@@ -50,6 +50,7 @@
             <child>
               <widget class="GtkButton" id="cancel_btn">
                 <property name="label" translatable="yes">&#x41E;&#x442;&#x43C;&#x435;&#x43D;&#x430;</property>
+                <property name="response_id">-6</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
