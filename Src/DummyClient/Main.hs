@@ -7,6 +7,7 @@ import Crypto
 
 import Network
 import System.IO
+import System.Time
 
 --------------------------------------------------------------------------------
 -- Messages
@@ -27,19 +28,23 @@ testTransaction = CommitedTransaction { reason = "test this client server commun
                                       , priority = Normal
                                       }
 
--- msg_body = GetBalance apk2
-msg_body = CommitTransaction testTransaction
-
 --------------------------------------------------------------------------------
 -- Main
 --------------------------------------------------------------------------------
 
 main = withSocketsDo $ do
+  ct1 <- getClockTime >>= toCalendarTime
+  ct2 <- getClockTime >>= toCalendarTime
+
+  -- let msg_body = GetBalance apk1
+  let msg_body = GetStatement apk1 ct1 ct2
+  -- let msg_body = CommitTransaction testTransaction
+
   let mb = (show msg_body)  
   let emb = encodeMessageBody sendRSAKey mb
   let msg = createMessage sendRSAKey (ClientId myUNP) emb
   let dmb = decodeMessageBody servRecvRSAKey emb      
-      
+  
   print $ "Message body: " ++ mb
   print $ "Encrypted message body: " ++ emb
   print $ "Decrypted message body: " ++ dmb

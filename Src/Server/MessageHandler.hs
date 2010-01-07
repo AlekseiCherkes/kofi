@@ -74,7 +74,7 @@ handleMessage urgents normals cnts = catch (perform cnts) handle
           response <- case r of
             CommitTransaction ct -> pushTransaction urgents normals timestamp cmp ct
             GetBalance apk -> runHandler $ getBallance cmp apk
-            GetStatement apk ct1 ct2 -> return $ Just $ Error "GetStatement not implemented."
+            GetStatement apk ct1 ct2 -> runHandler $ getStatement cmp apk ct1 ct2
             GetLog apk ct1 ct2 -> return $ Just $ Error "GetLog not implemented."
             
           -- кодирование и возврат ответа
@@ -161,7 +161,37 @@ pushTransaction urgents normals timestamp cmp ct = do
       writeChan normals trn
 
   return Nothing
+  
+getStatement :: Company -> AccountPK -> CalendarTime -> CalendarTime -> MessageMonad
+getStatement cmp apk from to = do
+  acc <- retriveAcc apk
+  bnk <- retriveBank $ bankBic $ accountPK acc
+  checkAccountOwner acc cmp
+  checkDate $ companyUnregistryDate cmp
+  checkDate $ accountCloseDate acc
 
+  -- if to < from
+  --   then do
+  --   throwError "End date is less then start date."
+  --   else do
+  --   liftIO $ infoM "End date is great then start date."
+    
+  ts <- liftIO $ findTransactionsForLog apk from to
+  
+  case ts of
+    Nothing -> throwError "Can't retrive transaction list."
+    Just jts -> return $ Statement 0.0 $ map trn2record jts
+    
+    where trn2record t = StatementRecord 
+                         (transactionId t)
+                         (transactionCommitDate t)
+                         (transactionReciveDate t)
+                         (transactionReason t)
+                         (transactionPayerAccountPK t)
+                         (transactionBnfcAccountPK t)
+                         (transactionAmount t)
+                         (transactionPriority t)
+  
 --------------------------------------------------------------------------------
 -- End of file
 --------------------------------------------------------------------------------
