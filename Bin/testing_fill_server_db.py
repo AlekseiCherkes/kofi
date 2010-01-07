@@ -190,6 +190,35 @@ def fill_CommitedTransaction(server_db_path, accounts):
     finally:
         c.close()
 
+def fill_CurrencyRate(server_db_path):
+    c = db.connect(database = server_db_path)
+    cu = c.cursor()
+    usd_bur = 2900.
+    eur_bur = 4200.
+    eur_usd = eur_bur / usd_bur
+    try:
+        cu.execute('''insert into CurrencyRate
+                   values ('USD', 'BYR', ?);''', (usd_bur,))
+        c.commit()
+        cu.execute('''insert into CurrencyRate
+                   values ('BYR', 'USD', ?);''', (1./usd_bur,))
+        c.commit()
+        cu.execute('''insert into CurrencyRate
+                   values ('EUR', 'BYR', ?);''', (eur_bur,))
+        c.commit()
+        cu.execute('''insert into CurrencyRate
+                   values ('BYR', 'EUR', ?);''', (1./eur_bur,))
+        c.commit()
+        cu.execute('''insert into CurrencyRate
+                   values ('USD', 'EUR', ?);''', (1./eur_usd,))
+        c.commit()
+        cu.execute('''insert into CurrencyRate
+                   values ('EUR', 'USD', ?);''', (eur_usd,))
+        c.commit()
+
+    finally:
+        c.close()
+
 
 def print_statistic(server_db_path):
     '''
@@ -218,6 +247,7 @@ if __name__ == '__main__':
     companies = fill_Company(company_names)
     accounts = fill_Account(companies, accounts_per_company, banks)
     fill_CommitedTransaction(server_db_path, accounts)
+    fill_CurrencyRate(server_db_path)
     print_statistic(server_db_path)
 
 
