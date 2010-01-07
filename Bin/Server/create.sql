@@ -57,6 +57,13 @@ create table Status (
 	message varchar(256) not null
 );
 
+create table CurrencyRate (
+	primary_name char(3) not null,
+	secondary_name char(3) not null,
+	rate double not null,
+	primary key (primary_name, secondary_name)	
+);
+
 insert into Status 
 values (0, "Success.");
 insert into Status 
