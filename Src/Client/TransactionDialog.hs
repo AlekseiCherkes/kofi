@@ -22,6 +22,7 @@ import Message
 import GtkCommon
 import DataModel
 import AccountChooser (showAccountChooser)
+import WaitDialog     (showWaitDialog)
 
 
 
@@ -158,17 +159,17 @@ initTransactionDialog gui chooseAcc session = do
 
 
     onClicked (commit_btn gui) $ do
-        putStrLn "Commiting..."
         isValid <- validateTransactionDialog gui
         if isValid 
-            then dialogResponse (dialog_wnd  gui) ResponseOk
+            then do
+                commitTransaction gui session
+                dialogResponse (dialog_wnd  gui) ResponseOk
             else showWarningMessage gui
 
     onClicked (cancel_btn gui) (dialogResponse (dialog_wnd  gui) ResponseCancel)
 
     onClicked (save_btn gui) $ do
         putStrLn "Save template."
-
 
     onClicked (load_btn gui) $ do
         putStrLn "Load template."
@@ -225,19 +226,25 @@ getTransactionDialogData gui = do
                 case isUrgent of
                     True  -> Urgent
                     False -> Normal)           
---    return $
---    CommitedTransaction { reason = "test this client server communication"
---                        , creditAccount = AccountPK (str2acc "123456789") (str2bic "000000001")
---                        , debitAccount  = AccountPK (str2acc "987654321") (str2bic "000000001")
---                        , amount = 100.0
---                        , priority = Normal
---                        }
 
 
---onCommitTransactionClicked :: CommitedTransaction -> IO ()
---onCommitTransactionClicked trans = do
---    let msg = makeMessage "123456789" (CommitTransaction trans)
---    (testSend msg) >> (testLogToConsole msg)
+
+commitTransaction :: TransactionDialog -> Session -> IO ()
+commitTransaction gui session = do
+    trans <- getTransactionDialogData gui
+    mservResp <- showWaitDialog (dialog_wnd gui) session (CommitTransaction trans)
+    dialog <- case mservResp of
+        Nothing               -> messageDialogNew Nothing [DialogModal] MessageInfo  ButtonsOk ("Запрос был отменен.")
+        Just (Silence)        -> messageDialogNew Nothing [DialogModal] MessageInfo  ButtonsOk ("Плетежное поручение отправлено.")
+        Just (Error   msg   ) -> messageDialogNew Nothing [DialogModal] MessageError ButtonsClose ("Ошибка: " ++ msg ++ ".")
+        otherwise             -> do
+            msg_dialog <- messageDialogNew Nothing [DialogModal] MessageError ButtonsClose ("Сервер ответил неверно: ")
+            messageDialogSetSecondaryText msg_dialog (show mservResp)
+            return msg_dialog
+    
+    windowSetTransientFor dialog (dialog_wnd gui)
+    dialogRun dialog
+    widgetDestroy dialog
 
 
 showTransactionDialog :: Session -> IO ()
@@ -245,6 +252,7 @@ showTransactionDialog session = do
     gui <- loadTransactionDialog "Resources/transaction_dialog.glade"
     initTransactionDialog gui (showAccountChooser $ dialog_wnd gui) session
     validateTransactionDialog gui
+    onResponse (dialog_wnd gui) (\_ -> widgetDestroy $ dialog_wnd gui)
     widgetShowAll (dialog_wnd gui)
 
 
