@@ -199,9 +199,7 @@ fetchAccount stmt = do
     
   return $ Account (AccountPK accId bankBic) ownerUnp 
     ballance 
-    openDate closeDate
-    
-  
+    openDate closeDate  
   
 fetchBank stmt = do
   let get = getFieldValue stmt
@@ -235,15 +233,9 @@ fetchTransaction stmt = do
   fvAmount <- get "amount"
   fvPriority <- get "priority"
   
-  infoM fvCommitDate
-  infoM fvReciveDate
-  
   let xid = fromJust $ fromSqlValue SqlInteger fvId
   commitDate <- toCalendarTime $ fromJust $ fromSqlValue (SqlDateTime) fvCommitDate
   reciveDate <- toCalendarTime $ fromJust $ fromSqlValue (SqlDateTime) fvReciveDate
-  
-  -- commitDate <- getClockTime >>= toCalendarTime
-  -- reciveDate <- getClockTime >>= toCalendarTime
       
   let statusId = fromJust $ fromSqlValue SqlInteger fvStatusId
   let content = fromJust $ fromSqlValue (SqlVarChar 4000) fvContent
@@ -269,6 +261,11 @@ fetchTransaction stmt = do
     (AccountPK payerAccId payerBankBic) (AccountPK bnfcAccId bnfcBankBic)
     payerFinalBalance bnfcFinalBalance amount 
     priority
+    
+fetchTransactionStatus stmt = do
+  fvMessage <- getFieldValue stmt "message"
+  let msg = fromJust $ fromSqlValue (SqlVarChar 256) fvMessage
+  return msg
 
 --------------------------------------------------------------------------------
 -- Companies
@@ -346,8 +343,24 @@ insertTransaction t = sqlExec withServerDB cmd
                               , toSqlValue $ transactionAmount t
                               , toSqlValue $ priority2sql $ transactionPriority t]
                  
+findTransactionsForStatement apk from to = sqlQueryList withServerDB fetchTransaction q
+  where q = "SELECT * FROM CommitedTransaction " ++
+            "WHERE commit_date BETWEEN " ++
+             fd ++ " AND " ++ td ++ " " ++
+             "AND status_id = 0;"
+             where fd = toSqlValue $ toClockTime from
+                   td = toSqlValue $ toClockTime to
+
 findTransactionsForLog apk from to = sqlQueryList withServerDB fetchTransaction q
-  where q = "SELECT * FROM CommitedTransaction;"
+  where q = "SELECT * FROM CommitedTransaction " ++
+            "WHERE commit_date BETWEEN " ++
+             fd ++ " AND " ++ td ++ ";"
+             where fd = toSqlValue $ toClockTime from
+                   td = toSqlValue $ toClockTime to
+                   
+findTransactionStatusMessageById id = sqlQueryRec withServerDB fetchTransactionStatus q
+  where q = "SELECT message FROM Status " ++
+            "WHERE status_id = " ++ (toSqlValue id) ++ ";"
 
 --------------------------------------------------------------------------------
 -- End
