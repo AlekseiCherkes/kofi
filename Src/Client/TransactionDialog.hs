@@ -3,6 +3,7 @@ module TransactionDialog
 
 import System.IO
 import Data.IORef
+import Data.List (findIndex)
 import Control.Monad (liftM2)
 
 -- Gtk imports
@@ -14,7 +15,7 @@ import Graphics.UI.Gtk.Glade
 import Types
 import Validation
 import ClientEntities
-import DataModel ()
+import DataModel
 
 
 -- Client imports
@@ -24,6 +25,7 @@ import DataModel
 import AccountChooser  (showAccountChooser)
 import WaitDialog      (showWaitDialog)
 import TemplateChooser (showTemplateChooser)
+import TemplateSaver   (showTemplateSaver)
 
 import PrintTransaction
 
@@ -172,11 +174,23 @@ initTransactionDialog gui chooseAcc session = do
     onClicked (cancel_btn gui) (dialogResponse (dialog_wnd  gui) ResponseCancel)
 
     onClicked (save_btn gui) $ do
-        putStrLn "Save template."
+        isValid <- validateTransactionDialog gui
+        if isValid 
+            then do
+                mname <- showTemplateSaver (dialog_wnd  gui)
+                case mname of
+                    Nothing   -> return ()
+                    Just name -> do
+                        tmpl <- getTemplateData gui name
+                        insertTransactionTemplate path tmpl
+            else showWarningMessage gui
+            
 
     onClicked (load_btn gui) $ do
-        mtmpl <- showTemplateChooser session
-        putStrLn ("Load template." ++ show mtmpl)
+        mtmpl <- showTemplateChooser (dialog_wnd gui) session
+        case mtmpl of
+            Nothing   -> return ()
+            Just tmpl -> setTransactionDialodData gui model session tmpl
 
     return ()
     
@@ -217,6 +231,37 @@ validateTransactionDialog gui = do
         `andM` (return . isValidAmount =<< (entryGetText     .  amount_entry) gui)
 
 
+setTransactionDialodData :: TransactionDialog -> ListStore Company -> Session -> TransactionTemplate -> IO ()
+setTransactionDialodData gui model session tmpl = do
+    let path       = sessionPath session
+    let payerAccPk = transactionTemplatePayerAccountPK tmpl
+    let payeeAccPk = transactionTemplateBnfcAccountPK  tmpl
+    
+    [payerBnk, payeeBnk] <- mapM (\apk -> (return . bnkName) =<< (findBankByBic . bankBic) apk) [payerAccPk, payeeAccPk]
+    unp   <- return . accCompany =<< (findAccount path (str2bic "151501267") (accId payeeAccPk))
+    cmp   <- findCompanyByUnp path unp 
+
+    unps  <- return . (map cmpUnp) =<<  listStoreToList model
+    idx   <- case (findIndex ((==) unp) unps) of
+      Just idx -> return idx
+      Nothing  -> return (-1)
+      
+    comboBoxSetActive     (payee_cmb     gui) idx
+    labelSetText          (payeeName_lbl gui) (cmpName cmp)
+    writeIORef            (payer_acc     gui) (Just payerAccPk)
+    writeIORef            (payee_acc     gui) (Just payeeAccPk)
+    
+    renderAccountInfo (Just (payerAccPk, payerBnk)) (payerBank_lbl gui) (payerBankBic_lbl gui) (payerAcc_lbl gui)
+    renderAccountInfo (Just (payeeAccPk, payeeBnk)) (payeeBank_lbl gui) (payeeBankBic_lbl gui) (payeeAcc_lbl gui)
+    
+    setMultilineText      (reason_txt    gui) (transactionTemplateReason        tmpl)
+    entrySetText          (amount_entry  gui) (show $ transactionTemplateAmount tmpl)
+    toggleButtonSetActive (urgent_btn    gui) (transactionTemplateIsUrgent      tmpl)
+    
+    validateTransactionDialog gui
+    return ()
+    
+    
 
 getTransactionDialogData :: TransactionDialog -> IO CommitedTransaction
 getTransactionDialogData gui = do
@@ -229,8 +274,22 @@ getTransactionDialogData gui = do
     return $ CommitedTransaction reason creditAcc debitAcc amount (
                 case isUrgent of
                     True  -> Urgent
-                    False -> Normal)           
-
+                    False -> Normal)  
+                    
+getTemplateData :: TransactionDialog -> String -> IO TransactionTemplate         
+getTemplateData gui name = do
+    reason         <- (getMultilineText . reason_txt) gui
+    Just creditAcc <- (readIORef        . payer_acc ) gui
+    Just debitAcc  <- (readIORef        . payee_acc ) gui
+    amount         <- (return . (read::String -> Double)) =<< (entryGetText . amount_entry) gui
+    isUrgent       <- (toggleButtonGetActive . urgent_btn) gui
+    
+    return $ TransactionTemplate
+                0         name
+                creditAcc debitAcc
+                amount    reason 
+                isUrgent  
+    
 
 
 commitTransaction :: TransactionDialog -> Session -> IO ()

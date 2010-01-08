@@ -44,5 +44,5 @@ data TransactionTemplate = TransactionTemplate { transactionTemplateId :: Int
                                                , transactionTemplateReason :: String
                                                , transactionTemplateIsUrgent :: Bool 
                                                }
-                         deriving (Read, Show)              
- 
+                             deriving (Read, Show)
+

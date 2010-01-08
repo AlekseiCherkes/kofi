@@ -19,7 +19,7 @@ data ACC  = C_ACC  { acc2str :: String} deriving (Read, Show, Eq)
 
 data AccountPK = AccountPK { accId   :: ACC
                            , bankBic :: BIC }
-                deriving (Read, Show, Eq)
+                  deriving (Read, Show, Eq)
 
 --------------------------------------------------------------------------------
 -- Conversion
