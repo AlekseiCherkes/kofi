@@ -63,10 +63,11 @@ testTransaction = CommitedTransaction { reason = "test this client server commun
 main = withSocketsDo $ do
   ctc <- getClockTime >>= toCalendarTime
 
-  let msg_body = GetBalance apk1
+  -- let msg_body = GetBalance apk1
   -- let msg_body = GetStatement apk1 ct1 ct2
-  --let msg_body = GetLog apk1 ct1 ct2
+  -- let msg_body = GetLog apk1 ct1 ct2
   -- let msg_body = CommitTransaction testTransaction
+  let msg_body = GetCurrencyRates
 
   let mb = (show msg_body)  
   let emb = encodeMessageBody sendRSAKey mb

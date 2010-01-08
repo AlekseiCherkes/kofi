@@ -12,13 +12,19 @@ import System.Exit
 import Data.Bits
 import Data.Word
 
+import Prelude hiding (print)
+import System.IO.UTF8
+import qualified Codec.Binary.UTF8.String as UTF8
+
 --------------------------------------------------------------------------------
 -- Helper functions
 --------------------------------------------------------------------------------
 
 parseArgs :: [String] -> (String, String, Double)
 parseArgs args | length args /= 3 = error "Invalid command line params."
-               | otherwise = (args !! 0, args !! 1, read (args !! 2))
+               | otherwise = (UTF8.decodeString $ args !! 0, 
+                              UTF8.decodeString $ args !! 1, 
+                              read $ UTF8.decodeString $ args !! 2)
 
 rand min max = getStdRandom $ randomR (min, max)
 

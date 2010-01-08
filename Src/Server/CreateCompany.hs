@@ -7,7 +7,10 @@ import Types
 
 import Loggers
 
-import System.IO
+import Prelude hiding (print)
+import qualified Codec.Binary.UTF8.String as UTF8
+-- import System.IO
+import System.IO.UTF8
 import System.Environment
 import System.Random
 import System.Time
@@ -55,7 +58,7 @@ mles a b n | a <= 0 || n <= 0 = BadParams
 --------------------------------------------------------------------------------
 
 parseArgs args | length args /= 1 = error "Invalid command line params."
-               | otherwise = head $ args
+               | otherwise = UTF8.decodeString $ head $ args
                              
 rand min max = getStdRandom $ randomR (min, max)
                              
@@ -115,7 +118,7 @@ main = withUtilityLoggers $ \_ -> do
   insertCompany cmp
   
   print $ unp2str unp
-  print name
+  print $ UTF8.encodeString $ name
   print date
   print clientRecvKey
   print clientSendKey

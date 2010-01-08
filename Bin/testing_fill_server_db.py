@@ -107,8 +107,8 @@ def fill_Account(companies, accounts_per_company, banks):
     for company in companies:
         for bank_bic in banks:
             for i in range(accounts_per_company):
-                #balance = (int(company[0]) + int(bank_bic)) / 1000000
-                balance = 100 + 10 * total_acc_count
+                #balance = 100 + 10 * total_acc_count
+                balance = random.randint(10, 1000) * 10
                 args = ['Server\create_account', company[0], bank_bic, str(balance)]
                 process = subprocess.Popen(args, cwd = 'Server', shell=False, \
                     stdin=subprocess.PIPE, stdout=subprocess.PIPE, \
@@ -163,13 +163,17 @@ def fill_CommitedTransaction(server_db_path, accounts):
                     t = time.mktime(t)
                     recive_date = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(t))
                     money_amount = payer_account[3] / 2.0
+                    trn_reason = random.choice(['Оплата коммунальных услуг.',
+                                                'Выплата гонорара.',
+                                                'Благотворительность.'
+                                                'Выплата кредита.'])
                     cu.execute('''insert into CommitedTransaction
                                   values(?,
                                          ?,
                                          ?,
                                          0,
                                         'trn_content',
-                                        'trn_reason',
+                                        ?,
                                         ?, ?, ?,
                                         ?, ?, ?,
                                         ?,
@@ -178,6 +182,7 @@ def fill_CommitedTransaction(server_db_path, accounts):
                                 (trn_id,
                                 recive_date,
                                 recive_date,
+                                trn_reason,
                                 payer_account[0],
                                 payer_account[2],
                                 bnfc_account[0],
@@ -187,6 +192,35 @@ def fill_CommitedTransaction(server_db_path, accounts):
                                 money_amount)
                               )
                     c.commit()
+    finally:
+        c.close()
+
+def fill_CurrencyRate(server_db_path):
+    c = db.connect(database = server_db_path)
+    cu = c.cursor()
+    usd_bur = 2900.
+    eur_bur = 4200.
+    eur_usd = eur_bur / usd_bur
+    try:
+        cu.execute('''insert into CurrencyRate
+                   values ('USD', 'BYR', ?);''', (usd_bur,))
+        c.commit()
+        cu.execute('''insert into CurrencyRate
+                   values ('BYR', 'USD', ?);''', (1./usd_bur,))
+        c.commit()
+        cu.execute('''insert into CurrencyRate
+                   values ('EUR', 'BYR', ?);''', (eur_bur,))
+        c.commit()
+        cu.execute('''insert into CurrencyRate
+                   values ('BYR', 'EUR', ?);''', (1./eur_bur,))
+        c.commit()
+        cu.execute('''insert into CurrencyRate
+                   values ('USD', 'EUR', ?);''', (1./eur_usd,))
+        c.commit()
+        cu.execute('''insert into CurrencyRate
+                   values ('EUR', 'USD', ?);''', (eur_usd,))
+        c.commit()
+
     finally:
         c.close()
 
@@ -218,6 +252,7 @@ if __name__ == '__main__':
     companies = fill_Company(company_names)
     accounts = fill_Account(companies, accounts_per_company, banks)
     fill_CommitedTransaction(server_db_path, accounts)
+    fill_CurrencyRate(server_db_path)
     print_statistic(server_db_path)
 
 
