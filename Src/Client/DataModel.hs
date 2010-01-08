@@ -15,6 +15,8 @@ import Data.String.UTF8 ()
 import Control.Exception
 import Database.HSQL.SQLite3
 
+import Debug.Trace
+
 --------------------------------------------------------------------------------
 -- Connection functions
 --------------------------------------------------------------------------------
@@ -37,12 +39,12 @@ withBanksManual = bracket
 
 sqlHandleError :: SqlError -> IO [a]
 sqlHandleError e = do
-  print $ "SQL Error: " ++ (show e)
+  putTraceMsg $ "SQL Error: " ++ (show e)
   -- throwIO (ErrorCall $ "SQL Error: " ++ (show e))
   return []
 
 sqlPerformQuery fetchRowFunction q connection =
-  print q >>
+  putTraceMsg q >>
   query connection q >>=
   collectRows fetchRowFunction >>=
   return
@@ -300,10 +302,10 @@ listCounterparties file = sqlQuery (withDB file) fetchCompany $
 -- not tested !!!
 insertStatement :: FilePath -> E.Statement -> IO ()
 insertStatement file s = do
-  -- print $ show cmd
+  -- putTraceMsg $ show cmd
   catchSql 
     (withDB file $ \conn -> execute conn cmd)
-    (\e -> print $ show e)
+    (\e -> putTraceMsg $ show e)
   where cmd = "INSERT INTO Statement VALUES(" ++ values ++ ");"
         values = formatValues [ "NULL" -- autoincremented primary key
                               , toSqlValue $ toClockTime $ E.statementStartDate s
@@ -333,10 +335,10 @@ listStatements file = sqlQuery (withDB file) fetchStatement $
 -- not tested !!!  
 insertTransactionTemplate :: FilePath -> E.TransactionTemplate -> IO ()
 insertTransactionTemplate file t = do
-  -- print $ show cmd
+  -- putTraceMsg $ show cmd
   catchSql 
     (withDB file $ \conn -> execute conn cmd)
-    (\e -> print $ show e)
+    (\e -> putTraceMsg $ show e)
   where cmd = "INSERT INTO TransactionTemplate VALUES(" ++ values ++ ");"
         values = formatValues [ "NULL" -- autoincremented primary key
                               , toSqlValue $ E.transactionTemplateName t
