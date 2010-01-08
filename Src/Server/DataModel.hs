@@ -360,21 +360,32 @@ insertTransaction t = sqlExec withServerDB cmd
                               , toSqlValue $ transactionBnfcFinalBalance t
                               , toSqlValue $ transactionAmount t
                               , toSqlValue $ priority2sql $ transactionPriority t]
-                 
+
 findTransactionsForStatement apk from to = sqlQueryList withServerDB fetchTransaction q
   where q = "SELECT * FROM CommitedTransaction " ++
-            "WHERE commit_date BETWEEN " ++
-             fd ++ " AND " ++ td ++ " " ++
+            "WHERE commit_date BETWEEN " ++ fd ++ " AND " ++ td ++ " " ++
+             "AND ( " ++
+             "( payer_acc_id = " ++ aid ++ " AND payer_bank_bic = " ++ bic  ++ " ) " ++ 
+             "OR " ++
+             "( bnfc_acc_id = " ++ aid ++ " AND bnfc_bank_bic = " ++ bic  ++ " )) " ++
              "AND status_id = 0;"
              where fd = toSqlValue $ toClockTime from
                    td = toSqlValue $ toClockTime to
+                   aid = toSqlValue $ acc2str $ accId apk
+                   bic = toSqlValue $ bic2str $ bankBic apk
 
 findTransactionsForLog apk from to = sqlQueryList withServerDB fetchTransaction q
   where q = "SELECT * FROM CommitedTransaction " ++
-            "WHERE commit_date BETWEEN " ++
-             fd ++ " AND " ++ td ++ ";"
+            "WHERE commit_date BETWEEN " ++ fd ++ " AND " ++ td ++ " " ++
+             "AND ( " ++
+             "( payer_acc_id = " ++ aid ++ " AND payer_bank_bic = " ++ bic  ++ " ) " ++ 
+             "OR " ++
+             "( bnfc_acc_id = " ++ aid ++ " AND bnfc_bank_bic = " ++ bic  ++ " ) " ++ 
+             ");"
              where fd = toSqlValue $ toClockTime from
                    td = toSqlValue $ toClockTime to
+                   aid = toSqlValue $ acc2str $ accId apk
+                   bic = toSqlValue $ bic2str $ bankBic apk
                    
 findTransactionStatusMessageById id = sqlQueryRec withServerDB fetchTransactionStatus q
   where q = "SELECT message FROM Status " ++
