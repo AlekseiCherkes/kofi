@@ -27,8 +27,15 @@ create_account: Src/Server/CreateAccount.hs
 	ghc --make -iSrc/Server $(DATABASE_FLAGS) -optP $(CFLAGS) -o Bin/Server/create_account $(HSFLAGS_OUR) Src/Server/CreateAccount.hs $(CBITS_O)
 
 .PHONY: client
-client: third_party Src/Client/Main.hs
+client: clientd # clientr
+	
+.PHONY: clientd
+clientd: third_party Src/Client/Main.hs
 	ghc --make -iSrc/Client -optP $(CFLAGS) -o Bin/Client/client $(HSFLAGS_OUR) Src/Client/Main.hs $(CBITS_O)
+
+.PHONY: clientr
+clientr: third_party Src/Client/Main.hs
+	ghc --make -optl-mwindows -iSrc/Client -optP $(CFLAGS) -o Bin/Client/client_release $(HSFLAGS_OUR) Src/Client/Main.hs $(CBITS_O)
 
 .PHONY: dummy_client
 dummy_client: Src/DummyClient/Main.hs

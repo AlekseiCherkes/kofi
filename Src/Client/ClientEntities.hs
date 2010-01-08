@@ -34,6 +34,7 @@ data Statement = Statement { statementId :: Int
                            , statementAccountPK :: AccountPK
                            , statementText :: String
                            }
+               deriving (Read, Show)
 
 data TransactionTemplate = TransactionTemplate { transactionTemplateId :: Int
                                                , transactionTemplateName :: String
@@ -43,5 +44,5 @@ data TransactionTemplate = TransactionTemplate { transactionTemplateId :: Int
                                                , transactionTemplateReason :: String
                                                , transactionTemplateIsUrgent :: Bool 
                                                }
-                             
+                         deriving (Read, Show)              
  

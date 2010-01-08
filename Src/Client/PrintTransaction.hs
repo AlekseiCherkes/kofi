@@ -3,24 +3,30 @@ module PrintTransaction
 
 import DataModel
 import Message
+import Types
+
+import System.IO
 
 printTransaction :: FilePath -> CommitedTransaction -> IO String
 printTransaction file ct = do
-  pa <- findAccount (creditAccount ct)
-  ba <- findAccount (debitAccount ct)
+  let papk = creditAccount ct
+  let bapk = debitAccount ct
+      
+  pa <- findAccount file (bankBic papk) (accId papk)
+  ba <- findAccount file (bankBic bapk) (accId bapk)
   
   -- bb <- findCompanyByUnp
   -- findBankByBic
   -- findCompanyByUnp
   let payerBankName = "Payer bank name"
-  let payerBankBic = bic2str $ bankBic pa
-  let payerAcc = acc2str $ accId pa
+  let payerBankBic = bic2str $ bankBic papk
+  let payerAcc = acc2str $ accId papk
       
   let bnfcUnp = "123456789012"
   let bnfcName = "Bnfc Name"
   let bnfcBankName = "Bnfc Bank name"
-  let bnfcBankBic = bic2str $ bankBic ba
-  let bnfcAccId = acc2str $ accId ba
+  let bnfcBankBic = bic2str $ bankBic bapk
+  let bnfcAccId = acc2str $ accId bapk
       
   let result = "|----------------------------------------" ++ "\n" ++
                "|Плательщик                 | " ++ "\n" ++

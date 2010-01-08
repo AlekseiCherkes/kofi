@@ -15,6 +15,8 @@ import Data.String.UTF8 ()
 import Control.Exception
 import Database.HSQL.SQLite3
 
+import Debug.Trace
+
 --------------------------------------------------------------------------------
 -- Connection functions
 --------------------------------------------------------------------------------
@@ -37,12 +39,12 @@ withBanksManual = bracket
 
 sqlHandleError :: SqlError -> IO [a]
 sqlHandleError e = do
-  print $ "SQL Error: " ++ (show e)
+  putTraceMsg $ "SQL Error: " ++ (show e)
   -- throwIO (ErrorCall $ "SQL Error: " ++ (show e))
   return []
 
 sqlPerformQuery fetchRowFunction q connection =
-  print q >>
+  putTraceMsg q >>
   query connection q >>=
   collectRows fetchRowFunction >>=
   return
@@ -127,8 +129,8 @@ fetchStatement stmt = do
   let xid = read $ fromJust $ fromSqlValue (SqlInteger) fvId
   startDate <- toCalendarTime $ fromJust $ fromSqlValue (SqlDateTime) fvStartDate
   endDate <- toCalendarTime $ fromJust $ fromSqlValue (SqlDateTime) fvEndDate
-  let accId = read $ fromJust $ fromSqlValue (SqlChar 13) fvAccId
-  let bankBic = read $ fromJust $ fromSqlValue (SqlChar 9) fvBankBic
+  let accId = str2acc $ fromJust $ fromSqlValue (SqlChar 13) fvAccId
+  let bankBic = str2bic $ fromJust $ fromSqlValue (SqlChar 9) fvBankBic
   let text = fromJust $ fromSqlValue (SqlVarChar 2000) fvStatementText
       
   return $ E.Statement xid startDate endDate
@@ -142,22 +144,22 @@ fetchTransactionTemplate stmt = do
   fvBnfcBankBic <- getFieldValue stmt "bnfc_bank_bic" 
   fvBnfcAccId <- getFieldValue stmt "bnfc_acc_id" 
   fvAmount <- getFieldValue stmt "amount" 
-  fvReason <- getFieldValue stmt "varchar"
+  fvReason <- getFieldValue stmt "reason"
   fvIsUrgent <- getFieldValue stmt "is_urgent" 
   
   let xid = read $ fromJust $ fromSqlValue (SqlInteger) fvTransactionTemplateId
   let name = fromJust $ fromSqlValue (SqlVarChar 16) fvTmplName
-  let payerBankBic = read $ fromJust $ fromSqlValue (SqlChar 9) fvPayerBankBic
-  let payerAccId = read $ fromJust $ fromSqlValue (SqlChar 13) fvPayerAccId
-  let bnfcBankBic = read $ fromJust $ fromSqlValue (SqlChar 9) fvBnfcBankBic
-  let bnfcAccId = read $ fromJust $ fromSqlValue (SqlChar 13) fvBnfcAccId
+  let payerBankBic = str2bic $ fromJust $ fromSqlValue (SqlChar 9) fvPayerBankBic
+  let payerAccId = str2acc $ fromJust $ fromSqlValue (SqlChar 13) fvPayerAccId
+  let bnfcBankBic = str2bic $ fromJust $ fromSqlValue (SqlChar 9) fvBnfcBankBic
+  let bnfcAccId = str2acc $ fromJust $ fromSqlValue (SqlChar 13) fvBnfcAccId
   let amount = read $ fromJust $ fromSqlValue (SqlMoney) fvAmount
   let reason = fromJust $ fromSqlValue (SqlVarChar 256) fvReason
-  let isUrgent = read $ fromJust $ fromSqlValue (SqlBit) fvIsUrgent
+  let isUrgent = fromJust $ fromSqlValue (SqlBit) fvIsUrgent
   
   return $ E.TransactionTemplate xid name 
-    (AccountPK payerBankBic payerAccId)
-    (AccountPK bnfcBankBic bnfcAccId)
+    (AccountPK payerAccId payerBankBic)
+    (AccountPK bnfcAccId bnfcBankBic)
     amount reason isUrgent
     
 --------------------------------------------------------------------------------
@@ -300,10 +302,10 @@ listCounterparties file = sqlQuery (withDB file) fetchCompany $
 -- not tested !!!
 insertStatement :: FilePath -> E.Statement -> IO ()
 insertStatement file s = do
-  -- print $ show cmd
+  -- putTraceMsg $ show cmd
   catchSql 
     (withDB file $ \conn -> execute conn cmd)
-    (\e -> print $ show e)
+    (\e -> putTraceMsg $ show e)
   where cmd = "INSERT INTO Statement VALUES(" ++ values ++ ");"
         values = formatValues [ "NULL" -- autoincremented primary key
                               , toSqlValue $ toClockTime $ E.statementStartDate s
@@ -333,10 +335,10 @@ listStatements file = sqlQuery (withDB file) fetchStatement $
 -- not tested !!!  
 insertTransactionTemplate :: FilePath -> E.TransactionTemplate -> IO ()
 insertTransactionTemplate file t = do
-  -- print $ show cmd
+  -- putTraceMsg $ show cmd
   catchSql 
     (withDB file $ \conn -> execute conn cmd)
-    (\e -> print $ show e)
+    (\e -> putTraceMsg $ show e)
   where cmd = "INSERT INTO TransactionTemplate VALUES(" ++ values ++ ");"
         values = formatValues [ "NULL" -- autoincremented primary key
                               , toSqlValue $ E.transactionTemplateName t
