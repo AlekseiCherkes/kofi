@@ -18,8 +18,8 @@ recvRSAKey = ("R2s=","BV0=")
 servRecvRSAKey = ("MI8=","K0U=")
 
 myUNP = str2unp "7011293625508"
-apk1 = AccountPK (str2acc "6801954585389") (str2bic "151501267")
-apk2 = AccountPK (str2acc "5308275477924") (str2bic "151501267")
+apk1 = AccountPK (str2acc "8837776875539") (str2bic "151501267")
+apk2 = AccountPK (str2acc "1237136324411") (str2bic "151501267")
 
 ct1 = CalendarTime { ctYear = 2008
                    , ctMonth = January
@@ -64,10 +64,10 @@ main = withSocketsDo $ do
   ctc <- getClockTime >>= toCalendarTime
 
   -- let msg_body = GetBalance apk1
-  -- let msg_body = GetStatement apk1 ct1 ct2
+  let msg_body = GetStatement apk1 ct1 ct2
   -- let msg_body = GetLog apk1 ct1 ct2
   -- let msg_body = CommitTransaction testTransaction
-  let msg_body = GetCurrencyRates
+  -- let msg_body = GetCurrencyRates
 
   let mb = (show msg_body)  
   let emb = encodeMessageBody sendRSAKey mb

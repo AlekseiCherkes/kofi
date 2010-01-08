@@ -186,10 +186,22 @@ getStatement cmp apk from to = do
     liftIO $ infoM "End date is great then start date."
     
   ts <- liftIO $ findTransactionsForStatement apk from to
+  lt <- liftIO $ findLastStatementTransaction apk to
+  
+  let aid = accId $ apk
+  let bic = bankBic $ apk
+      
+  let final_ballance = case lt of 
+        Nothing -> accountBallance acc
+        Just t -> if aid == lpa && bic == lpb
+                 then fromJust $ transactionPayerFinalBalance t
+                 else fromJust $ transactionBnfcFinalBalance t
+                   where lpa = accId $ transactionPayerAccountPK t
+                         lpb = bankBic $ transactionPayerAccountPK t
   
   case ts of
     Nothing -> throwError "Can't retrive transaction list."
-    Just jts -> return $ Statement 0.0 $ map trn2record jts
+    Just jts -> return $ Statement final_ballance $ map trn2record jts
     
     where trn2record t = StatementRecord 
                          (transactionId t)
