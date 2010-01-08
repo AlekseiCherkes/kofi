@@ -47,7 +47,10 @@ initTemplateChooser gui session = do
     templates <- listTransactionTemplate path
     model <- listStoreNew templates
     
-    initTreeViewColumns (templates_tv gui) model [("Шаблоны", transactionTemplateName) ]
+    initTreeViewColumns (templates_tv gui) model [
+        ("Имя шаблона", transactionTemplateName  ),
+        ("Назначение" , \t -> (take 40 (transactionTemplateReason t)))]
+    
     
     bindTreeViewHandlers (\s t -> isPrefixOf s (transactionTemplateName t)) (updateTemplateData gui) (templates_tv gui) model
 

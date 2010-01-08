@@ -5,6 +5,9 @@
   <widget class="GtkDialog" id="dialog_wnd">
     <property name="border_width">5</property>
     <property name="title" translatable="yes">&#x412;&#x44B;&#x431;&#x43E;&#x440; &#x448;&#x430;&#x431;&#x43B;&#x43E;&#x43D;&#x430; &#x43F;&#x43B;&#x430;&#x442;&#x435;&#x436;&#x43D;&#x43E;&#x433;&#x43E; &#x43F;&#x43E;&#x440;&#x443;&#x447;&#x435;&#x43D;&#x438;&#x44F;</property>
+    <property name="window_position">center-on-parent</property>
+    <property name="default_width">270</property>
+    <property name="default_height">125</property>
     <property name="type_hint">normal</property>
     <property name="has_separator">False</property>
     <child internal-child="vbox">
