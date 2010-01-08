@@ -303,7 +303,7 @@ listCounterparties file = sqlQuery (withDB file) fetchCompany $
 -- Statements
 --------------------------------------------------------------------------------
 
--- not tested !!!
+
 insertStatement :: FilePath -> E.Statement -> IO ()
 insertStatement file s = do
   -- putTraceMsg $ show cmd
@@ -319,7 +319,7 @@ insertStatement file s = do
                               , toSqlValue $ E.statementText s
                               ]
                  
--- not tested !!!  
+  
 findStatementById :: FilePath -> Int -> IO E.Statement
 findStatementById file xid = sqlQueryGetFirst $
                              sqlQuery (withDB file) fetchStatement $
@@ -327,7 +327,7 @@ findStatementById file xid = sqlQueryGetFirst $
                              "WHERE statement_id = " ++ idValue ++ ";"
                                where idValue = toSqlValue xid
                     
--- not tested !!!
+
 listStatements :: FilePath -> IO [E.Statement]
 listStatements file = sqlQuery (withDB file) fetchStatement $
                       "SELECT * FROM Statement;"
@@ -336,7 +336,7 @@ listStatements file = sqlQuery (withDB file) fetchStatement $
 -- Transaction templates
 --------------------------------------------------------------------------------
 
--- not tested !!!  
+ 
 insertTransactionTemplate :: FilePath -> E.TransactionTemplate -> IO ()
 insertTransactionTemplate file t = do
   -- putTraceMsg $ show cmd
@@ -346,16 +346,16 @@ insertTransactionTemplate file t = do
   where cmd = "INSERT INTO TransactionTemplate VALUES(" ++ values ++ ");"
         values = formatValues [ "NULL" -- autoincremented primary key
                               , toSqlValue $ E.transactionTemplateName t
-                              , toSqlValue $ acc2str $ accId $ E.transactionTemplatePayerAccountPK t
                               , toSqlValue $ bic2str $ bankBic $ E.transactionTemplatePayerAccountPK t
-                              , toSqlValue $ acc2str $ accId $ E.transactionTemplateBnfcAccountPK t
+                              , toSqlValue $ acc2str $ accId $ E.transactionTemplatePayerAccountPK t
                               , toSqlValue $ bic2str $ bankBic $ E.transactionTemplateBnfcAccountPK t
+                              , toSqlValue $ acc2str $ accId $ E.transactionTemplateBnfcAccountPK t
                               , toSqlValue $ E.transactionTemplateAmount t
                               , toSqlValue $ E.transactionTemplateReason t
                               , toSqlValue $ E.transactionTemplateIsUrgent t
                               ]
 
--- not tested !!!  
+ 
 findTransactionTemplateById :: FilePath -> Int -> IO E.TransactionTemplate
 findTransactionTemplateById file xid = sqlQueryGetFirst $
                                        sqlQuery (withDB file) fetchTransactionTemplate $
@@ -363,7 +363,7 @@ findTransactionTemplateById file xid = sqlQueryGetFirst $
                                        "WHERE transaction_template_id = " ++ idValue ++ ";"
                                          where idValue = toSqlValue xid
 
--- not tested !!!
+
 listTransactionTemplate :: FilePath -> IO [E.TransactionTemplate]
 listTransactionTemplate file = sqlQuery (withDB file) fetchTransactionTemplate $
                                "SELECT * FROM TransactionTemplate;"
