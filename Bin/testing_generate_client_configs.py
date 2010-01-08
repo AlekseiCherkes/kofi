@@ -11,57 +11,57 @@ def create_client_db(con):
     cur = con.cursor()
     # Config table always has only one row
     cur.execute('''create table Config (
-	                   unp char(13) not null,
-	                   name varchar(256) not null,
+                       unp char(13) not null,
+                       name varchar(256) not null,
                        date datetime not null,
                        recv_key varchar(1024) not null,
                        send_key varchar(1024) not null
                     ); ''')
     cur.execute('''create table Company (
-	                   company_unp char(13) not null,
-	                   company_name varchar(256) not null,
-	                   primary key (company_unp)
+                       company_unp char(13) not null,
+                       company_name varchar(256) not null,
+                       primary key (company_unp)
                     ); ''')
     cur.execute('''create table Account (
-	                   acc_id char(13) not null,
-	                   company_unp char(13) not null,
-	                   bank_bic char(9) not null,
-	                   primary key (acc_id, bank_bic),
-	                   foreign key (company_unp)
-		                  references Company(company_unp)
+                       acc_id char(13) not null,
+                       company_unp char(13) not null,
+                       bank_bic char(9) not null,
+                       primary key (acc_id, bank_bic),
+                       foreign key (company_unp)
+                          references Company(company_unp)
                     );''')
     cur.execute('''create table Statement(
-	                   statement_id integer not null,
-	                   start_date datetime not null,
-	                   end_date datetime not null,
-	                   acc_id char(13) not null,
-	                   bank_bic char(9) not null,
-	                   statement_text varchar(2000) not null,
-	                   primary key (statement_id),
-	                   foreign key (acc_id)
+                       statement_id integer not null,
+                       start_date datetime not null,
+                       end_date datetime not null,
+                       acc_id char(13) not null,
+                       bank_bic char(9) not null,
+                       statement_text varchar(2000) not null,
+                       primary key (statement_id),
+                       foreign key (acc_id)
                             references Account(acc_id),
-	                   foreign key (bank_bic)
+                       foreign key (bank_bic)
                             references Account(bank_bic)
                     );''')
     cur.execute('''create table TransactionTemplate(
-                    	transaction_template_id integer not null,
-                    	tmpl_name varchar(16) not null,
-                    	payer_bank_bic char(9) not null,
-                    	payer_acc_id char(13) not null,
-                    	bnfc_bank_bic char(9) not null,
-                    	bnfc_acc_id char(13) not null,
-                    	amount money not null,
-                    	reason varchar(256) not null,
-                    	is_urgent bit not null,
-                    	primary key (transaction_template_id),
-                    	foreign key (payer_acc_id)
-                    		references Account(acc_id)
-                    	foreign key (payer_bank_bic)
-                    		references Account(bank_bic)
-                    	foreign key (bnfc_acc_id)
-                    		references Account(acc_id)
-                    	foreign key (bnfc_bank_bic)
-                    		references Account(bank_bic)
+                        transaction_template_id integer not null,
+                        tmpl_name varchar(16) not null,
+                        payer_bank_bic char(9) not null,
+                        payer_acc_id char(13) not null,
+                        bnfc_bank_bic char(9) not null,
+                        bnfc_acc_id char(13) not null,
+                        amount money not null,
+                        reason varchar(256) not null,
+                        is_urgent bit not null,
+                        primary key (transaction_template_id),
+                        foreign key (payer_acc_id)
+                            references Account(acc_id)
+                        foreign key (payer_bank_bic)
+                            references Account(bank_bic)
+                        foreign key (bnfc_acc_id)
+                            references Account(acc_id)
+                        foreign key (bnfc_bank_bic)
+                            references Account(bank_bic)
                     );''')
 
 def fill_client_db(client_con, server_db_path, client_info):
@@ -139,7 +139,10 @@ if __name__ == '__main__':
     for root, dirs, files in os.walk(client_dir):
         for _file in files:
             full_path = os.path.join(root, _file)
-            os.remove(full_path)
+            try:
+                os.remove(full_path)
+            except:
+                pass
     try:
         os.rmdir(client_dir)
     except:
