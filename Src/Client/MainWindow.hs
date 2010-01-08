@@ -14,6 +14,7 @@ import ClientEntities
 import TransactionDialog (showTransactionDialog)
 import BalanceDialog     (showBalanceDialog)
 import StaRequestDialog  (showStaRequestDialog)
+import FxViewer          (showFxViewer)
 import GtkCommon
 
 
@@ -27,6 +28,7 @@ actionEntries =
  ,ActionEntry "ViewBalance_a" "Запрсить баланс"          (Just stockZoom100             ) Nothing (Just "Запрашивает баланс счета."         ) (putStrLn "ViewBalance_a")--onBalanceReq 
  ,ActionEntry "Exit_a"        "Выход"                    (Just stockQuit                ) Nothing (Just "Завершает программу."              ) (putStrLn "Exit_a") --mainQuit
  ,ActionEntry "About_a"       "О программе"              (Just stockAbout               ) Nothing (Just "About."                            ) (putStrLn "About_a")--onAbout
+ ,ActionEntry "Fx_a"          "Курсы валют"              (Just stockAbout               ) Nothing (Just "Курсы авлют."                      ) (putStrLn "Fx_a")--onAbout
  ]
 
 
@@ -97,6 +99,9 @@ bindActions gui session = do
     
     (Just staAction) <- actionGroupGetAction acts "StaReq_a"
     onActionActivate staAction (showStaRequestDialog session)
+    
+    (Just fxAction)  <- actionGroupGetAction acts "Fx_a"
+    onActionActivate fxAction (showFxViewer (dialog_wnd gui) session)
     return ()
  
 

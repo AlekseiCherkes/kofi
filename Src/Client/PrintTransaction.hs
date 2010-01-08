@@ -49,6 +49,4 @@ printTransaction file ct = do
                "|----------------------------------------" ++  "\n"
                
   return result
-               
-      
-  
+

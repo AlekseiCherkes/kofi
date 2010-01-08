@@ -23,6 +23,7 @@
 
         <menu action= "HlpAction">
             <menuitem action= "About_a"/>
+            <menuitem action= "Fx_a"/>
         </menu>
 
     </menubar>
