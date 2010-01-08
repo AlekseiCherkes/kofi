@@ -163,10 +163,10 @@ def fill_CommitedTransaction(server_db_path, accounts):
                     t = time.mktime(t)
                     recive_date = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(t))
                     money_amount = payer_account[3] / 2.0
-                    trn_reason = random.choice(['Оплата коммунальных услуг.',
-                                                'Выплата гонорара.',
-                                                'Благотворительность.'
-                                                'Выплата кредита.'])
+                    trn_reason = random.choice([u'Оплата коммунальных услуг.',
+                                                u'Выплата гонорара.',
+                                                u'Благотворительность.'
+                                                u'Выплата кредита.'])
                     cu.execute('''insert into CommitedTransaction
                                   values(?,
                                          ?,
