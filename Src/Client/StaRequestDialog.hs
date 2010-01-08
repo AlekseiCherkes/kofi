@@ -184,8 +184,8 @@ handleResponse gui session respId = do
             
     
 
-showStaRequestDialog :: Session -> IO ()
-showStaRequestDialog session = do
+showStaRequestDialog :: (WindowClass twin)=> twin ->  Session -> IO ()
+showStaRequestDialog parent session = do
     gui <- loadStaRequestDialog "Resources/staRequest_dialog.glade"
     let unp       = profileUnp $ sessionProfile session
     let chooseAcc = showAccountChooser (dialog_wnd gui) session unp
@@ -193,5 +193,7 @@ showStaRequestDialog session = do
     initStaRequestDialog gui session chooseAcc
     validateStaRequestDialog gui
     onResponse (dialog_wnd gui) (handleResponse gui session)
+    windowSetTransientFor (dialog_wnd gui) parent
+    windowSetDestroyWithParent (dialog_wnd gui) True
     widgetShowAll (dialog_wnd gui)
 

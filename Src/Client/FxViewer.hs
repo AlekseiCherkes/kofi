@@ -56,11 +56,13 @@ rateDoesMatch :: MatchFunc CurrencyRate
 rateDoesMatch str r  = map toLower str `isPrefixOf` map toLower ((primaryName r) ++ "/" ++ (secondaryName r))
     
     
-showFxViewerDialog :: [CurrencyRate] -> IO ()
-showFxViewerDialog rates = do
+showFxViewerDialog :: (WindowClass twin) => twin -> [CurrencyRate] -> IO ()
+showFxViewerDialog parent rates = do
     gui <- loadFxViewer "Resources/fx_dialog.glade"
     initFxViewer gui rates
     onResponse    (dialog_wnd gui) (\_ -> widgetDestroy  (dialog_wnd gui))
+    windowSetTransientFor (dialog_wnd gui) parent
+    windowSetDestroyWithParent (dialog_wnd gui) True
     widgetShowAll (dialog_wnd gui)
     return ()   
             
@@ -75,7 +77,7 @@ showFxViewer parent session = do
             windowSetTransientFor dialog parent
             dialogRun dialog
             widgetDestroy dialog
-        Just (CurrencyRates rates) -> showFxViewerDialog rates
+        Just (CurrencyRates rates) -> showFxViewerDialog parent rates
         Just (Error msg          ) -> do
             dialog <- messageDialogNew Nothing [DialogModal] MessageError ButtonsClose ("Ошибка: " ++ msg ++ ".")
             windowSetTransientFor dialog parent

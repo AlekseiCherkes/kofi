@@ -92,13 +92,13 @@ bindActions gui session = do
     onActionActivate exiAction (dialogResponse (dialog_wnd  gui) ResponseClose)
     
     (Just payAction) <- actionGroupGetAction acts "NewPay_a"
-    onActionActivate payAction (showTransactionDialog session)
+    onActionActivate payAction (showTransactionDialog (dialog_wnd  gui) session)
     
     (Just accAction) <- actionGroupGetAction acts "ViewBalance_a"
-    onActionActivate accAction (showBalanceDialog session)
+    onActionActivate accAction (showBalanceDialog (dialog_wnd  gui) session)
     
     (Just staAction) <- actionGroupGetAction acts "StaReq_a"
-    onActionActivate staAction (showStaRequestDialog session)
+    onActionActivate staAction (showStaRequestDialog (dialog_wnd  gui) session)
     
     (Just fxAction)  <- actionGroupGetAction acts "Fx_a"
     onActionActivate fxAction (showFxViewer (dialog_wnd gui) session)

@@ -92,8 +92,8 @@ commitRequest gui session accpk = do
     widgetDestroy dialog
 
 
-showBalanceDialog :: Session -> IO()
-showBalanceDialog session = do
+showBalanceDialog :: (WindowClass twin)=> twin -> Session -> IO()
+showBalanceDialog parent session = do
     gui <- loadBalanceDialog "Resources/balanceRequest_dialog.glade"
     initBalanceDialog
         (showAccountChooser (dialog_wnd gui) session (profileUnp $ sessionProfile session) )
@@ -101,6 +101,8 @@ showBalanceDialog session = do
         gui
 
     validateBalanceDialog gui
+    windowSetTransientFor (dialog_wnd gui) parent
+    windowSetDestroyWithParent (dialog_wnd gui) True
     widgetShowAll (dialog_wnd gui)
             
 

@@ -313,12 +313,14 @@ commitTransaction gui session = do
     widgetDestroy dialog
 
 
-showTransactionDialog :: Session -> IO ()
-showTransactionDialog session = do
+showTransactionDialog :: (WindowClass twin) => twin -> Session -> IO ()
+showTransactionDialog parent session = do
     gui <- loadTransactionDialog "Resources/transaction_dialog.glade"
     initTransactionDialog gui (showAccountChooser $ dialog_wnd gui) session
     validateTransactionDialog gui
     onResponse (dialog_wnd gui) (\_ -> widgetDestroy $ dialog_wnd gui)
+    windowSetTransientFor (dialog_wnd gui) parent
+    windowSetDestroyWithParent (dialog_wnd gui) True
     widgetShowAll (dialog_wnd gui)
 
 
