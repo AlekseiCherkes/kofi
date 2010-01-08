@@ -135,34 +135,34 @@ fetchStatement stmt = do
     (AccountPK accId bankBic) text
 
 fetchTransactionTemplate stmt = do
-  --fvTransactionTemplateId <- getFieldValue stmt "transaction_template_id" 
-  --fvTmplName              <- getFieldValue stmt "tmpl_name" 
+  fvTransactionTemplateId <- getFieldValue stmt "transaction_template_id" 
+  fvTmplName              <- getFieldValue stmt "tmpl_name" 
   --fvPayerBankBic          <- getFieldValue stmt "payer_bank_bic" 
   --fvPayerAccId            <- getFieldValue stmt "payer_acc_id" 
   --fvBnfcBankBic           <- getFieldValue stmt "bnfc_bank_bic" 
   --fvBnfcAccId             <- getFieldValue stmt "bnfc_acc_id" 
-  --fvAmount                <- getFieldValue stmt "amount" 
-  --fvReason                <- getFieldValue stmt "reason"
+  fvAmount                <- getFieldValue stmt "amount" 
+  fvReason                <- getFieldValue stmt "reason"
   --fvIsUrgent              <- getFieldValue stmt "is_urgent"
   
-  let xid          = 1                       
-  let name         = "The name"              
+  --let xid          = 1                       
+  --let name         = "The name"              
   let payerBankBic = str2bic "151501267"     
   let payerAccId   = str2acc "6801954585389" 
   let bnfcBankBic  = str2bic "151501267"     
   let bnfcAccId    = str2acc "2730815431876" 
-  let amount       = 75                      
-  let reason       = "Never you mind, meddlesome git!" 
+  --let amount       = 75                      
+  --let reason       = "Never you mind, meddlesome git!" 
   let isUrgent     = False                   
   
-  --let xid          = read $ fromJust $ fromSqlValue (SqlInteger    ) fvTransactionTemplateId
-  --let name         =        fromJust $ fromSqlValue (SqlVarChar  16) fvTmplName
+  let xid          = read $ fromJust $ fromSqlValue (SqlInteger    ) fvTransactionTemplateId
+  let name         =        fromJust $ fromSqlValue (SqlVarChar  16) fvTmplName
   --let payerBankBic = read $ fromJust $ fromSqlValue (SqlChar      9) fvPayerBankBic
   --let payerAccId   = read $ fromJust $ fromSqlValue (SqlChar     13) fvPayerAccId
   --let bnfcBankBic  = read $ fromJust $ fromSqlValue (SqlChar      9) fvBnfcBankBic
   --let bnfcAccId    = read $ fromJust $ fromSqlValue (SqlChar     13) fvBnfcAccId
-  --let amount       = read $ fromJust $ fromSqlValue (SqlMoney      ) fvAmount
-  --let reason       =        fromJust $ fromSqlValue (SqlVarChar 256) fvReason
+  let amount       = read $ fromJust $ fromSqlValue (SqlMoney      ) fvAmount
+  let reason       =        fromJust $ fromSqlValue (SqlVarChar 256) fvReason
   --let isUrgent     = read $ fromJust $ fromSqlValue (SqlBit        ) fvIsUrgent
   
   return $ E.TransactionTemplate xid name 
