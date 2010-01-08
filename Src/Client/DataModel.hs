@@ -129,8 +129,8 @@ fetchStatement stmt = do
   let xid = read $ fromJust $ fromSqlValue (SqlInteger) fvId
   startDate <- toCalendarTime $ fromJust $ fromSqlValue (SqlDateTime) fvStartDate
   endDate <- toCalendarTime $ fromJust $ fromSqlValue (SqlDateTime) fvEndDate
-  let accId = read $ fromJust $ fromSqlValue (SqlChar 13) fvAccId
-  let bankBic = read $ fromJust $ fromSqlValue (SqlChar 9) fvBankBic
+  let accId = str2acc $ fromJust $ fromSqlValue (SqlChar 13) fvAccId
+  let bankBic = str2bic $ fromJust $ fromSqlValue (SqlChar 9) fvBankBic
   let text = fromJust $ fromSqlValue (SqlVarChar 2000) fvStatementText
       
   return $ E.Statement xid startDate endDate
@@ -144,22 +144,22 @@ fetchTransactionTemplate stmt = do
   fvBnfcBankBic <- getFieldValue stmt "bnfc_bank_bic" 
   fvBnfcAccId <- getFieldValue stmt "bnfc_acc_id" 
   fvAmount <- getFieldValue stmt "amount" 
-  fvReason <- getFieldValue stmt "varchar"
+  fvReason <- getFieldValue stmt "reason"
   fvIsUrgent <- getFieldValue stmt "is_urgent" 
   
   let xid = read $ fromJust $ fromSqlValue (SqlInteger) fvTransactionTemplateId
   let name = fromJust $ fromSqlValue (SqlVarChar 16) fvTmplName
-  let payerBankBic = read $ fromJust $ fromSqlValue (SqlChar 9) fvPayerBankBic
-  let payerAccId = read $ fromJust $ fromSqlValue (SqlChar 13) fvPayerAccId
-  let bnfcBankBic = read $ fromJust $ fromSqlValue (SqlChar 9) fvBnfcBankBic
-  let bnfcAccId = read $ fromJust $ fromSqlValue (SqlChar 13) fvBnfcAccId
+  let payerBankBic = str2bic $ fromJust $ fromSqlValue (SqlChar 9) fvPayerBankBic
+  let payerAccId = str2acc $ fromJust $ fromSqlValue (SqlChar 13) fvPayerAccId
+  let bnfcBankBic = str2bic $ fromJust $ fromSqlValue (SqlChar 9) fvBnfcBankBic
+  let bnfcAccId = str2acc $ fromJust $ fromSqlValue (SqlChar 13) fvBnfcAccId
   let amount = read $ fromJust $ fromSqlValue (SqlMoney) fvAmount
   let reason = fromJust $ fromSqlValue (SqlVarChar 256) fvReason
-  let isUrgent = read $ fromJust $ fromSqlValue (SqlBit) fvIsUrgent
+  let isUrgent = fromJust $ fromSqlValue (SqlBit) fvIsUrgent
   
   return $ E.TransactionTemplate xid name 
-    (AccountPK payerBankBic payerAccId)
-    (AccountPK bnfcBankBic bnfcAccId)
+    (AccountPK payerAccId payerBankBic)
+    (AccountPK bnfcAccId bnfcBankBic)
     amount reason isUrgent
     
 --------------------------------------------------------------------------------

@@ -115,7 +115,7 @@ def fill_client_db(client_con, server_db_path, client_info):
                                   values (NULL, ?,?,?,?,?,
                                           150,
                                           'reason',
-                                          1);''',
+                                          't');''',
                                   (tmpl_name,
                                   accounts[0][1],
                                   accounts[0][0],
