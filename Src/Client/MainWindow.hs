@@ -22,10 +22,10 @@ actionEntries =
  [ActionEntry "SwitchUser_a"  "Переключить пользователя" (Just stockDialogAuthentication) Nothing (Just "Меняет пользователя."              ) (putStrLn "SwitchUser_a")--onSwitchUser 
  ,ActionEntry "NewPay_a"      "Создать"                  (Just stockAdd                 ) Nothing (Just "Создает новое платежное поручение" ) (putStrLn "NewPay_a")--onNewPay 
  ,ActionEntry "ViewPays_a"    "Просмотреть платежи"      (Just stockIndex               ) Nothing (Just "Показывает все платежные поручения") (putStrLn "ViewPays_a")--onViewPay 
- ,ActionEntry "StaReq_a"      "Запрсить выписку"         (Just stockDnd                 ) Nothing (Just "Запрашивает выписку со счета."     ) (putStrLn "StaReq_a")--onStaReq 
- ,ActionEntry "LogReq_a"      "Запрсить лог"             (Just stockUndelete            ) Nothing (Just "Запрашивает лог."                  ) (putStrLn "LogReq_a")--onLogReq 
+ ,ActionEntry "StaReq_a"      "Запросить выписку"         (Just stockDnd                ) Nothing (Just "Запрашивает выписку со счета."     ) (putStrLn "StaReq_a")--onStaReq 
+ ,ActionEntry "LogReq_a"      "Запросить лог"             (Just stockUndelete           ) Nothing (Just "Запрашивает лог."                  ) (putStrLn "LogReq_a")--onLogReq 
  ,ActionEntry "ViewSta_a"     "Просмотреть выписки"      (Just stockDndMultiple         ) Nothing (Just "Показывает все выписки."           ) (putStrLn "ViewSta_a")--onViewSta 
- ,ActionEntry "ViewBalance_a" "Запрсить баланс"          (Just stockZoom100             ) Nothing (Just "Запрашивает баланс счета."         ) (putStrLn "ViewBalance_a")--onBalanceReq 
+ ,ActionEntry "ViewBalance_a" "Запросить баланс"          (Just stockZoom100            ) Nothing (Just "Запрашивает баланс счета."         ) (putStrLn "ViewBalance_a")--onBalanceReq 
  ,ActionEntry "Exit_a"        "Выход"                    (Just stockQuit                ) Nothing (Just "Завершает программу."              ) (putStrLn "Exit_a") --mainQuit
  ,ActionEntry "About_a"       "О программе"              (Just stockAbout               ) Nothing (Just "About."                            ) (putStrLn "About_a")--onAbout
  ,ActionEntry "Fx_a"          "Курсы валют"              (Just stockAbout               ) Nothing (Just "Курсы авлют."                      ) (putStrLn "Fx_a")--onAbout

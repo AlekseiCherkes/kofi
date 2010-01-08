@@ -2,6 +2,8 @@ module ClientMessage where
 
 import Network
 import System.IO
+import Control.Exception
+import Prelude hiding (catch)
 
 -- Common imports
 import Types
@@ -21,9 +23,20 @@ port = PortNumber 6555
 
 sendRequest :: Session -> Request -> IO Response
 sendRequest session request = do
+    (perform session request) `catch` errHandler
+    where errHandler e = do
+            putStrLn $ (show (e::SomeException))
+            return $ Error "Server response cannot be parsed." 
+ 
+        
+perform :: Session -> Request -> IO Response
+perform session request = do
     let unp        = (profileUnp .sessionProfile) session
     let sendRSAKey = sessionSendKey session
     let recvRSAKey = sessionRecvKey session
+    
+    putStrLn $ show sendRSAKey
+    putStrLn $ show recvRSAKey
   
     
     let mb = (show request)  
@@ -35,7 +48,7 @@ sendRequest session request = do
             sendOnly msg
             return Silence
         otherwise -> sendAndRecv msg recvRSAKey
-            
+             
 
 
 sendOnly :: Message -> IO ()
