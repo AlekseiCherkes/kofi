@@ -25,6 +25,7 @@ import DataModel
 import AccountChooser  (showAccountChooser)
 import WaitDialog      (showWaitDialog)
 import TemplateChooser (showTemplateChooser)
+import TemplateSaver   (showTemplateSaver)
 
 
 
@@ -171,7 +172,17 @@ initTransactionDialog gui chooseAcc session = do
     onClicked (cancel_btn gui) (dialogResponse (dialog_wnd  gui) ResponseCancel)
 
     onClicked (save_btn gui) $ do
-        putStrLn "Save template."
+        isValid <- validateTransactionDialog gui
+        if isValid 
+            then do
+                mname <- showTemplateSaver (dialog_wnd  gui)
+                case mname of
+                    Nothing   -> return ()
+                    Just name -> do
+                        tmpl <- getTemplateData gui name
+                        insertTransactionTemplate path tmpl
+            else showWarningMessage gui
+            
 
     onClicked (load_btn gui) $ do
         mtmpl <- showTemplateChooser (dialog_wnd gui) session
@@ -261,8 +272,22 @@ getTransactionDialogData gui = do
     return $ CommitedTransaction reason creditAcc debitAcc amount (
                 case isUrgent of
                     True  -> Urgent
-                    False -> Normal)           
-
+                    False -> Normal)  
+                    
+getTemplateData :: TransactionDialog -> String -> IO TransactionTemplate         
+getTemplateData gui name = do
+    reason         <- (getMultilineText . reason_txt) gui
+    Just creditAcc <- (readIORef        . payer_acc ) gui
+    Just debitAcc  <- (readIORef        . payee_acc ) gui
+    amount         <- (return . (read::String -> Double)) =<< (entryGetText . amount_entry) gui
+    isUrgent       <- (toggleButtonGetActive . urgent_btn) gui
+    
+    return $ TransactionTemplate
+                0         name
+                creditAcc debitAcc
+                amount    reason 
+                isUrgent  
+    
 
 
 commitTransaction :: TransactionDialog -> Session -> IO ()
