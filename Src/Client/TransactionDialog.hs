@@ -27,7 +27,7 @@ import WaitDialog      (showWaitDialog)
 import TemplateChooser (showTemplateChooser)
 import TemplateSaver   (showTemplateSaver)
 
-import PrintTransaction
+import Printers
 
 import Debug.Trace
 
