@@ -29,8 +29,7 @@ import TemplateSaver   (showTemplateSaver)
 
 import PrintTransaction
 
-
-
+import Debug.Trace
 
 data TransactionDialog = TransactionDialog{ dialog_wnd         :: Dialog
                                            ,commit_btn         :: Button
@@ -296,7 +295,7 @@ commitTransaction :: TransactionDialog -> Session -> IO ()
 commitTransaction gui session = do
     trans <- getTransactionDialogData gui
     
-    printTransaction (sessionPath session) trans >>= print
+    printTransaction (sessionPath session) trans >>= putTraceMsg
     
     mservResp <- showWaitDialog (dialog_wnd gui) session (CommitTransaction trans)
     dialog <- case mservResp of

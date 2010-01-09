@@ -27,7 +27,7 @@ create_account: Src/Server/CreateAccount.hs
 	ghc --make -iSrc/Server $(DATABASE_FLAGS) -optP $(CFLAGS) -o Bin/Server/create_account $(HSFLAGS_OUR) Src/Server/CreateAccount.hs $(CBITS_O)
 
 .PHONY: client
-client: clientd # clientr
+client: clientd clientr
 	
 .PHONY: clientd
 clientd: third_party Src/Client/Main.hs
