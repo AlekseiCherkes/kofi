@@ -16,6 +16,8 @@ import Prelude hiding (print)
 import System.IO.UTF8
 import qualified Codec.Binary.UTF8.String as UTF8
 
+import Data.HashTable
+
 --------------------------------------------------------------------------------
 -- Helper functions
 --------------------------------------------------------------------------------
@@ -35,11 +37,6 @@ generateAccId = do
     min = 10^12::Integer
     max = 10^13 - 1::Integer
 
-hashString :: String -> Int
-hashString str = (toEnum . fromEnum) $ 
-                 foldl1 xor $ 
-                 ((map (toEnum . fromEnum) str) :: [Word16])
-
 --------------------------------------------------------------------------------
 -- Main function
 --------------------------------------------------------------------------------
@@ -48,7 +45,7 @@ main = withUtilityLoggers $ \_ -> do
   args <- getArgs
   let (unp, bic, ballance) = parseArgs args
       
-  setStdGen $ mkStdGen $ hashString $ foldl1 (++) args
+  setStdGen $ mkStdGen $ toEnum . fromEnum $ hashString $ foldl1 (++) args
   aid <- generateAccId
   date <- getClockTime >>= toCalendarTime
                          

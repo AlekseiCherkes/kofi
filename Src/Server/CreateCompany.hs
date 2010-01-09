@@ -23,6 +23,8 @@ import Data.Word
 import Database.HSQL
 import System.Exit
 
+import Data.HashTable
+
 --------------------------------------------------------------------------------
 -- Helper functions from number theory
 --------------------------------------------------------------------------------
@@ -85,18 +87,15 @@ generateKeyPair r1 r2 r3 = (open_key, private_key)
     open_key = cast n e
     private_key = cast n d
     
-hashString :: String -> Int
-hashString str = (toEnum . fromEnum) $ 
-                 foldl1 xor $ 
-                 ((map (toEnum . fromEnum) str) :: [Word16])
-    
 --------------------------------------------------------------------------------
 -- Main function
 --------------------------------------------------------------------------------
                   
 main = withUtilityLoggers $ \_ -> do
   name <- (getArgs >>= \as -> return (parseArgs as))
-  setStdGen $ mkStdGen $ hashString name -- use company name for generate UNP
+  
+   -- use company name for generate UNP
+  setStdGen $ mkStdGen $ toEnum . fromEnum $ hashString name
   
   r1 <- rand 10 100
   r2 <- rand 10 100
