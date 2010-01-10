@@ -6,6 +6,7 @@ import sqlite3 as db
 
 server_db_path = 'Server/server.db'
 client_dir = 'Client/Profiles'
+rand_seed = 123
 
 def create_client_db(con):
     cur = con.cursor()
@@ -126,6 +127,7 @@ def fill_client_db(client_con, server_db_path, client_info):
         server_con.close()
 
 if __name__ == '__main__':
+    random.seed(rand_seed)
     server_con = db.connect(database = server_db_path)
     server_cur = server_con.cursor()
     try:

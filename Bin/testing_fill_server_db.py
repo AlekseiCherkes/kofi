@@ -40,15 +40,14 @@ import time
 
 company_names = [
     'АКСЕНОВ Сергей Анатольевич',
-    'МАРУДОВ Олег Владимирович',
-    #'ООО «Юридическое агентство «Берега Двины»  г. Витебск',
-    'Филиал ООО «Партнёр-Консультант» в городе Витебске',
-    'ООО «Юридическая компания «Темис» г. Новополоцк'
-    #'ООО «Витебская юридическая компания»',
-    #'ЧЕПИК Дина Константиновна'
-    
+    'БОРИСОВ Владимир Сергеевич'
+##    'АКСЕНОВ Сергей Анатольевич',
+##    'МАРУДОВ Олег Владимирович',
+##    'Филиал ООО «Партнёр-Консультант» в городе Витебске',
+##    'ООО «Юридическая компания «Темис» г. Новополоцк'
     ]
 
+rand_seed = 123
 accounts_per_company = 2
 #transaction_per_account = 2
 banks_count = 2
@@ -113,8 +112,8 @@ def fill_Account(companies, accounts_per_company, banks):
     for company in companies:
         for bank_bic in banks:
             for i in range(accounts_per_company):
-                #balance = 100 + 10 * total_acc_count
-                balance = random.randint(10, 1000) * 10
+                balance = 100 + 10 * total_acc_count
+                #balance = random.randint(10, 1000) * 10
                 args = ['Server\create_account', company[0], bank_bic, str(balance)]
                 process = subprocess.Popen(args, cwd = 'Server', shell=False, \
                     stdin=subprocess.PIPE, stdout=subprocess.PIPE, \
@@ -254,6 +253,7 @@ def print_statistic(server_db_path):
 
 
 if __name__ == '__main__':
+    random.seed(rand_seed)
     banks = get_banks_manual(banks_manual_db_path, banks_count)
     companies = fill_Company(company_names)
     accounts = fill_Account(companies, accounts_per_company, banks)
